@@ -1,4 +1,4 @@
-package it.gov.pagopa.quarkustemplate.models;
+package it.gov.pagopa.nodetsworker.models;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
