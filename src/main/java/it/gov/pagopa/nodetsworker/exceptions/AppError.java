@@ -7,6 +7,7 @@ import lombok.Getter;
 public enum AppError {
 
     POSITION_SERVICE_NOT_FOUND(404, "Not found", "Position service with organization %s and %s not found"),
+    POSITION_SERVICE_DATE_BAD_REQUEST(400, "Bad Request", "%s"),
     WORKER_CONFLICT(409, "Conflict", "A worker with the nodeId %s already exists"),
     INTERNAL_ERROR(500, "Internal error", "Processing error"),
     UNKNOWN(520, null, null);

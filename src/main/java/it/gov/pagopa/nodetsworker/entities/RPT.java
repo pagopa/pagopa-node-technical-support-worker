@@ -55,7 +55,7 @@ public class RPT extends PanacheEntityBase {
     @Column(name = "DATA_MSG_RICH")
     private LocalDateTime paymentRequestTimestamp;
 
-    @Column(name = "FLAG_CANC")
+    @Column(name = "FLAG_CANC", columnDefinition = "bpchar")
     @Convert(converter = YesNoConverter.class)
     private Boolean revokeRequest;
 
