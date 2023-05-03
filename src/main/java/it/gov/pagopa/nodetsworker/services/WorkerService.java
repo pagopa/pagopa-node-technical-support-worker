@@ -1,15 +1,14 @@
 package it.gov.pagopa.nodetsworker.services;
 
-import io.quarkus.hibernate.orm.panache.PanacheEntityBase;
 import io.quarkus.panache.common.Parameters;
 import it.gov.pagopa.nodetsworker.entities.PositionPayment;
 import it.gov.pagopa.nodetsworker.entities.PositionPaymentStatusSnapshot;
-import it.gov.pagopa.nodetsworker.entities.PositionService;
 import it.gov.pagopa.nodetsworker.entities.RPT;
 import it.gov.pagopa.nodetsworker.entities.RT;
 import it.gov.pagopa.nodetsworker.entities.StatiRPTSnapshot;
 import it.gov.pagopa.nodetsworker.exceptions.AppError;
 import it.gov.pagopa.nodetsworker.exceptions.AppException;
+import it.gov.pagopa.nodetsworker.models.DateRequest;
 import it.gov.pagopa.nodetsworker.models.PaymentInfo;
 import it.gov.pagopa.nodetsworker.models.TransactionResponse;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
@@ -25,47 +24,49 @@ public class WorkerService {
     @ConfigProperty(name = "node.identifier", defaultValue = "")
     String nodeId;
 
+    String DATE_QUERY = " and insertedTimestamp >= :dateFrom and insertedTimestamp <= :dateTo";
+
     public TransactionResponse getInfoByNoticeNumber(String organizationFiscalCode, String noticeNumber, LocalDate dateFrom, LocalDate dateTo) {
-        verifyDate(dateFrom, dateTo);
+        DateRequest dateRequest = verifyDate(dateFrom, dateTo);
 
         // if payments > 0 it is a new payment model
-        List<PositionPayment> payments = getPaymentPositionListByNoticeNumber(organizationFiscalCode, noticeNumber, dateFrom, dateTo);
+        List<PositionPayment> payments = getPaymentPositionListByNoticeNumber(organizationFiscalCode, noticeNumber, dateRequest.getFrom(), dateRequest.getTo());
 
         List<PaymentInfo> paymentInfoList;
         if (!payments.isEmpty()) {
-            paymentInfoList = enrichPaymentPositionList(payments);
+            paymentInfoList = enrichPaymentPositionList(payments, dateRequest.getFrom(), dateRequest.getTo());
         }
         else {
             int beginIndex = noticeNumber.startsWith("0") || noticeNumber.startsWith("3") ? 3 : 1;
-            List<RPT> rptList = getRPTList(organizationFiscalCode, noticeNumber.substring(beginIndex));
-            paymentInfoList = enrichRPTList(rptList);
+            List<RPT> rptList = getRPTList(organizationFiscalCode, noticeNumber.substring(beginIndex), dateRequest.getFrom(), dateRequest.getTo());
+            paymentInfoList = enrichRPTList(rptList, dateRequest.getFrom(), dateRequest.getTo());
         }
 
         return TransactionResponse.builder()
-                .dateFrom(dateFrom)
-                .dateTo(dateTo)
+                .dateFrom(dateRequest.getFrom())
+                .dateTo(dateRequest.getTo())
                 .paymentInfoList(paymentInfoList)
                 .build();
     }
 
     public TransactionResponse getInfoByIUV(String organizationFiscalCode, String iuv, LocalDate dateFrom, LocalDate dateTo) {
-        verifyDate(dateFrom, dateTo);
+        DateRequest dateRequest = verifyDate(dateFrom, dateTo);
 
         // if payments > 0 it is a new model payment
-        List<PositionPayment> payments = getPaymentPositionListByIUV(organizationFiscalCode, iuv, dateFrom, dateTo);
+        List<PositionPayment> payments = getPaymentPositionListByIUV(organizationFiscalCode, iuv, dateRequest.getFrom(), dateRequest.getTo());
 
         List<PaymentInfo> paymentInfoList;
         if (!payments.isEmpty()) {
-            paymentInfoList = enrichPaymentPositionList(payments);
+            paymentInfoList = enrichPaymentPositionList(payments, dateRequest.getFrom(), dateRequest.getTo());
         }
         else {
-            List<RPT> rptList = getRPTList(organizationFiscalCode, iuv);
-            paymentInfoList = enrichRPTList(rptList);
+            List<RPT> rptList = getRPTList(organizationFiscalCode, iuv, dateRequest.getFrom(), dateRequest.getTo());
+            paymentInfoList = enrichRPTList(rptList, dateRequest.getFrom(), dateRequest.getTo());
         }
 
         return TransactionResponse.builder()
-                .dateFrom(dateFrom)
-                .dateTo(dateTo)
+                .dateFrom(dateRequest.getFrom())
+                .dateTo(dateRequest.getTo())
                 .paymentInfoList(paymentInfoList)
                 .build();
     }
@@ -75,13 +76,21 @@ public class WorkerService {
      * @param dateFrom
      * @param dateTo
      */
-    private void verifyDate(LocalDate dateFrom, LocalDate dateTo) {
+    private DateRequest verifyDate(LocalDate dateFrom, LocalDate dateTo) {
         if (dateFrom == null && dateTo != null || dateFrom != null && dateTo == null) {
             throw new AppException(AppError.POSITION_SERVICE_DATE_BAD_REQUEST, "Date from and date to must be both defined");
         }
         else if (dateFrom != null && dateTo != null && dateFrom.isAfter(dateTo)) {
             throw new AppException(AppError.POSITION_SERVICE_DATE_BAD_REQUEST, "Date from must be before date to");
         }
+        if (dateFrom == null && dateTo == null) {
+            dateFrom = LocalDate.now();
+            dateTo = dateFrom.minusDays(10);
+        }
+        return DateRequest.builder()
+                .from(dateFrom)
+                .to(dateTo)
+                .build();
     }
 
 
@@ -116,15 +125,10 @@ public class WorkerService {
     }
 
     private List<PositionPayment> getPaymentPositionList(String query, Parameters parameters, LocalDate dateFrom, LocalDate dateTo) {
-        List<PositionPayment> payments;
-        if (dateFrom != null && dateTo != null) {
-            parameters.and("dateFrom", dateFrom.atStartOfDay()).and("dateTo", dateTo.atTime(23, 59, 59));
-            query += " and insertedTimestamp >= :dateFrom and insertedTimestamp <= :dateTo";
-        }
+        query += DATE_QUERY;
+        parameters.and("dateFrom", dateFrom.atStartOfDay()).and("dateTo", dateTo.atTime(23, 59, 59));
 
-        payments = PositionPayment.find(query, parameters.map()).list();
-
-        return payments;
+        return PositionPayment.find(query, parameters.map()).list();
     }
 
     /**
@@ -132,9 +136,16 @@ public class WorkerService {
      * @param payments
      * @return payment info list
      */
-    private List<PaymentInfo> enrichPaymentPositionList(List<PositionPayment> payments) {
+    private List<PaymentInfo> enrichPaymentPositionList(List<PositionPayment> payments, LocalDate dateFrom, LocalDate dateTo) {
         return payments.stream().map(payment -> {
-            Optional<PositionPaymentStatusSnapshot> optPaymentStatus = PositionPaymentStatusSnapshot.find("fkPositionPayment = :positionPaymentId", Parameters.with("positionPaymentId", payment.getId()).map()).singleResultOptional();
+            Optional<PositionPaymentStatusSnapshot> optPaymentStatus =
+                    PositionPaymentStatusSnapshot.find("fkPositionPayment = :positionPaymentId" + DATE_QUERY,
+                            Parameters.with("positionPaymentId", payment.getId())
+                                    .and("dateFrom", dateFrom.atStartOfDay())
+                                    .and("dateTo", dateTo.atTime(23, 59, 59))
+                                    .map()
+                    )
+                    .singleResultOptional();
             String status = optPaymentStatus.map(PositionPaymentStatusSnapshot::getStatus).orElse(null);
 
             PaymentInfo paymentInfo = PaymentInfo.builder()
@@ -162,14 +173,16 @@ public class WorkerService {
      * @param rptList
      * @return
      */
-    private List<PaymentInfo> enrichRPTList(List<RPT> rptList) {
+    private List<PaymentInfo> enrichRPTList(List<RPT> rptList, LocalDate dateFrom, LocalDate dateTo) {
 
         return rptList.stream().map(rpt -> {
 
-            Optional<RT> optRT = StatiRPTSnapshot.find("organizationFiscalCode = :organizationFiscalCode and iuv = :iuv and ccp = :ccp",
+            Optional<RT> optRT = StatiRPTSnapshot.find("organizationFiscalCode = :organizationFiscalCode and iuv = :iuv and ccp = :ccp" + DATE_QUERY,
                     Parameters.with("organizationFiscalCode", rpt.getOrganizationFiscalCode())
                             .and("iuv", rpt.getIuv())
                             .and("ccp", rpt.getCcp())
+                            .and("dateFrom", dateFrom.atStartOfDay())
+                            .and("dateTo", dateTo.atTime(23, 59, 59))
                             .map()
             ).singleResultOptional();
             String outcome = null;
@@ -183,10 +196,13 @@ public class WorkerService {
                 }
             }
 
-            Optional<StatiRPTSnapshot> optRPTStatus = StatiRPTSnapshot.find("id.organizationFiscalCode = :organizationFiscalCode and id.iuv = :iuv and id.ccp = :ccp",
+            Optional<StatiRPTSnapshot> optRPTStatus =
+                    StatiRPTSnapshot.find("id.organizationFiscalCode = :organizationFiscalCode and id.iuv = :iuv and id.ccp = :ccp" + DATE_QUERY,
                     Parameters.with("organizationFiscalCode", rpt.getOrganizationFiscalCode())
                             .and("iuv", rpt.getIuv())
                             .and("ccp", rpt.getCcp())
+                            .and("dateFrom", dateFrom.atStartOfDay())
+                            .and("dateTo", dateTo.atTime(23, 59, 59))
                             .map()
             ).singleResultOptional();
             String status = optRPTStatus.map(StatiRPTSnapshot::getStatus).orElse(null);
@@ -210,13 +226,20 @@ public class WorkerService {
 
     /**
      * Retrieve RPT list by organizationFiscalCode e IUV
+     *
      * @param organizationFiscalCode
      * @param iuv
+     * @param dateFrom
+     * @param dateTo
      * @return rpt list
      */
-    private List<RPT> getRPTList(String organizationFiscalCode, String iuv) {
-        return RPT.find("organizationFiscalCode = :organizationFiscalCode and iuv = :iuv",
-                Parameters.with("organizationFiscalCode", organizationFiscalCode).and("iuv", iuv).map()
+    private List<RPT> getRPTList(String organizationFiscalCode, String iuv, LocalDate dateFrom, LocalDate dateTo) {
+        return RPT.find("organizationFiscalCode = :organizationFiscalCode and iuv = :iuv" + DATE_QUERY,
+                Parameters.with("organizationFiscalCode", organizationFiscalCode)
+                        .and("iuv", iuv)
+                        .and("dateFrom", dateFrom.atStartOfDay())
+                        .and("dateTo", dateTo.atTime(23, 59, 59))
+                        .map()
         ).list();
     }
 

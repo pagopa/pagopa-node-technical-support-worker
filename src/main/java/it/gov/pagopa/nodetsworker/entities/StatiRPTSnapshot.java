@@ -16,6 +16,7 @@ import javax.persistence.Id;
 import javax.persistence.IdClass;
 import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
+import java.time.LocalDateTime;
 
 @Getter
 @Setter
@@ -33,4 +34,6 @@ public class StatiRPTSnapshot extends PanacheEntityBase {
     @Column(name = "STATO")
     private String status;
 
+    @Column(name = "INSERTED_TIMESTAMP")
+    private LocalDateTime insertedTimestamp;
 }

@@ -42,4 +42,7 @@ public class PositionPaymentStatusSnapshot extends PanacheEntityBase {
     @Column(name = "FK_POSITION_PAYMENT", columnDefinition = "NUMERIC")
     private Long fkPositionPayment;
 
+    @Column(name = "INSERTED_TIMESTAMP")
+    private LocalDateTime insertedTimestamp;
+
 }
