@@ -9,7 +9,9 @@ import it.gov.pagopa.nodetsworker.entities.StatiRPTSnapshot;
 import it.gov.pagopa.nodetsworker.exceptions.AppError;
 import it.gov.pagopa.nodetsworker.exceptions.AppException;
 import it.gov.pagopa.nodetsworker.models.DateRequest;
+import it.gov.pagopa.nodetsworker.models.PaymentAttemptInfo;
 import it.gov.pagopa.nodetsworker.models.PaymentInfo;
+import it.gov.pagopa.nodetsworker.models.TransactionAttemptResponse;
 import it.gov.pagopa.nodetsworker.models.TransactionResponse;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 
@@ -52,9 +54,9 @@ public class WorkerService {
     public TransactionResponse getInfoByIUV(String organizationFiscalCode, String iuv, LocalDate dateFrom, LocalDate dateTo) {
         DateRequest dateRequest = verifyDate(dateFrom, dateTo);
 
-        // if payments > 0 it is a new model payment
         List<PositionPayment> payments = getPaymentPositionListByIUV(organizationFiscalCode, iuv, dateRequest.getFrom(), dateRequest.getTo());
 
+        // if payments > 0 it is a new model payment
         List<PaymentInfo> paymentInfoList;
         if (!payments.isEmpty()) {
             paymentInfoList = enrichPaymentPositionList(payments, dateRequest.getFrom(), dateRequest.getTo());
@@ -70,6 +72,27 @@ public class WorkerService {
                 .paymentInfoList(paymentInfoList)
                 .build();
     }
+
+    public TransactionAttemptResponse getAttemptByIUV(String organizationFiscalCode, String iuv, String paymentToken, LocalDate dateFrom, LocalDate dateTo) {
+        DateRequest dateRequest = verifyDate(dateFrom, dateTo);
+
+        List<PositionPayment> payments = getPaymentPositionListByIUVPaymentToken(organizationFiscalCode, iuv, paymentToken, dateRequest.getFrom(), dateRequest.getTo());
+        List<PaymentAttemptInfo> paymentAttemptInfoList = enrichPaymentAttemptPositionList(payments, dateRequest.getFrom(), dateRequest.getTo());
+
+        return TransactionAttemptResponse.builder()
+                .dateFrom(dateRequest.getFrom())
+                .dateTo(dateRequest.getTo())
+                .paymentAttemptInfoList(paymentAttemptInfoList)
+                .build();
+    }
+
+
+
+
+
+
+
+
 
     /**
      * Check dates validity
@@ -124,6 +147,24 @@ public class WorkerService {
         return getPaymentPositionList(query, parameters, dateFrom, dateTo);
     }
 
+    /**
+     * Get payment position list by iuv
+     * @param organizationFiscalCode
+     * @param iuv
+     * @param dateFrom
+     * @param dateTo
+     * @return
+     */
+    private List<PositionPayment> getPaymentPositionListByIUVPaymentToken(String organizationFiscalCode, String iuv, String paymentToken, LocalDate dateFrom, LocalDate dateTo) {
+        String query = "organizationFiscalCode = :organizationFiscalCode and noticeNumber like :iuv and paymentToken = :paymentToken";
+        Parameters parameters = Parameters
+                .with("organizationFiscalCode", organizationFiscalCode)
+                .and("iuv", "%" + iuv)
+                .and("paymentToken", paymentToken);
+
+        return getPaymentPositionList(query, parameters, dateFrom, dateTo);
+    }
+
     private List<PositionPayment> getPaymentPositionList(String query, Parameters parameters, LocalDate dateFrom, LocalDate dateTo) {
         query += DATE_QUERY;
         parameters.and("dateFrom", dateFrom.atStartOfDay()).and("dateTo", dateTo.atTime(23, 59, 59));
@@ -170,6 +211,63 @@ public class WorkerService {
 
         paymentInfoList.sort(Comparator.comparing(PaymentInfo::getUpdatedTimestamp).reversed());
         return paymentInfoList;
+    }
+
+    /**
+     * Add status to payment
+     * @param payments
+     * @return payment attempt info list
+     */
+    private List<PaymentAttemptInfo> enrichPaymentAttemptPositionList(List<PositionPayment> payments, LocalDate dateFrom, LocalDate dateTo) {
+        List<PaymentAttemptInfo> paymentAttemptInfoList = payments.stream().map(payment -> {
+            Optional<PositionPaymentStatusSnapshot> optPaymentStatus =
+                    PositionPaymentStatusSnapshot.find("fkPositionPayment = :positionPaymentId" + DATE_QUERY,
+                                    Parameters.with("positionPaymentId", payment.getId())
+                                            .and("dateFrom", dateFrom.atStartOfDay())
+                                            .and("dateTo", dateTo.atTime(23, 59, 59))
+                                            .map()
+                            )
+                            .singleResultOptional();
+            String status = optPaymentStatus.map(PositionPaymentStatusSnapshot::getStatus).orElse(null);
+
+            PaymentAttemptInfo paymentAttemptInfo = PaymentAttemptInfo.builder()
+                    .organizationFiscalCode(payment.getOrganizationFiscalCode())
+                    .noticeNumber(payment.getNoticeNumber())
+                    .pspId(payment.getPspId())
+                    .brokerPspId(payment.getBrokerPspId())
+                    .channelId(payment.getChannelId())
+                    .brokerOrganizationId(payment.getBrokerOrganizationId())
+                    .stationId(payment.getStationId())
+                    .paymentMethod(payment.getPaymentMethod())
+                    .flagIO(payment.getFlagIO())
+                    .outcome(payment.getOutcome())
+                    .status(status)
+                    .paymentToken(payment.getPaymentToken())
+                    .pmReceipt(payment.getPmReceipt())
+                    .paymentMethod(payment.getPaymentMethod())
+                    .flagPayPal(payment.getFlagPayPal())
+                    .stationVersion(payment.getStationVersion())
+                    .amount(payment.getAmount())
+                    .fee(payment.getFee())
+                    .feeSpo(payment.getFeeSpo())
+                    .feeOrganization(payment.getFeeOrganization())
+                    .bundleId(payment.getBundleId())
+                    .bundleOrganizationId(payment.getBundleOrganizationId())
+                    .applicationDate(payment.getApplicationDate())
+                    .transferDate(payment.getTransferDate())
+                    .insertedTimestamp(payment.getInsertedTimestamp())
+                    .updatedTimestamp(payment.getUpdatedTimestamp())
+                    .isOldPaymentModel(false)
+                    .nodeId(nodeId)
+                    .build();
+
+            optPaymentStatus.ifPresent(positionPaymentStatusSnapshot -> paymentAttemptInfo.setStatus(positionPaymentStatusSnapshot.getStatus()));
+
+            return paymentAttemptInfo;
+        }).collect(Collectors.toList());
+
+        paymentAttemptInfoList.sort(Comparator.comparing(PaymentAttemptInfo::getUpdatedTimestamp).reversed());
+        return paymentAttemptInfoList;
     }
 
     /**

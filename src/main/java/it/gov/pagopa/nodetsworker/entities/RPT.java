@@ -65,4 +65,22 @@ public class RPT extends PanacheEntityBase {
     @Column(name = "UPDATED_TIMESTAMP")
     private LocalDateTime updatedTimestamp;
 
+    @Column(name = "NUM_VERSAMENTI", columnDefinition = "NUMERIC")
+    private Long numberOfPayments;
+
+    @Column(name = "SOMMA_VERSAMENTI", columnDefinition = "FLOAT4")
+    private Double amount;
+
+    @Column(name = "WISP_2", columnDefinition = "bpchar")
+    @Convert(converter = YesNoConverter.class)
+    private Boolean wispInitialization;
+
+    @Column(name = "FLAG_SECONDA", columnDefinition = "bpchar")
+    @Convert(converter = YesNoConverter.class)
+    private Boolean retriedRPT;
+
+    @Column(name = "FLAG_IO", columnDefinition = "bpchar")
+    @Convert(converter = YesNoConverter.class)
+    private Boolean flagIO;
+
 }

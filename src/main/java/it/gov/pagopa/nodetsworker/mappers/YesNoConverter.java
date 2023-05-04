@@ -16,6 +16,6 @@ public class YesNoConverter implements AttributeConverter<Boolean, String> {
 
     @Override
     public Boolean convertToEntityAttribute(final String value) {
-        return value.equals(YES);
+        return YES.equals(value);
     }
 }

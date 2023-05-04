@@ -4,12 +4,14 @@ package it.gov.pagopa.nodetsworker.entities;
 import io.quarkus.arc.All;
 import io.quarkus.hibernate.orm.panache.PanacheEntityBase;
 import io.quarkus.runtime.annotations.RegisterForReflection;
+import it.gov.pagopa.nodetsworker.mappers.YesNoConverter;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import javax.persistence.Column;
+import javax.persistence.Convert;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
@@ -80,4 +82,48 @@ public class PositionPayment extends PanacheEntityBase {
     @Column(name = "UPDATED_TIMESTAMP")
     private LocalDateTime updatedTimestamp;
 
+    @Column(name = "RICEVUTA_PM", columnDefinition = "bpchar")
+    @Convert(converter = YesNoConverter.class)
+    private Boolean pmReceipt;
+
+    @Column(name = "PAYMENT_METHOD")
+    private String paymentMethod;
+
+    @Column(name = "PAYMENT_CHANNEL")
+    private String paymentChannel;
+
+    @Column(name = "FLAG_IO", columnDefinition = "bpchar")
+    @Convert(converter = YesNoConverter.class)
+    private Boolean flagIO;
+
+    @Column(name = "FLAG_PAYPAL", columnDefinition = "bpchar")
+    @Convert(converter = YesNoConverter.class)
+    private Boolean flagPayPal;
+
+    @Column(name = "BROKER_PA_ID")
+    private String brokerOrganizationId;
+
+    @Column(name = "STATION_ID")
+    private String stationId;
+
+    @Column(name = "STATION_VERSION", columnDefinition = "NUMERIC")
+    private Long stationVersion;
+
+    @Column(name = "AMOUNT", columnDefinition = "NUMERIC")
+    private Long amount;
+
+    @Column(name = "FEE", columnDefinition = "NUMERIC")
+    private Long fee;
+
+    @Column(name = "FEE_SPO", columnDefinition = "NUMERIC")
+    private Long feeSpo;
+
+    @Column(name = "FEE_PA", columnDefinition = "NUMERIC")
+    private Long feeOrganization;
+
+    @Column(name = "BUNDLE_ID")
+    private String bundleId;
+
+    @Column(name = "BUNDLE_PA_ID")
+    private String bundleOrganizationId;
 }

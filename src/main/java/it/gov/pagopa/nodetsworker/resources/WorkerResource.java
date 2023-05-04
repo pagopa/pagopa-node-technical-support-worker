@@ -27,6 +27,15 @@ public class WorkerResource implements Serializable {
     @Inject
     WorkerService workerService;
 
+    /**
+     *  ######  ########    #####    #######
+     * ##    ## ##     ##  ##   ##  ##     ##
+     * ##       ##     ## ##     ##        ##
+     *  ######  ########  ##     ##  #######
+     *       ## ##        ##     ##        ##
+     * ##    ## ##         ##   ##  ##     ##
+     *  ######  ##          #####    #######
+     */
     @APIResponses(value = {
             @APIResponse(responseCode = "200", description = "OK", content = @Content(mediaType = MediaType.APPLICATION_JSON, schema = @Schema(implementation = TransactionResponse.class))),
             @APIResponse(responseCode = "400", description = "Bad Request", content = @Content(mediaType = MediaType.APPLICATION_JSON, schema = @Schema(implementation = ProblemJson.class))),
@@ -59,5 +68,30 @@ public class WorkerResource implements Serializable {
         return Response.ok(workerService.getInfoByIUV(organizationFiscalCode, iuv, dateFrom, dateTo)).build();
     }
 
+    /**
+     *  ######  ########    #####   ##
+     * ##    ## ##     ##  ##   ##  ##    ##
+     * ##       ##     ## ##     ## ##    ##
+     *  ######  ########  ##     ## ##    ##
+     *       ## ##        ##     ## #########
+     * ##    ## ##         ##   ##        ##
+     *  ######  ##          #####         ##
+     */
 
+    @APIResponses(value = {
+            @APIResponse(responseCode = "200", description = "OK", content = @Content(mediaType = MediaType.APPLICATION_JSON, schema = @Schema(implementation = TransactionResponse.class))),
+            @APIResponse(responseCode = "400", description = "Bad Request", content = @Content(mediaType = MediaType.APPLICATION_JSON, schema = @Schema(implementation = ProblemJson.class))),
+            @APIResponse(responseCode = "500", description = "Service unavailable.", content = @Content(mediaType = MediaType.APPLICATION_JSON, schema = @Schema(implementation = ProblemJson.class)))
+    })
+    @GET
+    @Path("/{organizationFiscalCode}/iuv/{iuv}/paymentToken/{paymentToken}")
+    public Response useCaseSP04_byIUV_PaymentToken(
+            @PathParam("organizationFiscalCode") @NotNull String organizationFiscalCode,
+            @PathParam("iuv") @NotNull String iuv,
+            @PathParam("paymentToken") @NotNull String paymentToken,
+            @QueryParam("dateFrom") LocalDate dateFrom,
+            @QueryParam("dateTo") LocalDate dateTo
+    ) {
+        return Response.ok(workerService.getAttemptByIUV(organizationFiscalCode, iuv, paymentToken, dateFrom, dateTo)).build();
+    }
 }
