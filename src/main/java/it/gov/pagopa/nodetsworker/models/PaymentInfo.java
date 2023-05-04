@@ -17,8 +17,8 @@ import java.time.LocalDateTime;
 public class PaymentInfo {
 
     private String organizationFiscalCode;
-    private String noticeNumber;
-    private String paymentToken; // payment token if new payment model or ccp for old payment model
+    private String noticeNumber; // for new payment model is nav and for old payment model is iuv
+    private String paymentToken; // for new payment model is payment token and for old payment model is ccp
     private String pspId;
     private String brokerPspId;
     private String channelId;

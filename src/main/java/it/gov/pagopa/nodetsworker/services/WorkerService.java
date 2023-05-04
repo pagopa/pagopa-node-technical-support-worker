@@ -160,6 +160,7 @@ public class WorkerService {
                     .insertedTimestamp(payment.getInsertedTimestamp())
                     .updatedTimestamp(payment.getUpdatedTimestamp())
                     .isOldModelPayment(false)
+                    .nodeId(nodeId)
                     .build();
 
             optPaymentStatus.ifPresent(positionPaymentStatusSnapshot -> paymentInfo.setStatus(positionPaymentStatusSnapshot.getStatus()));
@@ -177,7 +178,7 @@ public class WorkerService {
 
         return rptList.stream().map(rpt -> {
 
-            Optional<RT> optRT = StatiRPTSnapshot.find("organizationFiscalCode = :organizationFiscalCode and iuv = :iuv and ccp = :ccp" + DATE_QUERY,
+            Optional<RT> optRT = RT.find("organizationFiscalCode = :organizationFiscalCode and iuv = :iuv and ccp = :ccp" + DATE_QUERY,
                     Parameters.with("organizationFiscalCode", rpt.getOrganizationFiscalCode())
                             .and("iuv", rpt.getIuv())
                             .and("ccp", rpt.getCcp())
@@ -218,7 +219,8 @@ public class WorkerService {
                     .status(status)
                     .insertedTimestamp(rpt.getInsertedTimestamp())
                     .updatedTimestamp(rpt.getUpdatedTimestamp())
-                    .isOldModelPayment(false)
+                    .isOldModelPayment(true)
+                    .nodeId(nodeId)
                     .build();
         }).collect(Collectors.toList());
     }

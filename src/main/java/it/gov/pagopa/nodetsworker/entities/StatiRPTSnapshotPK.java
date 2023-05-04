@@ -8,21 +8,23 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import javax.persistence.Column;
+import javax.persistence.Embeddable;
 import java.io.Serializable;
 
-@Getter
-@Setter
-@NoArgsConstructor
-@AllArgsConstructor
-@RegisterForReflection
-public class StatiRPTSnapshotPK implements Serializable {
-
-    @Column(name = "ID_DOMINIO")
-    private String organizationFiscalCode;
-
-    @Column(name = "IUV")
-    private String iuv;
-
-    @Column(name = "CCP")
-    private String ccp;
-}
+//@Getter
+//@Setter
+//@NoArgsConstructor
+//@AllArgsConstructor
+//@RegisterForReflection
+//@Embeddable
+//public class StatiRPTSnapshotPK implements Serializable {
+//
+//    @Column(name = "ID_DOMINIO")
+//    private String organizationFiscalCode;
+//
+//    @Column(name = "IUV")
+//    private String iuv;
+//
+//    @Column(name = "CCP")
+//    private String ccp;
+//}

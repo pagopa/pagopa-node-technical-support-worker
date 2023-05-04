@@ -7,8 +7,11 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import lombok.ToString;
 
 import javax.persistence.Column;
+import javax.persistence.Embeddable;
+import javax.persistence.EmbeddedId;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
@@ -16,6 +19,7 @@ import javax.persistence.Id;
 import javax.persistence.IdClass;
 import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
+import java.io.Serializable;
 import java.time.LocalDateTime;
 
 @Getter
@@ -24,11 +28,10 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @Entity
 @Table(name = "STATI_RPT_SNAPSHOT")
-@IdClass(StatiRPTSnapshotPK.class)
 @RegisterForReflection
 public class StatiRPTSnapshot extends PanacheEntityBase {
 
-    @Id
+    @EmbeddedId
     private StatiRPTSnapshotPK id;
 
     @Column(name = "STATO")
@@ -36,4 +39,21 @@ public class StatiRPTSnapshot extends PanacheEntityBase {
 
     @Column(name = "INSERTED_TIMESTAMP")
     private LocalDateTime insertedTimestamp;
+
+    @Getter
+    @Setter
+    @NoArgsConstructor
+    @AllArgsConstructor
+    @Embeddable
+    public static class StatiRPTSnapshotPK implements Serializable {
+
+        @Column(name = "ID_DOMINIO")
+        private String organizationFiscalCode;
+
+        @Column(name = "IUV")
+        private String iuv;
+
+        @Column(name = "CCP")
+        private String ccp;
+    }
 }
