@@ -6,7 +6,6 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 @Getter
@@ -26,7 +25,7 @@ public class PaymentInfo {
     private String status;
     private LocalDateTime insertedTimestamp;
     private LocalDateTime updatedTimestamp;
-    private Boolean isOldModelPayment;
+    private Boolean isOldPaymentModel;
 
     private String nodeId;
 }

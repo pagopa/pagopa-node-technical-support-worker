@@ -137,15 +137,15 @@ public class WorkerService {
      * @return payment info list
      */
     private List<PaymentInfo> enrichPaymentPositionList(List<PositionPayment> payments, LocalDate dateFrom, LocalDate dateTo) {
-        return payments.stream().map(payment -> {
+        List<PaymentInfo> paymentInfoList = payments.stream().map(payment -> {
             Optional<PositionPaymentStatusSnapshot> optPaymentStatus =
                     PositionPaymentStatusSnapshot.find("fkPositionPayment = :positionPaymentId" + DATE_QUERY,
-                            Parameters.with("positionPaymentId", payment.getId())
-                                    .and("dateFrom", dateFrom.atStartOfDay())
-                                    .and("dateTo", dateTo.atTime(23, 59, 59))
-                                    .map()
-                    )
-                    .singleResultOptional();
+                                    Parameters.with("positionPaymentId", payment.getId())
+                                            .and("dateFrom", dateFrom.atStartOfDay())
+                                            .and("dateTo", dateTo.atTime(23, 59, 59))
+                                            .map()
+                            )
+                            .singleResultOptional();
             String status = optPaymentStatus.map(PositionPaymentStatusSnapshot::getStatus).orElse(null);
 
             PaymentInfo paymentInfo = PaymentInfo.builder()
@@ -159,7 +159,7 @@ public class WorkerService {
                     .status(status)
                     .insertedTimestamp(payment.getInsertedTimestamp())
                     .updatedTimestamp(payment.getUpdatedTimestamp())
-                    .isOldModelPayment(false)
+                    .isOldPaymentModel(false)
                     .nodeId(nodeId)
                     .build();
 
@@ -167,6 +167,9 @@ public class WorkerService {
 
             return paymentInfo;
         }).collect(Collectors.toList());
+
+        paymentInfoList.sort(Comparator.comparing(PaymentInfo::getUpdatedTimestamp).reversed());
+        return paymentInfoList;
     }
 
     /**
@@ -175,8 +178,7 @@ public class WorkerService {
      * @return
      */
     private List<PaymentInfo> enrichRPTList(List<RPT> rptList, LocalDate dateFrom, LocalDate dateTo) {
-
-        return rptList.stream().map(rpt -> {
+        List<PaymentInfo> paymentInfoList = rptList.stream().map(rpt -> {
 
             Optional<RT> optRT = RT.find("organizationFiscalCode = :organizationFiscalCode and iuv = :iuv and ccp = :ccp" + DATE_QUERY,
                     Parameters.with("organizationFiscalCode", rpt.getOrganizationFiscalCode())
@@ -191,21 +193,20 @@ public class WorkerService {
                 RT rt = optRT.get();
                 if (rt.getOutcome().equals("ESEGUITO")) {
                     outcome = "OK";
-                }
-                else if (rt.getOutcome().equals("NON_ESEGUITO")) {
+                } else if (rt.getOutcome().equals("NON_ESEGUITO")) {
                     outcome = "KO";
                 }
             }
 
             Optional<StatiRPTSnapshot> optRPTStatus =
                     StatiRPTSnapshot.find("id.organizationFiscalCode = :organizationFiscalCode and id.iuv = :iuv and id.ccp = :ccp" + DATE_QUERY,
-                    Parameters.with("organizationFiscalCode", rpt.getOrganizationFiscalCode())
-                            .and("iuv", rpt.getIuv())
-                            .and("ccp", rpt.getCcp())
-                            .and("dateFrom", dateFrom.atStartOfDay())
-                            .and("dateTo", dateTo.atTime(23, 59, 59))
-                            .map()
-            ).singleResultOptional();
+                            Parameters.with("organizationFiscalCode", rpt.getOrganizationFiscalCode())
+                                    .and("iuv", rpt.getIuv())
+                                    .and("ccp", rpt.getCcp())
+                                    .and("dateFrom", dateFrom.atStartOfDay())
+                                    .and("dateTo", dateTo.atTime(23, 59, 59))
+                                    .map()
+                    ).singleResultOptional();
             String status = optRPTStatus.map(StatiRPTSnapshot::getStatus).orElse(null);
 
             return PaymentInfo.builder()
@@ -219,10 +220,13 @@ public class WorkerService {
                     .status(status)
                     .insertedTimestamp(rpt.getInsertedTimestamp())
                     .updatedTimestamp(rpt.getUpdatedTimestamp())
-                    .isOldModelPayment(true)
+                    .isOldPaymentModel(true)
                     .nodeId(nodeId)
                     .build();
         }).collect(Collectors.toList());
+
+        paymentInfoList.sort(Comparator.comparing(PaymentInfo::getUpdatedTimestamp).reversed());
+        return paymentInfoList;
     }
 
 
