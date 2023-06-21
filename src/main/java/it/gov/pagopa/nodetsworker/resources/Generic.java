@@ -1,6 +1,6 @@
-package it.gov.pagopa.quarkustemplate.resources;
+package it.gov.pagopa.nodetsworker.resources;
 
-import it.gov.pagopa.quarkustemplate.models.AppInfo;
+import it.gov.pagopa.nodetsworker.models.AppInfo;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.eclipse.microprofile.openapi.annotations.Operation;
 import org.eclipse.microprofile.openapi.annotations.media.Content;
@@ -8,23 +8,23 @@ import org.eclipse.microprofile.openapi.annotations.media.Schema;
 import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
 import org.eclipse.microprofile.openapi.annotations.responses.APIResponses;
 
-import javax.ws.rs.GET;
-import javax.ws.rs.Path;
-import javax.ws.rs.Produces;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
-import javax.ws.rs.core.UriBuilder;
+import jakarta.ws.rs.GET;
+import jakarta.ws.rs.Path;
+import jakarta.ws.rs.Produces;
+import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.Response;
+import jakarta.ws.rs.core.UriBuilder;
 
 @Path("")
 @Produces(value = MediaType.APPLICATION_JSON)
 public class Generic {
-    @ConfigProperty(name = "quarkus.application.name", defaultValue = "")
+    @ConfigProperty(name = "app.name", defaultValue = "")
     private String name;
 
-    @ConfigProperty(name = "quarkus.application.version", defaultValue = "")
+    @ConfigProperty(name = "app.version", defaultValue = "")
     private String version;
 
-    @ConfigProperty(name = "quarkus.application.environment", defaultValue = "")
+    @ConfigProperty(name = "app.environment", defaultValue = "")
     private String environment;
 
 

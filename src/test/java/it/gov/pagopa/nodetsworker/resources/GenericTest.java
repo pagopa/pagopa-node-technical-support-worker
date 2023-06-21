@@ -1,10 +1,10 @@
-package it.gov.pagopa.quarkustemplate.resources;
+package it.gov.pagopa.nodetsworker.resources;
 
 
 import io.quarkus.test.junit.QuarkusTest;
 import org.junit.jupiter.api.Test;
 
-import javax.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.MediaType;
 
 import static io.restassured.RestAssured.given;
 
