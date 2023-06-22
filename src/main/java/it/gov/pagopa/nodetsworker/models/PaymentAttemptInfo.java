@@ -28,7 +28,6 @@ public class PaymentAttemptInfo extends BasePaymentAttemptInfo {
     private String paymentChannel;
     private Boolean flagPayPal;
     private Long stationVersion;
-    private Long amount;
     private Long fee;
     private Long feeSpo;
     private Long feeOrganization;

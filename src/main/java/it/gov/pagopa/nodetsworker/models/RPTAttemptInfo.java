@@ -1,5 +1,6 @@
 package it.gov.pagopa.nodetsworker.models;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -20,6 +21,9 @@ public class RPTAttemptInfo extends BasePaymentAttemptInfo {
     private String ccp;
     private Long numberOfPayments;
     private Boolean retriedRPT;
-    private Double amount;
     private Boolean isOldPaymentModel = true;
+    private Boolean wispInitialization;
+    private Boolean pmReceipt;
+    @JsonProperty("iuv")
+    private String noticeNumber;
 }

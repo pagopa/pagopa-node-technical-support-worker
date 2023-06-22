@@ -52,6 +52,12 @@ public class RPT extends PanacheEntityBase {
     @Column(name = "CANALE")
     private String channelId;
 
+    @Column(name = "STAZ_INTERMEDIARIOPA")
+    private String stationId;
+
+    @Column(name = "INTERMEDIARIOPA")
+    private String brokerOrganizationId;
+
     @Column(name = "DATA_MSG_RICH")
     private LocalDateTime paymentRequestTimestamp;
 
@@ -65,8 +71,15 @@ public class RPT extends PanacheEntityBase {
     @Column(name = "UPDATED_TIMESTAMP")
     private LocalDateTime updatedTimestamp;
 
+    @Column(name = "TIPO_VERSAMENTO")
+    private String paymentMethod;
+
     @Column(name = "NUM_VERSAMENTI", columnDefinition = "NUMERIC")
     private Long numberOfPayments;
+
+    @Column(name = "RICEVUTA_PM", columnDefinition = "bpchar")
+    @Convert(converter = YesNoConverter.class)
+    private Boolean pmReceipt;
 
     @Column(name = "SOMMA_VERSAMENTI", columnDefinition = "FLOAT4")
     private Double amount;

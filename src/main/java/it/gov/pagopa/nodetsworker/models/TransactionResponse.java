@@ -16,5 +16,5 @@ public class TransactionResponse {
     private LocalDate dateFrom;
     private LocalDate dateTo;
     @JsonProperty("data")
-    private List<PaymentInfo> paymentInfoList;
+    private List<? extends BasePaymentInfo> payments;
 }

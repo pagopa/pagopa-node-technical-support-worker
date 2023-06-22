@@ -15,21 +15,11 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 @SuperBuilder
-public class BasePaymentAttemptInfo {
+public class BasePaymentAttemptInfo extends BasePaymentInfo {
 
-    private String organizationFiscalCode;
-    private String noticeNumber;
-    private String pspId;
-    private String brokerPspId;
-    private String channelId;
     private String brokerOrganizationId;
     private String stationId;
     private String paymentMethod;
+    private Double amount;
     private Boolean flagIO;
-    private String outcome;
-    private String status;
-    private LocalDateTime insertedTimestamp;
-    private LocalDateTime updatedTimestamp;
-
-    private String nodeId;
 }

@@ -110,7 +110,7 @@ public class PositionPayment extends PanacheEntityBase {
     private Long stationVersion;
 
     @Column(name = "AMOUNT", columnDefinition = "NUMERIC")
-    private Long amount;
+    private Double amount;
 
     @Column(name = "FEE", columnDefinition = "NUMERIC")
     private Long fee;

@@ -11,7 +11,7 @@ import it.gov.pagopa.nodetsworker.exceptions.AppException;
 import it.gov.pagopa.nodetsworker.models.DateRequest;
 import it.gov.pagopa.nodetsworker.models.PaymentAttemptInfo;
 import it.gov.pagopa.nodetsworker.models.PaymentInfo;
-import it.gov.pagopa.nodetsworker.models.TransactionAttemptResponse;
+import it.gov.pagopa.nodetsworker.models.RPTAttemptInfo;
 import it.gov.pagopa.nodetsworker.models.TransactionResponse;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 
@@ -39,7 +39,7 @@ public class WorkerService {
             paymentInfoList = enrichPaymentPositionList(payments, dateRequest.getFrom(), dateRequest.getTo());
         }
         else {
-            int beginIndex = noticeNumber.startsWith("0") || noticeNumber.startsWith("3") ? 3 : 1;
+            int beginIndex = noticeNumber.startsWith("0") ? 3 : 1;
             List<RPT> rptList = getRPTList(organizationFiscalCode, noticeNumber.substring(beginIndex), dateRequest.getFrom(), dateRequest.getTo());
             paymentInfoList = enrichRPTList(rptList, dateRequest.getFrom(), dateRequest.getTo());
         }
@@ -47,7 +47,7 @@ public class WorkerService {
         return TransactionResponse.builder()
                 .dateFrom(dateRequest.getFrom())
                 .dateTo(dateRequest.getTo())
-                .paymentInfoList(paymentInfoList)
+                .payments(paymentInfoList)
                 .build();
     }
 
@@ -69,25 +69,34 @@ public class WorkerService {
         return TransactionResponse.builder()
                 .dateFrom(dateRequest.getFrom())
                 .dateTo(dateRequest.getTo())
-                .paymentInfoList(paymentInfoList)
+                .payments(paymentInfoList)
                 .build();
     }
 
-    public TransactionAttemptResponse getAttemptByIUV(String organizationFiscalCode, String iuv, String paymentToken, LocalDate dateFrom, LocalDate dateTo) {
+    public TransactionResponse getAttemptByIUVPaymentToken(String organizationFiscalCode, String iuv, String paymentToken, LocalDate dateFrom, LocalDate dateTo) {
         DateRequest dateRequest = verifyDate(dateFrom, dateTo);
 
         List<PositionPayment> payments = getPaymentPositionListByIUVPaymentToken(organizationFiscalCode, iuv, paymentToken, dateRequest.getFrom(), dateRequest.getTo());
         List<PaymentAttemptInfo> paymentAttemptInfoList = enrichPaymentAttemptPositionList(payments, dateRequest.getFrom(), dateRequest.getTo());
 
-        return TransactionAttemptResponse.builder()
+        return TransactionResponse.builder()
                 .dateFrom(dateRequest.getFrom())
                 .dateTo(dateRequest.getTo())
-                .paymentAttemptInfoList(paymentAttemptInfoList)
+                .payments(paymentAttemptInfoList)
                 .build();
     }
+    public TransactionResponse getAttemptByIUVCCP(String organizationFiscalCode, String iuv, String ccp, LocalDate dateFrom, LocalDate dateTo) {
+        DateRequest dateRequest = verifyDate(dateFrom, dateTo);
 
+        List<RPT> rptList = getRPTListByIUVCCP(organizationFiscalCode, iuv, ccp, dateRequest.getFrom(), dateRequest.getTo());
+        List<RPTAttemptInfo> rptAttemptInfoList = enrichRPTAttemptList(rptList, dateRequest.getFrom(), dateRequest.getTo());
 
-
+        return TransactionResponse.builder()
+                .dateFrom(dateRequest.getFrom())
+                .dateTo(dateRequest.getTo())
+                .payments(rptAttemptInfoList)
+                .build();
+    }
 
 
 
@@ -148,7 +157,7 @@ public class WorkerService {
     }
 
     /**
-     * Get payment position list by iuv
+     * Get payment position list by iuv and payment token
      * @param organizationFiscalCode
      * @param iuv
      * @param dateFrom
@@ -164,6 +173,8 @@ public class WorkerService {
 
         return getPaymentPositionList(query, parameters, dateFrom, dateTo);
     }
+
+
 
     private List<PositionPayment> getPaymentPositionList(String query, Parameters parameters, LocalDate dateFrom, LocalDate dateTo) {
         query += DATE_QUERY;
@@ -278,34 +289,7 @@ public class WorkerService {
     private List<PaymentInfo> enrichRPTList(List<RPT> rptList, LocalDate dateFrom, LocalDate dateTo) {
         List<PaymentInfo> paymentInfoList = rptList.stream().map(rpt -> {
 
-            Optional<RT> optRT = RT.find("organizationFiscalCode = :organizationFiscalCode and iuv = :iuv and ccp = :ccp" + DATE_QUERY,
-                    Parameters.with("organizationFiscalCode", rpt.getOrganizationFiscalCode())
-                            .and("iuv", rpt.getIuv())
-                            .and("ccp", rpt.getCcp())
-                            .and("dateFrom", dateFrom.atStartOfDay())
-                            .and("dateTo", dateTo.atTime(23, 59, 59))
-                            .map()
-            ).singleResultOptional();
-            String outcome = null;
-            if (optRT.isPresent()) {
-                RT rt = optRT.get();
-                if (rt.getOutcome().equals("ESEGUITO")) {
-                    outcome = "OK";
-                } else if (rt.getOutcome().equals("NON_ESEGUITO")) {
-                    outcome = "KO";
-                }
-            }
-
-            Optional<StatiRPTSnapshot> optRPTStatus =
-                    StatiRPTSnapshot.find("id.organizationFiscalCode = :organizationFiscalCode and id.iuv = :iuv and id.ccp = :ccp" + DATE_QUERY,
-                            Parameters.with("organizationFiscalCode", rpt.getOrganizationFiscalCode())
-                                    .and("iuv", rpt.getIuv())
-                                    .and("ccp", rpt.getCcp())
-                                    .and("dateFrom", dateFrom.atStartOfDay())
-                                    .and("dateTo", dateTo.atTime(23, 59, 59))
-                                    .map()
-                    ).singleResultOptional();
-            String status = optRPTStatus.map(StatiRPTSnapshot::getStatus).orElse(null);
+            Map<String, String> rptResponse = retrieveRPTResponseInfo(rpt, dateFrom, dateTo);
 
             return PaymentInfo.builder()
                     .organizationFiscalCode(rpt.getOrganizationFiscalCode())
@@ -314,8 +298,8 @@ public class WorkerService {
                     .pspId(rpt.getPspId())
                     .brokerPspId(rpt.getBrokerPspId())
                     .channelId(rpt.getChannelId())
-                    .outcome(outcome)
-                    .status(status)
+                    .outcome(rptResponse.get("outcome"))
+                    .status(rptResponse.get("status"))
                     .insertedTimestamp(rpt.getInsertedTimestamp())
                     .updatedTimestamp(rpt.getUpdatedTimestamp())
                     .isOldPaymentModel(true)
@@ -327,6 +311,79 @@ public class WorkerService {
         return paymentInfoList;
     }
 
+    /**
+     * Add status to rpt
+     * @param rptList
+     * @return
+     */
+    private List<RPTAttemptInfo> enrichRPTAttemptList(List<RPT> rptList, LocalDate dateFrom, LocalDate dateTo) {
+        List<RPTAttemptInfo> rptAttemptInfoList = rptList.stream().map(rpt -> {
+
+            Map<String, String> rptResponse = retrieveRPTResponseInfo(rpt, dateFrom, dateTo);
+
+            return RPTAttemptInfo.builder()
+                    .organizationFiscalCode(rpt.getOrganizationFiscalCode())
+                    .noticeNumber(rpt.getIuv())
+                    .pspId(rpt.getPspId())
+                    .brokerPspId(rpt.getBrokerPspId())
+                    .channelId(rpt.getChannelId())
+                    .brokerOrganizationId(rpt.getBrokerPspId())
+                    .stationId(rpt.getStationId())
+                    .paymentMethod(rpt.getPaymentMethod())
+                    .amount(rpt.getAmount())
+                    .flagIO(rpt.getFlagIO())
+                    .outcome(rptResponse.get("outcome"))
+                    .status(rptResponse.get("status"))
+                    .insertedTimestamp(rpt.getInsertedTimestamp())
+                    .updatedTimestamp(rpt.getUpdatedTimestamp())
+                    .nodeId(nodeId)
+                    .ccp(rpt.getCcp())
+                    .numberOfPayments(rpt.getNumberOfPayments())
+                    .retriedRPT(rpt.getRetriedRPT())
+                    .wispInitialization(rpt.getWispInitialization())
+                    .pmReceipt(rpt.getPmReceipt())
+                    .build();
+        }).collect(Collectors.toList());
+
+        rptAttemptInfoList.sort(Comparator.comparing(RPTAttemptInfo::getUpdatedTimestamp).reversed());
+        return rptAttemptInfoList;
+    }
+
+    private Map<String, String> retrieveRPTResponseInfo(RPT rpt, LocalDate dateFrom, LocalDate dateTo) {
+        Map<String, String> response = new HashMap<>();
+        Optional<RT> optRT = RT.find("organizationFiscalCode = :organizationFiscalCode and iuv = :iuv and ccp = :ccp" + DATE_QUERY,
+                Parameters.with("organizationFiscalCode", rpt.getOrganizationFiscalCode())
+                        .and("iuv", rpt.getIuv())
+                        .and("ccp", rpt.getCcp())
+                        .and("dateFrom", dateFrom.atStartOfDay())
+                        .and("dateTo", dateTo.atTime(23, 59, 59))
+                        .map()
+        ).singleResultOptional();
+        String outcome = null;
+        if (optRT.isPresent()) {
+            RT rt = optRT.get();
+            if (rt.getOutcome().equals("ESEGUITO")) {
+                outcome = "OK";
+            } else if (rt.getOutcome().equals("NON_ESEGUITO")) {
+                outcome = "KO";
+            }
+        }
+
+        Optional<StatiRPTSnapshot> optRPTStatus =
+                StatiRPTSnapshot.find("id.organizationFiscalCode = :organizationFiscalCode and id.iuv = :iuv and id.ccp = :ccp" + DATE_QUERY,
+                        Parameters.with("organizationFiscalCode", rpt.getOrganizationFiscalCode())
+                                .and("iuv", rpt.getIuv())
+                                .and("ccp", rpt.getCcp())
+                                .and("dateFrom", dateFrom.atStartOfDay())
+                                .and("dateTo", dateTo.atTime(23, 59, 59))
+                                .map()
+                ).singleResultOptional();
+        String status = optRPTStatus.map(StatiRPTSnapshot::getStatus).orElse(null);
+
+        response.put("outcome", outcome);
+        response.put("status", status);
+        return response;
+    }
 
     /**
      * Retrieve RPT list by organizationFiscalCode e IUV
@@ -341,6 +398,28 @@ public class WorkerService {
         return RPT.find("organizationFiscalCode = :organizationFiscalCode and iuv = :iuv" + DATE_QUERY,
                 Parameters.with("organizationFiscalCode", organizationFiscalCode)
                         .and("iuv", iuv)
+                        .and("dateFrom", dateFrom.atStartOfDay())
+                        .and("dateTo", dateTo.atTime(23, 59, 59))
+                        .map()
+        ).list();
+    }
+
+    /**
+     * Get rpt list by iuv and ccp
+     * @param organizationFiscalCode
+     * @param iuv
+     * @param ccp
+     * @param dateFrom
+     * @param dateTo
+     * @return rpt list
+     */
+    private List<RPT> getRPTListByIUVCCP(String organizationFiscalCode, String iuv, String ccp, LocalDate dateFrom, LocalDate dateTo) {
+        String query = "organizationFiscalCode = :organizationFiscalCode and iuv = :iuv and ccp = :ccp";
+
+        return RPT.find(query + DATE_QUERY,
+                Parameters.with("organizationFiscalCode", organizationFiscalCode)
+                        .and("iuv", iuv)
+                        .and("ccp", ccp)
                         .and("dateFrom", dateFrom.atStartOfDay())
                         .and("dateTo", dateTo.atTime(23, 59, 59))
                         .map()

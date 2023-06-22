@@ -5,6 +5,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import lombok.experimental.SuperBuilder;
 
 import java.time.LocalDateTime;
 
@@ -12,20 +13,9 @@ import java.time.LocalDateTime;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder
-public class PaymentInfo {
+@SuperBuilder
+public class PaymentInfo extends BasePaymentInfo {
 
-    private String organizationFiscalCode;
-    private String noticeNumber; // for new payment model is nav and for old payment model is iuv
     private String paymentToken; // for new payment model is payment token and for old payment model is ccp
-    private String pspId;
-    private String brokerPspId;
-    private String channelId;
-    private String outcome;
-    private String status;
-    private LocalDateTime insertedTimestamp;
-    private LocalDateTime updatedTimestamp;
-    private Boolean isOldPaymentModel;
 
-    private String nodeId;
 }
