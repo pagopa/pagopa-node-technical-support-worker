@@ -20,28 +20,28 @@ import java.util.List;
 
 @ApplicationScoped
 @Startup
-public class CosmosBizEventClient {
+public class CosmosNegBizEventClient {
 
-    @ConfigProperty(name = "biz.endpoint")
+    @ConfigProperty(name = "bizneg.endpoint")
     private String endpoint;
 
-    @ConfigProperty(name = "biz.key")
+    @ConfigProperty(name = "bizneg.key")
     private String key;
 
     private static String dbname = "db";
-    private static String tablename = "biz-events";
+    private static String tablename = "negative-biz-events";
 
     @Inject
     Logger log;
 
-    private CosmosPagedIterable<PositiveBizEvent> query(SqlQuerySpec query){
+    private CosmosPagedIterable<NegativeBizEvent> query(SqlQuerySpec query){
         log.info("executing query:"+query.getQueryText());
         CosmosClient client = new CosmosClientBuilder().endpoint(endpoint).key(key).buildClient();
         CosmosContainer container = client.getDatabase(dbname).getContainer(tablename);
-        return container.queryItems(query, new CosmosQueryRequestOptions(), PositiveBizEvent.class);
+        return container.queryItems(query, new CosmosQueryRequestOptions(), NegativeBizEvent.class);
     }
 
-    public CosmosPagedIterable<PositiveBizEvent> findEvents(String organizationFiscalCode, String noticeNumber, LocalDate dateFrom,LocalDate dateTo){
+    public CosmosPagedIterable<NegativeBizEvent> findEvents(String organizationFiscalCode, String noticeNumber, LocalDate dateFrom, LocalDate dateTo){
         List<SqlParameter> paramList = new ArrayList<SqlParameter>();
         paramList.add(new SqlParameter("@organizationFiscalCode", organizationFiscalCode));
         paramList.add(new SqlParameter("@noticeNumber", noticeNumber));
@@ -59,5 +59,6 @@ public class CosmosBizEventClient {
                 .setParameters(paramList);
         return query(q);
     }
+
 
 }

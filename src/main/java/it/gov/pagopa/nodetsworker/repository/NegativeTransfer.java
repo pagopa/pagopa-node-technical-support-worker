@@ -1,11 +1,16 @@
 package it.gov.pagopa.nodetsworker.repository;
 
 import java.math.BigDecimal;
+
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @Data
 @Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class NegativeTransfer {
   private String idTransfer;
   private String fiscalCodePA;

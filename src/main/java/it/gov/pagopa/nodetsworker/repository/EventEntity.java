@@ -3,9 +3,11 @@ package it.gov.pagopa.nodetsworker.repository;
 import io.quarkus.mongodb.panache.PanacheMongoEntity;
 import io.quarkus.mongodb.panache.PanacheQuery;
 import io.quarkus.mongodb.panache.common.MongoEntity;
-import java.time.LocalDate;
+import io.quarkus.panache.common.Parameters;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+
+import java.time.LocalDate;
 
 @Data
 @EqualsAndHashCode(callSuper = true)
@@ -48,7 +50,9 @@ public class EventEntity extends PanacheMongoEntity {
 
   public static PanacheQuery<EventEntity> findByCIAndNAV(
       String creditorInstitution, String nav, LocalDate dateFrom, LocalDate dateTo) {
-    return find("idDominio", creditorInstitution).project(EventEntity.class);
+    return find("idDominio = :idDominio and noticeNumber = :noticeNumber and esito = 'CAMBIO_STATO'",
+            Parameters.with("idDominio", creditorInstitution).and("noticeNumber",nav))
+            .project(EventEntity.class);
   }
   public static PanacheQuery<EventEntity> findByCIAndIUV(
           String creditorInstitution, String nav, LocalDate dateFrom, LocalDate dateTo) {

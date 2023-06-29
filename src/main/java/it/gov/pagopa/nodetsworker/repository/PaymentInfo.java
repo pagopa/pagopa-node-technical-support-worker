@@ -3,17 +3,24 @@ package it.gov.pagopa.nodetsworker.repository;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @Data
 @Builder
+@JsonIgnoreProperties(ignoreUnknown = true)
+@NoArgsConstructor
+@AllArgsConstructor
 public class PaymentInfo {
   private String description;
   private LocalDateTime paymentDateTime;
-  private LocalDate applicationDate;
-  private LocalDate transferDate;
-  private LocalDate dueDate;
+  private String applicationDate;
+  private String transferDate;
+  private String dueDate;
   private String paymentToken;
   private BigDecimal amount;
   private BigDecimal fee;

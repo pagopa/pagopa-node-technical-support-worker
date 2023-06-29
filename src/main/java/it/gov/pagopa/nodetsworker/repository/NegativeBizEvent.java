@@ -11,8 +11,7 @@ import java.util.List;
 
 @Data
 @Builder
-@MongoEntity(collection = "negative-biz-events", clientName = "bizneg")
-public class NegativeBizEvent extends PanacheMongoEntity {
+public class NegativeBizEvent {
   private String version;
   private String id;
   private String useCase;
@@ -26,12 +25,4 @@ public class NegativeBizEvent extends PanacheMongoEntity {
   private List<NegativeTransfer> transferList;
   private Object transactionDetails;
 
-  public static PanacheQuery<NegativeBizEvent> findByCIAndNAV(
-          String creditorInstitution, String nav, LocalDate dateFrom, LocalDate dateTo) {
-    return find("idDominio", creditorInstitution).project(NegativeBizEvent.class);
-  }
-  public static PanacheQuery<NegativeBizEvent> findByCIAndIUV(
-          String creditorInstitution, String nav, LocalDate dateFrom, LocalDate dateTo) {
-    return find("idDominio", creditorInstitution).project(NegativeBizEvent.class);
-  }
 }

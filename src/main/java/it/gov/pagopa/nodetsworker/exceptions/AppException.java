@@ -2,22 +2,36 @@ package it.gov.pagopa.nodetsworker.exceptions;
 
 import lombok.Getter;
 
-import jakarta.validation.constraints.NotNull;
+import java.io.Serializable;
 
 @Getter
-public class AppException extends RuntimeException{
-    
-    String title;
+public class AppException extends RuntimeException {
 
-    int httpStatus;
+  private final transient AppErrorCodeMessageInterface codeMessage;
 
-    public AppException(@NotNull AppError appError, Object... args) {
-        super(formatDetails(appError, args));
-        this.httpStatus = appError.httpStatus;
-        this.title = appError.title;
-    }
+  private final transient Object[] args;
 
-    private static String formatDetails(AppError appError, Object[] args) {
-        return String.format(appError.details, args);
-    }
+  public AppException(Throwable cause, AppErrorCodeMessageInterface codeMessage) {
+    super(cause);
+    this.codeMessage = codeMessage;
+    this.args = null;
+  }
+
+  public AppException(Throwable cause, AppErrorCodeMessageInterface codeMessage, Object... args) {
+    super(cause);
+    this.codeMessage = codeMessage;
+    this.args = args;
+  }
+
+  public AppException(AppErrorCodeMessageInterface codeMessage) {
+    super();
+    this.codeMessage = codeMessage;
+    this.args = null;
+  }
+
+  public AppException(AppErrorCodeMessageInterface codeMessage, Serializable... args) {
+    super();
+    this.codeMessage = codeMessage;
+    this.args = args;
+  }
 }
