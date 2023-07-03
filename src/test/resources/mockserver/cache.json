@@ -1,0 +1,1701 @@
+[{
+  "id": "1",
+  "httpRequest": {
+    "path": "/stakeholders/node/cache/schemas/v1/id"
+  },
+  "httpResponse": {
+    "body": {
+      "type": "JSON",
+      "json": {
+        "version": "15807041712995048"
+      },
+      "contentType": "application/json"
+    }
+  }
+},
+  {
+    "id": "2",
+    "httpRequest": {
+      "path": "/stakeholders/node/cache/schemas/v1"
+    },
+    "httpResponse": {
+      "body": {
+        "type": "JSON",
+        "json": {
+          "version": "15807041712995048",
+          "creditorInstitutions": {
+            "12345678900": {
+              "creditor_institution_code": "12345678900",
+              "enabled": true,
+              "business_name": "paStress80",
+              "description": null,
+              "address": {
+                "location": null,
+                "city": null,
+                "zip_code": null,
+                "country_code": null,
+                "tax_domicile": null
+              },
+              "psp_payment": true,
+              "reporting_ftp": false,
+              "reporting_zip": false
+            },
+            "00987654321": {
+              "creditor_institution_code": "00987654321",
+              "enabled": false,
+              "business_name": "paStress80",
+              "description": null,
+              "address": {
+                "location": null,
+                "city": null,
+                "zip_code": null,
+                "country_code": null,
+                "tax_domicile": null
+              },
+              "psp_payment": true,
+              "reporting_ftp": false,
+              "reporting_zip": false
+            }
+          },
+          "creditorInstitutionBrokers": {
+            "intPaStress14": {
+              "broker_code": "intPaStress14",
+              "enabled": true,
+              "description": "intPaStress14",
+              "extended_fault_bean": false
+            }
+          },
+          "stations": {
+            "77777777777_01": {
+              "station_code": "77777777777_01",
+              "enabled": true,
+              "version": 2,
+              "connection": {
+                "protocol": "HTTPS",
+                "ip": "api.dev.platform.pagopa.it",
+                "port": 443
+              }
+            }
+          },
+            "creditorInstitutionStations": {
+              "11_15151515151_null_null_null": {
+                "creditor_institution_code": "15151515151",
+                "station_code": "11",
+                "application_code": null,
+                "aux_digit": null,
+                "segregation_code": null,
+                "mod4": false,
+                "broadcast": false,
+                "primitive_version": 1,
+                "spontaneous_payment": false
+              }
+            },
+            "encodings": null,
+            "creditorInstitutionEncodings": null,
+            "ibans": null,
+            "creditorInstitutionInformations": null,
+            "psps": {
+              "pspTest": {
+                "psp_code": "pspTest",
+                "enabled": true,
+                "description": "pspStress1",
+                "business_name": "pspStress1",
+                "abi": "TBD",
+                "bic": "TBD",
+                "my_bank_code": null,
+                "digital_stamp": false,
+                "agid_psp": false,
+                "tax_code": "CFpspStress1",
+                "vat_number": null
+              },
+              "pspTest2": {
+                "psp_code": "pspTest2",
+                "enabled": true,
+                "description": "pspStress1",
+                "business_name": "pspStress1",
+                "abi": "TBD",
+                "bic": "TBD",
+                "my_bank_code": null,
+                "digital_stamp": false,
+                "agid_psp": false,
+                "tax_code": "CFpspStress1",
+                "vat_number": null
+              },
+              "pspNotEnabled": {
+                "psp_code": "pspNotEnabled",
+                "enabled": false,
+                "description": "pspStress1",
+                "business_name": "pspStress1",
+                "abi": "TBD",
+                "bic": "TBD",
+                "my_bank_code": null,
+                "digital_stamp": false,
+                "agid_psp": false,
+                "tax_code": "CFpspStress1",
+                "vat_number": null
+              }
+            },
+            "pspBrokers": {
+              "intTest": {
+                "broker_psp_code": "intTest",
+                "description": "Intermediario per mybankSvil",
+                "enabled": true,
+                "extended_fault_bean": false
+              },
+              "intTest2": {
+                "broker_psp_code": "intTest2",
+                "description": "Intermediario per mybankSvil",
+                "enabled": true,
+                "extended_fault_bean": false
+              },
+              "intNotEnabled": {
+                "broker_psp_code": "intNotEnabled",
+                "description": "Intermediario per mybankSvil",
+                "enabled": false,
+                "extended_fault_bean": false
+              }
+            },
+            "paymentTypes": {
+              "AD": {
+                "payment_type": "AD",
+                "description": "Addebito diretto"
+              },
+              "JIF": {
+                "payment_type": "JIF",
+                "description": "Jiffy"
+              },
+              "CP": {
+                "payment_type": "CP",
+                "description": "Carta di pagamento "
+              },
+              "DEVPAY": {
+                "payment_type": "DEVPAY",
+                "description": "Develop PAY"
+              },
+              "PPAL": {
+                "payment_type": "PPAL",
+                "description": "PayPal"
+              },
+              "STP": {
+                "payment_type": "STP",
+                "description": "Satispay PROVA"
+              },
+              "BP": {
+                "payment_type": "BP",
+                "description": "Bollettino postale "
+              },
+              "MYBK": {
+                "payment_type": "MYBK",
+                "description": "MyBank"
+              },
+              "TPAY": {
+                "payment_type": "TPAY",
+                "description": "Pagamento appIO di test aggiuntivo"
+              },
+              "BBT": {
+                "payment_type": "BBT",
+                "description": "Bonifico bancario telematico"
+              },
+              "BPAY": {
+                "payment_type": "BPAY",
+                "description": "Bancomat Pay"
+              },
+              "OBEP": {
+                "payment_type": "OBEP",
+                "description": "Online Banking Electronic Payment "
+              },
+              "PPAY": {
+                "payment_type": "PPAY",
+                "description": "PostePay"
+              },
+              "PO": {
+                "payment_type": "PO",
+                "description": "Pagamento attivato presso PSP "
+              }
+            },
+            "pspChannelPaymentTypes": {
+              "pspTest_canaleTest_PAYPAL": {
+                "psp_code": "pspTest",
+                "channel_code": "canaleTest",
+                "payment_type": "PAYPAL"
+              }
+            },
+            "plugins": null,
+            "pspInformationTemplates": null,
+            "pspInformations": null,
+            "channels": {
+              "canaleTest": {
+                "channel_code": "canaleTest",
+                "description": null,
+                "enabled": true,
+                "password": null,
+                "broker_psp_code": "intTest",
+                "connection": {
+                  "protocol": "HTTPS",
+                  "ip": "api.dev.platform.pagopa.it",
+                  "port": 443
+                }
+              },
+              "canaleNotEnabled": {
+                "channel_code": "canaleNotEnabled",
+                "description": null,
+                "enabled": false,
+                "password": null,
+                "broker_psp_code": "intTest",
+                "connection": {
+                  "protocol": "HTTPS",
+                  "ip": "api.dev.platform.pagopa.it",
+                  "port": 443
+                }
+              }
+            },
+            "cdsServices": null,
+            "cdsSubjects": null,
+            "cdsSubjectServices": null,
+            "cdsCategories": null,
+            "configurations": {
+              "GLOBAL-idPspCD": {
+                "category": "GLOBAL",
+                "key": "idPspCD",
+                "value": "AGID_01",
+                "description": "id PSP Cittadinanza Digitale"
+              },
+              "GLOBAL-scheduler.sendPaymentResultPollerMaxRetry": {
+                "category": "GLOBAL",
+                "key": "scheduler.sendPaymentResultPollerMaxRetry",
+                "value": "5",
+                "description": "Numero massimo di tentativi di re-invio sendPaymentResult al PM"
+              },
+              "GLOBAL-scheduler.jobName_situazioneOrdineCheck.enabled": {
+                "category": "GLOBAL",
+                "key": "scheduler.jobName_situazioneOrdineCheck.enabled",
+                "value": "true",
+                "description": "Job enabled (true/false) - da P_READY a P_WAITING"
+              },
+              "GLOBAL-scheduler.jobName_situazioneOrdineCheck.jobDescription": {
+                "category": "GLOBAL",
+                "key": "scheduler.jobName_situazioneOrdineCheck.jobDescription",
+                "value": "Description",
+                "description": "processo di recovery che parte dal WFESP per tutte le redirect in stato P_READY"
+              },
+              "info-quadr-commissioneCaricoPa.template.sender.name.mail": {
+                "category": "info-quadr",
+                "key": "commissioneCaricoPa.template.sender.name.mail",
+                "value": "PPT",
+                "description": null
+              },
+              "GLOBAL-scheduler.paAttivaRptMaxRetry": {
+                "category": "GLOBAL",
+                "key": "scheduler.paAttivaRptMaxRetry",
+                "value": "5",
+                "description": "pa attiva Rpt max retry"
+              },
+              "info-quadr-commissioneCaricoPa.template.sender.address.mail": {
+                "category": "info-quadr",
+                "key": "commissioneCaricoPa.template.sender.address.mail",
+                "value": "prova@prova.com",
+                "description": null
+              },
+              "GLOBAL-scheduler.jobName_pspRetryAckNegative.cronExpression": {
+                "category": "GLOBAL",
+                "key": "scheduler.jobName_pspRetryAckNegative.cronExpression",
+                "value": "0/30 * * ? * * *",
+                "description": "Cron expression (Es.[*/10 * * ? * *] will fire every ten seconds)"
+              },
+              "GLOBAL-istitutoAttestante.civicoAttestante": {
+                "category": "GLOBAL",
+                "key": "istitutoAttestante.civicoAttestante",
+                "value": "370",
+                "description": "civicoAttestante"
+              },
+              "GLOBAL-chiediSceltaWisp.tipoVersamento": {
+                "category": "GLOBAL",
+                "key": "chiediSceltaWisp.tipoVersamento",
+                "value": "BBT",
+                "description": "tipo versamento restituito durante la chiedi scelta Wisp"
+              },
+              "GLOBAL-scheduler.jobName_paRetryPaInviaRtNegative.enabled": {
+                "category": "GLOBAL",
+                "key": "scheduler.jobName_paRetryPaInviaRtNegative.enabled",
+                "value": "false",
+                "description": "Job enabled (true/false)"
+              },
+              "GLOBAL-scheduler.retryPspSendPayment": {
+                "category": "GLOBAL",
+                "key": "scheduler.retryPspSendPayment",
+                "value": "5",
+                "description": "Retry psp sent payment max retries"
+              },
+              "GLOBAL-timeout.pspInviaCarrelloRPT": {
+                "category": "GLOBAL",
+                "key": "timeout.pspInviaCarrelloRPT",
+                "value": "TIMEOUT_B",
+                "description": "Tipo timeout"
+              },
+              "GLOBAL-istitutoAttestante.indirizzoAttestante": {
+                "category": "GLOBAL",
+                "key": "istitutoAttestante.indirizzoAttestante",
+                "value": "Piazza Colonna",
+                "description": "indirizzoAttestante"
+              },
+              "GLOBAL-scheduler.jobName_rtPullRecoveryPush.cronExpression": {
+                "category": "GLOBAL",
+                "key": "scheduler.jobName_rtPullRecoveryPush.cronExpression",
+                "value": "0 0 0/1 ? * * *",
+                "description": "Cron expression (Es.[*/10 * * ? * *] will fire every ten seconds)"
+              },
+              "GLOBAL-default_durata_estensione_token_IO": {
+                "category": "GLOBAL",
+                "key": "default_durata_estensione_token_IO",
+                "value": "1000",
+                "description": " default millisecondi validità token IO estesa"
+              },
+              "GLOBAL-scheduler.jobName_rtPullRecoveryPush.jobDescription": {
+                "category": "GLOBAL",
+                "key": "scheduler.jobName_rtPullRecoveryPush.jobDescription",
+                "value": "Description",
+                "description": "Description"
+              },
+              "GLOBAL-scheduler.jobName_mod3CancelV1.enabled": {
+                "category": "GLOBAL",
+                "key": "scheduler.jobName_mod3CancelV1.enabled",
+                "value": "false",
+                "description": "Job enabled (true/false)"
+              },
+              "rpt-invia-patch.ministeroDiGiustizia.idDominio": {
+                "category": "rpt-invia",
+                "key": "patch.ministeroDiGiustizia.idDominio",
+                "value": "01386030488",
+                "description": "Indicare qui idDominio della PA MdG sulle cui RPT si deve applicare la trasformazione. Eventuali identificativi devono essere separati dal carattere \",\" (virgola)"
+              },
+              "GLOBAL-scheduler.jobName_pspRetryAckNegative.jobDescription": {
+                "category": "GLOBAL",
+                "key": "scheduler.jobName_pspRetryAckNegative.jobDescription",
+                "value": "Description",
+                "description": "Description"
+              },
+              "rpt-modello4-descrizioneServizioBolloAuto": {
+                "category": "rpt-modello4",
+                "key": "descrizioneServizioBolloAuto",
+                "value": "Tassa automobilistica",
+                "description": "-"
+              },
+              "info-quadr-smtp.test.sia": {
+                "category": "info-quadr",
+                "key": "smtp.test.sia",
+                "value": "true",
+                "description": "set true or false se si usa smtp server test"
+              },
+              "GLOBAL-httpmethod.wfesp.psp2wfesp": {
+                "category": "GLOBAL",
+                "key": "httpmethod.wfesp.psp2wfesp",
+                "value": "esito",
+                "description": null
+              },
+              "GLOBAL-scheduler.jobName_situazioneOrdine.jobDescription": {
+                "category": "GLOBAL",
+                "key": "scheduler.jobName_situazioneOrdine.jobDescription",
+                "value": "Description",
+                "description": "processo di recovery che parte dal WFESP"
+              },
+              "GLOBAL-scheduler.jobName_positionRetrySendPaymentResult.enabled": {
+                "category": "GLOBAL",
+                "key": "scheduler.jobName_positionRetrySendPaymentResult.enabled",
+                "value": "true",
+                "description": "Job enabled (true/false)"
+              },
+              "GLOBAL-payment_activation_validity_minutes": {
+                "category": "GLOBAL",
+                "key": "payment_activation_validity_minutes",
+                "value": "10",
+                "description": "Minuti di validita chiave idempotenza"
+              },
+              "GLOBAL-scheduler.suspendAllJobs": {
+                "category": "GLOBAL",
+                "key": "scheduler.suspendAllJobs",
+                "value": "false",
+                "description": "Suspend all jobs for release"
+              },
+              "GLOBAL-scheduler.pspChiediAvanzamentoRptPollerMaxRetry": {
+                "category": "GLOBAL",
+                "key": "scheduler.pspChiediAvanzamentoRptPollerMaxRetry",
+                "value": "1",
+                "description": "numero massimo di tentativi di invio RPT incomplete verso il PSP"
+              },
+              "GLOBAL-scheduler.jobName_pspSendPayment.jobDescription": {
+                "category": "GLOBAL",
+                "key": "scheduler.jobName_pspSendPayment.jobDescription",
+                "value": "Description",
+                "description": "psp send payment"
+              },
+              "GLOBAL-istitutoAttestante.codiceUnitOperAttestante": {
+                "category": "GLOBAL",
+                "key": "istitutoAttestante.codiceUnitOperAttestante",
+                "value": "n/a",
+                "description": "codiceUnitOperAttestante"
+              },
+              "GLOBAL-scheduler.jobName_generaRendicontazioneBollo.jobDescription": {
+                "category": "GLOBAL",
+                "key": "scheduler.jobName_generaRendicontazioneBollo.jobDescription",
+                "value": "Description",
+                "description": "Description"
+              },
+              "GLOBAL-istitutoAttestante.nazioneAttestante": {
+                "category": "GLOBAL",
+                "key": "istitutoAttestante.nazioneAttestante",
+                "value": "IT",
+                "description": "nazioneAttestante"
+              },
+              "FATTURAZIONI-tipoVersamento.PPAL": {
+                "category": "FATTURAZIONI",
+                "key": "tipoVersamento.PPAL",
+                "value": "0;0;0;0;1;0;0;0",
+                "description": "codifica csv tipo versamento PPAL"
+              },
+              "GLOBAL-scheduler.jobName_pspChiediListaAndChiediRt.jobDescription": {
+                "category": "GLOBAL",
+                "key": "scheduler.jobName_pspChiediListaAndChiediRt.jobDescription",
+                "value": "Description",
+                "description": "Description"
+              },
+              "GLOBAL-scheduler.jobName_annullamentoRptMaiRichiesteDaPm.enabled": {
+                "category": "GLOBAL",
+                "key": "scheduler.jobName_annullamentoRptMaiRichiesteDaPm.enabled",
+                "value": "true",
+                "description": "Job enabled (true/false)"
+              },
+              "GLOBAL-timeout.paaAttivaRPT": {
+                "category": "GLOBAL",
+                "key": "timeout.paaAttivaRPT",
+                "value": "TIMEOUT_A",
+                "description": "Tipo timeout"
+              },
+              "GLOBAL-timeout.pspChiediRT": {
+                "category": "GLOBAL",
+                "key": "timeout.pspChiediRT",
+                "value": "TIMEOUT_C",
+                "description": "Tipo timeout"
+              },
+              "GLOBAL-scheduler.jobName_pspChiediListaAndChiediRt.cronExpression": {
+                "category": "GLOBAL",
+                "key": "scheduler.jobName_pspChiediListaAndChiediRt.cronExpression",
+                "value": "0/30 * * ? * * *",
+                "description": "Cron expression (Es.[*/10 * * ? * *] will fire every ten seconds)"
+              },
+              "GLOBAL-scheduler.jobName_annullamentoRptMaiRichiesteDaPm.jobDescription": {
+                "category": "GLOBAL",
+                "key": "scheduler.jobName_annullamentoRptMaiRichiesteDaPm.jobDescription",
+                "value": "Description",
+                "description": "Description"
+              },
+              "GLOBAL-idIntPspMod3New": {
+                "category": "GLOBAL",
+                "key": "idIntPspMod3New",
+                "value": "15376371009",
+                "description": "idIntPspMod3New"
+              },
+              "GLOBAL-scheduler.rptExpiringDays": {
+                "category": "GLOBAL",
+                "key": "scheduler.rptExpiringDays",
+                "value": "8",
+                "description": "giorni per cui non si sono completate RPT"
+              },
+              "GLOBAL-timeout.pspInviaCarrelloRPTCarte": {
+                "category": "GLOBAL",
+                "key": "timeout.pspInviaCarrelloRPTCarte",
+                "value": "TIMEOUT_B",
+                "description": "Tipo timeout"
+              },
+              "GLOBAL-scheduler.jobName_mod3RiconciliazioneRpt.jobDescription": {
+                "category": "GLOBAL",
+                "key": "scheduler.jobName_mod3RiconciliazioneRpt.jobDescription",
+                "value": "Description",
+                "description": "Riconciliazione rpt"
+              },
+              "GLOBAL-scheduler.annullamentoRptMaiRichiesteDaPmPollerMinutesToBack": {
+                "category": "GLOBAL",
+                "key": "scheduler.annullamentoRptMaiRichiesteDaPmPollerMinutesToBack",
+                "value": "1",
+                "description": "totale minuti per cui una richiesta non è mai stata processata da WISP2"
+              },
+              "info-quadr-smtp.password": {
+                "category": "info-quadr",
+                "key": "smtp.password",
+                "value": "pda",
+                "description": null
+              },
+              "rpt-annulla-algoritmoFirmaRT": {
+                "category": "rpt-annulla",
+                "key": "algoritmoFirmaRT",
+                "value": "SHA256withRSA",
+                "description": null
+              },
+              "GLOBAL-scheduler.jobName_refreshConfiguration.jobDescription": {
+                "category": "GLOBAL",
+                "key": "scheduler.jobName_refreshConfiguration.jobDescription",
+                "value": "60",
+                "description": "Description"
+              },
+              "GLOBAL-uri.wfesp": {
+                "category": "GLOBAL",
+                "key": "uri.wfesp",
+                "value": "https://api.dev.platform.pagopa.it/wfesp-ndp/service/v1/redirect",
+                "description": "Redirect wfesp"
+              },
+              "GLOBAL-scheduler.jobName_refreshConfiguration.cronExpression": {
+                "category": "GLOBAL",
+                "key": "scheduler.jobName_refreshConfiguration.cronExpression",
+                "value": "0 * 0 ? * * *",
+                "description": "Cron expression (Es.[*/10 * * ? * *] will fire every ten seconds)"
+              },
+              "GLOBAL-scheduler.situazioneOrdineCheckMinutesToFilter": {
+                "category": "GLOBAL",
+                "key": "scheduler.situazioneOrdineCheckMinutesToFilter",
+                "value": "30",
+                "description": " indica i minuti che devono passare per un ordine prima di eseguire la Situazione Ordine - job \"check\""
+              },
+              "GLOBAL-scheduler.jobName_pspNotificaCancellazione.jobDescription": {
+                "category": "GLOBAL",
+                "key": "scheduler.jobName_pspNotificaCancellazione.jobDescription",
+                "value": "Description",
+                "description": "Description"
+              },
+              "GLOBAL-closePaymentV2DenyListTipoVersamento": {
+                "category": "GLOBAL",
+                "key": "closePaymentV2DenyListTipoVersamento",
+                "value": "AD,BBT,BP,OBEP,PO,JIF,MYBK,BPAY,PPAL",
+                "description": "tipi versamento non accettati per closePaymentV2 per pagamenti IO/Checkout"
+              },
+              "info-quadr-commissioneCaricoPsp.template.sender.address.mail": {
+                "category": "info-quadr",
+                "key": "commissioneCaricoPsp.template.sender.address.mail",
+                "value": "prova@prova.com",
+                "description": null
+              },
+              "info-quadr-smtp.port": {
+                "category": "info-quadr",
+                "key": "smtp.port",
+                "value": "1026",
+                "description": null
+              },
+              "GLOBAL-scheduler.jobName_annullamentoRptMaiRichiesteDaPm.cronExpression": {
+                "category": "GLOBAL",
+                "key": "scheduler.jobName_annullamentoRptMaiRichiesteDaPm.cronExpression",
+                "value": "0 0/2 * ? * * *",
+                "description": "Cron expression (Es.[*/10 * * ? * *] will fire every ten seconds)"
+              },
+              "GLOBAL-validate_output": {
+                "category": "GLOBAL",
+                "key": "validate_output",
+                "value": "true",
+                "description": "Validazione XSD output Bundle"
+              },
+              "FATTURAZIONI-tipoVersamento.POS": {
+                "category": "FATTURAZIONI",
+                "key": "tipoVersamento.POS",
+                "value": "0;0;0;0;0;0;0;0",
+                "description": "codifica csv tipo versamento POS"
+              },
+              "GLOBAL-scheduler.jobName_situazioneOrdineCheck.cronExpression": {
+                "category": "GLOBAL",
+                "key": "scheduler.jobName_situazioneOrdineCheck.cronExpression",
+                "value": "*/1 * * * *",
+                "description": "Cron expression (Es.[*/10 * * ? * *] will fire every ten seconds)"
+              },
+              "info-quadr-commissioneCaricoPa.noData.message": {
+                "category": "info-quadr",
+                "key": "commissioneCaricoPa.noData.message",
+                "value": "Nessun dato disponibile per il mese di riferimento",
+                "description": null
+              },
+              "GLOBAL-scheduler.jobName_paInviaRtRecovery.enabled": {
+                "category": "GLOBAL",
+                "key": "scheduler.jobName_paInviaRtRecovery.enabled",
+                "value": "true",
+                "description": "paInviaRtRecovery enabled"
+              },
+              "GLOBAL-scheduler.jobName_pspChiediAvanzamentoRpt.enabled": {
+                "category": "GLOBAL",
+                "key": "scheduler.jobName_pspChiediAvanzamentoRpt.enabled",
+                "value": "true",
+                "description": "Job enabled (true/false)"
+              },
+              "GLOBAL-scheduler.pspRetryNotificheCancellazioneRptPollerMaxRetry": {
+                "category": "GLOBAL",
+                "key": "scheduler.pspRetryNotificheCancellazioneRptPollerMaxRetry",
+                "value": "3",
+                "description": "numero massimo di tentativi di re-invio notifiche cancellazione al PSP"
+              },
+              "GLOBAL-timeout.paGetPayment": {
+                "category": "GLOBAL",
+                "key": "timeout.paGetPayment",
+                "value": "TIMEOUT_A",
+                "description": "timeout"
+              },
+              "GLOBAL-scheduler.jobName_generaRendicontazioneBollo.cronExpression": {
+                "category": "GLOBAL",
+                "key": "scheduler.jobName_generaRendicontazioneBollo.cronExpression",
+                "value": "0 0 0 ? * * *",
+                "description": "Cron expression (Es.[*/10 * * ? * *] will fire every ten seconds)"
+              },
+              "GLOBAL-intPspCD": {
+                "category": "GLOBAL",
+                "key": "intPspCD",
+                "value": "97735020584",
+                "description": "identificativo intermediario PSP Cittadinanza Digitale"
+              },
+              "GLOBAL-scheduler.jobName_paSendRt.jobDescription": {
+                "category": "GLOBAL",
+                "key": "scheduler.jobName_paSendRt.jobDescription",
+                "value": "Description",
+                "description": "invio receipt verso Stazioni PA"
+              },
+              "GLOBAL-GLOBAL-mod3_inizio": {
+                "category": "GLOBAL",
+                "key": "GLOBAL-mod3_inizio",
+                "value": "2021-01-01",
+                "description": "Job enabled (true/false)"
+              },
+              "GLOBAL-scheduler.jobName_ftpUpload.jobDescription": {
+                "category": "GLOBAL",
+                "key": "scheduler.jobName_ftpUpload.jobDescription",
+                "value": "Description",
+                "description": "Description"
+              },
+              "rpt-modello4-dataInizioValiditaBolloAuto": {
+                "category": "rpt-modello4",
+                "key": "dataInizioValiditaBolloAuto",
+                "value": "2017-04-30T00:00:00",
+                "description": "-"
+              },
+              "GLOBAL-idCanaleAGID": {
+                "category": "GLOBAL",
+                "key": "idCanaleAGID",
+                "value": "97735020584_02",
+                "description": "identificativo canale AGID"
+              },
+              "GLOBAL-idPspMod3New": {
+                "category": "GLOBAL",
+                "key": "idPspMod3New",
+                "value": "15376371009",
+                "description": "idPspMod3New"
+              },
+              "GLOBAL-scheduler.jobName_pspRetryNotificheCancellazioneRpt.enabled": {
+                "category": "GLOBAL",
+                "key": "scheduler.jobName_pspRetryNotificheCancellazioneRpt.enabled",
+                "value": "true",
+                "description": "Job enabled (true/false)"
+              },
+              "FATTURAZIONI-tipoVersamento.BP": {
+                "category": "FATTURAZIONI",
+                "key": "tipoVersamento.BP",
+                "value": "0;1;0;0;0;0;0;0",
+                "description": "codifica csv tipo versamento BP"
+              },
+              "GLOBAL-scheduler.jobName_mod3UpdateNotifiedPositionPayment.enabled": {
+                "category": "GLOBAL",
+                "key": "scheduler.jobName_mod3UpdateNotifiedPositionPayment.enabled",
+                "value": "true",
+                "description": "Job enabled (true/false)"
+              },
+              "info-quadr-commissioneCaricoPsp.pdf.aggregato.header": {
+                "category": "info-quadr",
+                "key": "commissioneCaricoPsp.pdf.aggregato.header",
+                "value": "Tabella aggregato versamenti",
+                "description": null
+              },
+              "rpt-modello4-aciDescrizione": {
+                "category": "rpt-modello4",
+                "key": "aciDescrizione",
+                "value": "Automobile Club d italia",
+                "description": "descrizione Automobile Club Italia"
+              },
+              "GLOBAL-timeout.pspNotifyPayment": {
+                "category": "GLOBAL",
+                "key": "timeout.pspNotifyPayment",
+                "value": "TIMEOUT_A",
+                "description": "timeout"
+              },
+              "GLOBAL-timeout.pspNotificaCancellazioneRPT": {
+                "category": "GLOBAL",
+                "key": "timeout.pspNotificaCancellazioneRPT",
+                "value": "TIMEOUT_C",
+                "description": "Tipo timeout"
+              },
+              "GLOBAL-scheduler.jobName_ftpUpload.cronExpression": {
+                "category": "GLOBAL",
+                "key": "scheduler.jobName_ftpUpload.cronExpression",
+                "value": "0 0/1 * ? * * *",
+                "description": "Cron expression (Es.[*/10 * * ? * *] will fire every ten seconds)"
+              },
+              "GLOBAL-scheduler.jobName_pspSendPayment.enabled": {
+                "category": "GLOBAL",
+                "key": "scheduler.jobName_pspSendPayment.enabled",
+                "value": "true",
+                "description": "Job enabled (true/false)"
+              },
+              "info-quadr-commissioneCaricoPsp.pdf.aggregato.footer": {
+                "category": "info-quadr",
+                "key": "commissioneCaricoPsp.pdf.aggregato.footer",
+                "value": "n.a.",
+                "description": null
+              },
+              "info-wisp-chiediListaPSP.listaPspLisPay": {
+                "category": "info-wisp",
+                "key": "chiediListaPSP.listaPspLisPay",
+                "value": "BIC36019",
+                "description": "id PSP LisPay,divisi da virgola"
+              },
+              "FATTURAZIONI-tipoVersamento.JIF": {
+                "category": "FATTURAZIONI",
+                "key": "tipoVersamento.JIF",
+                "value": "0;0;0;0;0;0;1;0",
+                "description": "codifica csv tipo versamento JIF"
+              },
+              "GLOBAL-inviaCarrelloRpt.maxNumRptInCartMultibeneficiario": {
+                "category": "GLOBAL",
+                "key": "inviaCarrelloRpt.maxNumRptInCartMultibeneficiario",
+                "value": "2",
+                "description": null
+              },
+              "GLOBAL-scheduler.jobName_pspNotificaCancellazione.enabled": {
+                "category": "GLOBAL",
+                "key": "scheduler.jobName_pspNotificaCancellazione.enabled",
+                "value": "true",
+                "description": "Job enabled (true/false)"
+              },
+              "info-quadr-commissioneCaricoPsp.template.sender.name.mail": {
+                "category": "info-quadr",
+                "key": "commissioneCaricoPsp.template.sender.name.mail",
+                "value": "PPT",
+                "description": null
+              },
+              "GLOBAL-idempotency.outcome.ok.duration.days": {
+                "category": "GLOBAL",
+                "key": "idempotency.outcome.ok.duration.days",
+                "value": "2",
+                "description": "cache validity days outcome ok"
+              },
+              "GLOBAL-mod3_inizio": {
+                "category": "GLOBAL",
+                "key": "mod3_inizio",
+                "value": "2021-01-01",
+                "description": "Job enabled (true/false)"
+              },
+              "FATTURAZIONI-tipoVersamento.CP": {
+                "category": "FATTURAZIONI",
+                "key": "tipoVersamento.CP",
+                "value": "0;0;0;0;1;0;0;0",
+                "description": "codifica csv tipo versamento CP"
+              },
+              "GLOBAL-ccpRandomTraduttore": {
+                "category": "GLOBAL",
+                "key": "ccpRandomTraduttore",
+                "value": "true",
+                "description": "popolare il CCP nella paaVerificaRPT generata dal traduttore con NMP_[random 10 numeri]"
+              },
+              "rpt-modello4-xsdRiferimentoBolloAuto": {
+                "category": "rpt-modello4",
+                "key": "xsdRiferimentoBolloAuto",
+                "value": "TassaAutomobilistica_1_0_0.xsd",
+                "description": "-"
+              },
+              "GLOBAL-scheduler.jobName_mod3Cancel.enabled": {
+                "category": "GLOBAL",
+                "key": "scheduler.jobName_mod3Cancel.enabled",
+                "value": "true",
+                "description": "Job enabled (true/false)"
+              },
+              "GLOBAL-scheduler.jobName_mod3Cancel.jobDescription": {
+                "category": "GLOBAL",
+                "key": "scheduler.jobName_mod3Cancel.jobDescription",
+                "value": "Description",
+                "description": "cancellazione position payment con token scaduti modello 3"
+              },
+              "rpt-invia-inviaCarrelloRpt.maxNumRptInCart": {
+                "category": "rpt-invia",
+                "key": "inviaCarrelloRpt.maxNumRptInCart",
+                "value": "5",
+                "description": "Numero massimo di elementi nel Carrello"
+              },
+              "rendicontazioni-bollo.intermediario.CAPDelDomicilioFiscale": {
+                "category": "rendicontazioni",
+                "key": "bollo.intermediario.CAPDelDomicilioFiscale",
+                "value": "20147",
+                "description": "Dati dell'intermediario della trasmissione/ C.A.P. domicilio fiscale"
+              },
+              "GLOBAL-timeout.paSendRT": {
+                "category": "GLOBAL",
+                "key": "timeout.paSendRT",
+                "value": "TIMEOUT_B",
+                "description": "timeout"
+              },
+              "GLOBAL-scheduler.jobName_pspRetryNotificheCancellazioneRpt.jobDescription": {
+                "category": "GLOBAL",
+                "key": "scheduler.jobName_pspRetryNotificheCancellazioneRpt.jobDescription",
+                "value": "Description",
+                "description": "Description"
+              },
+              "GLOBAL-istitutoAttestante.capAttestante": {
+                "category": "GLOBAL",
+                "key": "istitutoAttestante.capAttestante",
+                "value": "00187",
+                "description": "capAttestante"
+              },
+              "info-quadr-commissioneCaricoPsp.template.subject.mail": {
+                "category": "info-quadr",
+                "key": "commissioneCaricoPsp.template.subject.mail",
+                "value": "Report commissioniCaricoPsp",
+                "description": null
+              },
+              "rendicontazioni-bollo.intermediario.comuneDomicilioFiscale": {
+                "category": "rendicontazioni",
+                "key": "bollo.intermediario.comuneDomicilioFiscale",
+                "value": "Milano",
+                "description": "Dati dell'intermediario della trasmissione/ Comune domicilio fiscale"
+              },
+              "GLOBAL-uri.wallet": {
+                "category": "GLOBAL",
+                "key": "uri.wallet",
+                "value": "https://acardste.vaservices.eu:1443/wallet/welcome",
+                "description": null
+              },
+              "GLOBAL-timeout.paDemandPaymentNotice": {
+                "category": "GLOBAL",
+                "key": "timeout.paDemandPaymentNotice",
+                "value": "TIMEOUT_A",
+                "description": "Tipo timeout"
+              },
+              "GLOBAL-scheduler.jobName_rtPullRecoveryPush.enabled": {
+                "category": "GLOBAL",
+                "key": "scheduler.jobName_rtPullRecoveryPush.enabled",
+                "value": "true",
+                "description": "Job enabled (true/false)"
+              },
+              "info-wisp-chiediListaPSP.outputJsonValid": {
+                "category": "info-wisp",
+                "key": "chiediListaPSP.outputJsonValid",
+                "value": "true",
+                "description": null
+              },
+              "GLOBAL-scheduler.jobName_mod3RiconciliazioneRt.enabled": {
+                "category": "GLOBAL",
+                "key": "scheduler.jobName_mod3RiconciliazioneRt.enabled",
+                "value": "true",
+                "description": "Job enabled (true/false)"
+              },
+              "GLOBAL-istitutoAttestante.localitaAttestante": {
+                "category": "GLOBAL",
+                "key": "istitutoAttestante.localitaAttestante",
+                "value": "Roma",
+                "description": "localitaAttestante"
+              },
+              "GLOBAL-scheduler.paSendRtMaxRetry": {
+                "category": "GLOBAL",
+                "key": "scheduler.paSendRtMaxRetry",
+                "value": "1",
+                "description": "pa Send Rt max retry"
+              },
+              "GLOBAL-istitutoAttestante.denominazioneAttestante": {
+                "category": "GLOBAL",
+                "key": "istitutoAttestante.denominazioneAttestante",
+                "value": "PagoPA S.p.A.",
+                "description": "denominazioneAttestante"
+              },
+              "rendicontazioni-bollo.intermediario.indirizzoFrazioneViaENumeroCivicoDelDomicilioFiscale": {
+                "category": "rendicontazioni",
+                "key": "bollo.intermediario.indirizzoFrazioneViaENumeroCivicoDelDomicilioFiscale",
+                "value": "Via Gonin, 36",
+                "description": "Dati dell'intermediario della trasmissione/ Indirizzo, frazione, via e numero civico del domicilio fiscale"
+              },
+              "GLOBAL-scheduler.jobName_paRetryAttivaRpt.enabled": {
+                "category": "GLOBAL",
+                "key": "scheduler.jobName_paRetryAttivaRpt.enabled",
+                "value": "true",
+                "description": "Job enabled (true/false)"
+              },
+              "GLOBAL-timeout.paaInviaRT.push": {
+                "category": "GLOBAL",
+                "key": "timeout.paaInviaRT.push",
+                "value": "TIMEOUT_B",
+                "description": "Tipo timeout"
+              },
+              "Z7HuDfyuFpvmg6KBF3i6FQ17SA6W0FiiC2F-conf-key": {
+                "category": "Z7HuDfyuFpvmg6KBF3i6FQ17SA6W0FiiC2F",
+                "key": "conf-key",
+                "value": "test value",
+                "description": "this is a test"
+              },
+              "GLOBAL-scheduler.jobName_generaRendicontazioneBollo.enabled": {
+                "category": "GLOBAL",
+                "key": "scheduler.jobName_generaRendicontazioneBollo.enabled",
+                "value": "true",
+                "description": "Job enabled (true/false)"
+              },
+              "rendicontazioni-bollo.intermediario.denominazione": {
+                "category": "rendicontazioni",
+                "key": "bollo.intermediario.denominazione",
+                "value": "SIA S.p.A.",
+                "description": "Dati dell'intermediario della trasmissione/ Denominazione"
+              },
+              "GLOBAL-timeout.pspInviaAckRT": {
+                "category": "GLOBAL",
+                "key": "timeout.pspInviaAckRT",
+                "value": "TIMEOUT_C",
+                "description": "Tipo timeout"
+              },
+              "GLOBAL-scheduler.jobName_cancelIOPayment.enabled": {
+                "category": "GLOBAL",
+                "key": "scheduler.jobName_cancelIOPayment.enabled",
+                "value": "true",
+                "description": "Job enabled (true/false)"
+              },
+              "GLOBAL-scheduler.jobName_pspRetryNotificheCancellazioneRpt.cronExpression": {
+                "category": "GLOBAL",
+                "key": "scheduler.jobName_pspRetryNotificheCancellazioneRpt.cronExpression",
+                "value": "0 0 * ? * * *",
+                "description": "Cron expression (Es.[*/10 * * ? * *] will fire every ten seconds)"
+              },
+              "rendicontazioni-bollo.mittente.codiceFiscale": {
+                "category": "rendicontazioni",
+                "key": "bollo.mittente.codiceFiscale",
+                "value": "15376371009",
+                "description": null
+              },
+              "GLOBAL-scheduler.jobName_idempotencyCacheClean.enabled": {
+                "category": "GLOBAL",
+                "key": "scheduler.jobName_idempotencyCacheClean.enabled",
+                "value": "false",
+                "description": "jobName_idempotencyCacheClean enabled/disabled"
+              },
+              "FATTURAZIONI-tipoVersamento.AD": {
+                "category": "FATTURAZIONI",
+                "key": "tipoVersamento.AD",
+                "value": "0;0;1;0;0;0;0;0",
+                "description": "codifica csv tipo versamento AD"
+              },
+              "GLOBAL-timeout.paaInviaRT.pull": {
+                "category": "GLOBAL",
+                "key": "timeout.paaInviaRT.pull",
+                "value": "TIMEOUT_C",
+                "description": "Tipo timeout"
+              },
+              "GLOBAL-verificabollettino.validity.minutes": {
+                "category": "GLOBAL",
+                "key": "verificabollettino.validity.minutes",
+                "value": "1",
+                "description": "validitÃ  verifica bollettino"
+              },
+              "GLOBAL-scheduler.pspRetryAckNegativePollerMaxRetry": {
+                "category": "GLOBAL",
+                "key": "scheduler.pspRetryAckNegativePollerMaxRetry",
+                "value": "1",
+                "description": "numero massimo di tentativi di re-invio ACK al PSP"
+              },
+              "GLOBAL-idPspCheckout": {
+                "category": "GLOBAL",
+                "key": "idPspCheckout",
+                "value": "TBD",
+                "description": "id PSP Checkout"
+              },
+              "GLOBAL-intPspAGID": {
+                "category": "GLOBAL",
+                "key": "intPspAGID",
+                "value": "97735020584",
+                "description": "identificativo intermediario PSP AGID"
+              },
+              "info-quadr-commissioneCaricoPa.pdf.dettaglio.footer": {
+                "category": "info-quadr",
+                "key": "commissioneCaricoPa.pdf.dettaglio.footer",
+                "value": "n.a.",
+                "description": null
+              },
+              "GLOBAL-inviaCarrelloRpt.maxVersamentiInSecondRptMultibeneficiario": {
+                "category": "GLOBAL",
+                "key": "inviaCarrelloRpt.maxVersamentiInSecondRptMultibeneficiario",
+                "value": "1",
+                "description": null
+              },
+              "GLOBAL-scheduler.jobName_paInviaRt.jobDescription": {
+                "category": "GLOBAL",
+                "key": "scheduler.jobName_paInviaRt.jobDescription",
+                "value": "Description",
+                "description": "Description"
+              },
+              "GLOBAL-flag.chiediInfoPagamento.useNewField": {
+                "category": "GLOBAL",
+                "key": "flag.chiediInfoPagamento.useNewField",
+                "value": "true",
+                "description": "Flag che indica se il PM dovrà ricevere i nuovi campi di infoPagamento"
+              },
+              "GLOBAL-idCanaleMod3New": {
+                "category": "GLOBAL",
+                "key": "idCanaleMod3New",
+                "value": "15376371009_01",
+                "description": "idCanaleMod3New"
+              },
+              "GLOBAL-scheduler.jobName_situazioneOrdine.enabled": {
+                "category": "GLOBAL",
+                "key": "scheduler.jobName_situazioneOrdine.enabled",
+                "value": "true",
+                "description": "Job enabled (true/false) - sitOrd per quelle in P_WAITING"
+              },
+              "FATTURAZIONI-tipoVersamento.BPAY": {
+                "category": "FATTURAZIONI",
+                "key": "tipoVersamento.BPAY",
+                "value": "0;0;0;0;1;0;0;0",
+                "description": "codifica csv tipo versamento BPAY"
+              },
+              "rpt-modello4-idServizioBolloAuto": {
+                "category": "rpt-modello4",
+                "key": "idServizioBolloAuto",
+                "value": "00001",
+                "description": "-"
+              },
+              "GLOBAL-azureSdkClientReEventEnabled": {
+                "category": "GLOBAL",
+                "key": "azureSdkClientReEventEnabled",
+                "value": "true",
+                "description": "abilitazione scrittura re su eventhub azure PagoPA"
+              },
+              "GLOBAL-default_token_duration_validity_millis": {
+                "category": "GLOBAL",
+                "key": "default_token_duration_validity_millis",
+                "value": "70000",
+                "description": " default millisecondi validità token"
+              },
+              "GLOBAL-scheduler.jobName_paRetryPaInviaRtNegative.cronExpression": {
+                "category": "GLOBAL",
+                "key": "scheduler.jobName_paRetryPaInviaRtNegative.cronExpression",
+                "value": "0/30 * * ? * * *",
+                "description": "Cron expression (Es.[*/10 * * ? * *] will fire every ten seconds)"
+              },
+              "GLOBAL-scheduler.jobName_mod3RiconciliazioneRpt.enabled": {
+                "category": "GLOBAL",
+                "key": "scheduler.jobName_mod3RiconciliazioneRpt.enabled",
+                "value": "true",
+                "description": "Job enabled (true/false)"
+              },
+              "GLOBAL-scheduler.mod3Cancel.minutesWaitPaOld": {
+                "category": "GLOBAL",
+                "key": "scheduler.mod3Cancel.minutesWaitPaOld",
+                "value": "0",
+                "description": "timeout"
+              },
+              "info-quadr-smtp.host": {
+                "category": "info-quadr",
+                "key": "smtp.host",
+                "value": "10.10.39.132",
+                "description": null
+              },
+              "GLOBAL-scheduler.jobName_retryPspSendPayment.jobDescription": {
+                "category": "GLOBAL",
+                "key": "scheduler.jobName_retryPspSendPayment.jobDescription",
+                "value": "Description",
+                "description": "Retry psp send payment"
+              },
+              "GLOBAL-validate_input": {
+                "category": "GLOBAL",
+                "key": "validate_input",
+                "value": "true",
+                "description": "Validazione XSD input Bundle"
+              },
+              "GLOBAL-idempotency.activate.ko.duration.days": {
+                "category": "GLOBAL",
+                "key": "idempotency.activate.ko.duration.days",
+                "value": "1",
+                "description": "cache validity days activate ko"
+              },
+              "GLOBAL-gec.fees.maxRetry": {
+                "category": "GLOBAL",
+                "key": "gec.fees.maxRetry",
+                "value": "0",
+                "description": "maxRetry to GEC service fees"
+              },
+              "GLOBAL-istitutoAttestante.identificativoUnivocoAttestante.tipoIdentificativoUnivoco": {
+                "category": "GLOBAL",
+                "key": "istitutoAttestante.identificativoUnivocoAttestante.tipoIdentificativoUnivoco",
+                "value": "G",
+                "description": "CtIdentificativoUnivoco.tipoIdentificativoUnivoco"
+              },
+              "GLOBAL-scheduler.jobName_mod3UpdateNotifiedPositionPayment.jobDescription": {
+                "category": "GLOBAL",
+                "key": "scheduler.jobName_mod3UpdateNotifiedPositionPayment.jobDescription",
+                "value": "Description",
+                "description": "Mod3 update notified Position Payment"
+              },
+              "GLOBAL-idempotency.outcome.ko.duration.days": {
+                "category": "GLOBAL",
+                "key": "idempotency.outcome.ko.duration.days",
+                "value": "2",
+                "description": "cache validity days outcome ko"
+              },
+              "info-wisp-chiediListaPSP.listaIdPoste": {
+                "category": "info-wisp",
+                "key": "chiediListaPSP.listaIdPoste",
+                "value": "POSTE1",
+                "description": null
+              },
+              "rendicontazioni-ftp.internalFTPComponentEndpointPort": {
+                "category": "rendicontazioni",
+                "key": "ftp.internalFTPComponentEndpointPort",
+                "value": "9610",
+                "description": null
+              },
+              "GLOBAL-scheduler.jobName_paRetryPaInviaRtNegative.jobDescription": {
+                "category": "GLOBAL",
+                "key": "scheduler.jobName_paRetryPaInviaRtNegative.jobDescription",
+                "value": "Description",
+                "description": "Description"
+              },
+              "FATTURAZIONI-tipoVersamento.PO": {
+                "category": "FATTURAZIONI",
+                "key": "tipoVersamento.PO",
+                "value": "0;0;0;0;0;1;0;0",
+                "description": "codifica csv tipo versamento PO"
+              },
+              "GLOBAL-usePspNotifyPayment": {
+                "category": "GLOBAL",
+                "key": "usePspNotifyPayment",
+                "value": "false",
+                "description": " flag di ON/OFF se usare primitiva pspNotifyPayment per PayPal"
+              },
+              "GLOBAL-scheduler.jobName_paRetryAttivaRpt.jobDescription": {
+                "category": "GLOBAL",
+                "key": "scheduler.jobName_paRetryAttivaRpt.jobDescription",
+                "value": "Description",
+                "description": "retry attiva rpt "
+              },
+              "info-quadr-smtp.username": {
+                "category": "info-quadr",
+                "key": "smtp.username",
+                "value": "pda@dev.test",
+                "description": null
+              },
+              "GLOBAL-scheduler.jobName_ftpUpload.enabled": {
+                "category": "GLOBAL",
+                "key": "scheduler.jobName_ftpUpload.enabled",
+                "value": "true",
+                "description": "Job enabled (true/false)"
+              },
+              "info-quadr-commissioneCaricoPa.pdf.dettaglio.header": {
+                "category": "info-quadr",
+                "key": "commissioneCaricoPa.pdf.dettaglio.header",
+                "value": "Tabella dettaglio versamenti",
+                "description": null
+              },
+              "GLOBAL-timeout.cdInfoWisp": {
+                "category": "GLOBAL",
+                "key": "timeout.cdInfoWisp",
+                "value": "TIMEOUT_A",
+                "description": "Tipo timeout"
+              },
+              "GLOBAL-timeout.paSendRT.pull": {
+                "category": "GLOBAL",
+                "key": "timeout.paSendRT.pull",
+                "value": "TIMEOUT_C",
+                "description": "Tipo timeout"
+              },
+              "GLOBAL-useCountChiediAvanzamento": {
+                "category": "GLOBAL",
+                "key": "useCountChiediAvanzamento",
+                "value": "true",
+                "description": "toggle per abilitare o disabilitare contatori NodoChiediAvanzamento"
+              },
+              "GLOBAL-default_idempotency_key_validity_minutes": {
+                "category": "GLOBAL",
+                "key": "default_idempotency_key_validity_minutes",
+                "value": "10",
+                "description": "timeout"
+              },
+              "rpt-info-chiediInfoPagamento.outputJsonValid": {
+                "category": "rpt-info",
+                "key": "chiediInfoPagamento.outputJsonValid",
+                "value": "true",
+                "description": "-"
+              },
+              "GLOBAL-scheduler.jobName_paInviaRt.enabled": {
+                "category": "GLOBAL",
+                "key": "scheduler.jobName_paInviaRt.enabled",
+                "value": "false",
+                "description": "Job enabled (true/false)"
+              },
+              "info-pa-psp-disableNodoChiediInformativaPSP": {
+                "category": "info-pa-psp",
+                "key": "disableNodoChiediInformativaPSP",
+                "value": "false",
+                "description": "restituisce come risposta alla nodoChiediInformativaPSP un SYSTEM_ERROR"
+              },
+              "GLOBAL-scheduler.jobName_mod3GenerateReceipt.jobDescription": {
+                "category": "GLOBAL",
+                "key": "scheduler.jobName_mod3GenerateReceipt.jobDescription",
+                "value": "Description",
+                "description": "generazione ricevute in formato receipt"
+              },
+              "GLOBAL-scheduler.jobName_mod3Riconciliazione.jobDescription": {
+                "category": "GLOBAL",
+                "key": "scheduler.jobName_mod3Riconciliazione.jobDescription",
+                "value": "Description",
+                "description": "Riconciliazione rpt"
+              },
+              "GLOBAL-scheduler.jobName_mod3RiconciliazioneRt.jobDescription": {
+                "category": "GLOBAL",
+                "key": "scheduler.jobName_mod3RiconciliazioneRt.jobDescription",
+                "value": "Description",
+                "description": "Riconciliazione rpt"
+              },
+              "GLOBAL-scheduler.jobName_mod3CancelV2.enabled": {
+                "category": "GLOBAL",
+                "key": "scheduler.jobName_mod3CancelV2.enabled",
+                "value": "true",
+                "description": "Job enabled (true/false)"
+              },
+              "GLOBAL-scheduler.jobName_pspChiediAvanzamentoRpt.cronExpression": {
+                "category": "GLOBAL",
+                "key": "scheduler.jobName_pspChiediAvanzamentoRpt.cronExpression",
+                "value": "0/30 * * ? * * *",
+                "description": "Cron expression (Es.[*/10 * * ? * *] will fire every ten seconds)"
+              },
+              "info-wisp-chiediListaPSP.listaCanaliLisPay": {
+                "category": "info-wisp",
+                "key": "chiediListaPSP.listaCanaliLisPay",
+                "value": "13212880150_07",
+                "description": "id Canali LisPay,divisi da virgola"
+              },
+              "GLOBAL-timeout.paVerifyPaymentNotice": {
+                "category": "GLOBAL",
+                "key": "timeout.paVerifyPaymentNotice",
+                "value": "TIMEOUT_A",
+                "description": "Tipo timeout"
+              },
+              "GLOBAL-scheduler.jobName_refreshConfiguration.enabled": {
+                "category": "GLOBAL",
+                "key": "scheduler.jobName_refreshConfiguration.enabled",
+                "value": "true",
+                "description": "Job enabled (true/false)"
+              },
+              "GLOBAL-gec.fees.maxOccurences": {
+                "category": "GLOBAL",
+                "key": "gec.fees.maxOccurences",
+                "value": "10",
+                "description": "maxOccurences to GEC service fees"
+              },
+              "GLOBAL-idPlugin.mybank": {
+                "category": "GLOBAL",
+                "key": "idPlugin.mybank",
+                "value": "wpl04",
+                "description": "identificativo plugin MyBank"
+              },
+              "GLOBAL-paymentmanager.baseurl": {
+                "category": "GLOBAL",
+                "key": "paymentmanager.baseurl",
+                "value": "http://localhost:8080",
+                "description": "Validazione XSD input Bundle"
+              },
+              "FATTURAZIONI-tipoVersamento.MYBK": {
+                "category": "FATTURAZIONI",
+                "key": "tipoVersamento.MYBK",
+                "value": "0;0;0;0;0;0;0;1",
+                "description": "codifica csv tipo versamento MYBK"
+              },
+              "info-wisp-chiediListaPSP.ibanPosteMatch": {
+                "category": "info-wisp",
+                "key": "chiediListaPSP.ibanPosteMatch",
+                "value": "07601",
+                "description": "Check iban poste match"
+              },
+              "GLOBAL-httpmethod.wfesp.psp2wfespMS": {
+                "category": "GLOBAL",
+                "key": "httpmethod.wfesp.psp2wfespMS",
+                "value": "esitoMS",
+                "description": null
+              },
+              "rpt-invia-patch.ministeroDiGiustizia.active": {
+                "category": "rpt-invia",
+                "key": "patch.ministeroDiGiustizia.active",
+                "value": "true",
+                "description": "Flag di attivazione della patch"
+              },
+              "info-quadr-commissioneCaricoPsp.noData.message": {
+                "category": "info-quadr",
+                "key": "commissioneCaricoPsp.noData.message",
+                "value": "Nessun dato disponibile per il mese di riferimento",
+                "description": null
+              },
+              "GLOBAL-timeout.paaVerificaRPT": {
+                "category": "GLOBAL",
+                "key": "timeout.paaVerificaRPT",
+                "value": "TIMEOUT_A",
+                "description": "Tipo timeout"
+              },
+              "GLOBAL-timeout.pspChiediListaRT": {
+                "category": "GLOBAL",
+                "key": "timeout.pspChiediListaRT",
+                "value": "TIMEOUT_C",
+                "description": "Tipo timeout"
+              },
+              "GLOBAL-idCanaleCheckout": {
+                "category": "GLOBAL",
+                "key": "idCanaleCheckout",
+                "value": "TBD",
+                "description": "id Canale Checkout"
+              },
+              "GLOBAL-id_psp_poste": {
+                "category": "GLOBAL",
+                "key": "id_psp_poste",
+                "value": "POSTE3",
+                "description": "id psp poste"
+              },
+              "GLOBAL-outcome_retry_active": {
+                "category": "GLOBAL",
+                "key": "outcome_retry_active",
+                "value": "true",
+                "description": "attivazione retry su outcome scaduto mod3"
+              },
+              "rendicontazioni-bollo.codiceIdentificativo.1": {
+                "category": "rendicontazioni",
+                "key": "bollo.codiceIdentificativo.1",
+                "value": "SIA",
+                "description": null
+              },
+              "GLOBAL-scheduler.jobName_paInviaRt.cronExpression": {
+                "category": "GLOBAL",
+                "key": "scheduler.jobName_paInviaRt.cronExpression",
+                "value": "0/30 * * ? * * *",
+                "description": "Cron expression (Es.[*/10 * * ? * *] will fire every ten seconds)"
+              },
+              "GLOBAL-scheduler.ftpUploadRetryPollerMaxRetry": {
+                "category": "GLOBAL",
+                "key": "scheduler.ftpUploadRetryPollerMaxRetry",
+                "value": "5",
+                "description": "numero massimo di tentativi di re-invio file ftp"
+              },
+              "GLOBAL-scheduler.sendPaymentResultPollerMinutesBack": {
+                "category": "GLOBAL",
+                "key": "scheduler.sendPaymentResultPollerMinutesBack",
+                "value": "1",
+                "description": "Minuti precedenti per cercare una retry sendPaymentResult"
+              },
+              "rendicontazioni-bollo.codiceIdentificativo.2": {
+                "category": "rendicontazioni",
+                "key": "bollo.codiceIdentificativo.2",
+                "value": "YY",
+                "description": null
+              },
+              "GLOBAL-timeout.pspChiediAvanzamentoRPT": {
+                "category": "GLOBAL",
+                "key": "timeout.pspChiediAvanzamentoRPT",
+                "value": "TIMEOUT_B",
+                "description": "Tipo timeout"
+              },
+              "info-quadr-commissioneCaricoPsp.invio.mail": {
+                "category": "info-quadr",
+                "key": "commissioneCaricoPsp.invio.mail",
+                "value": "true",
+                "description": null
+              },
+              "GLOBAL-maxChiediAvanzamento": {
+                "category": "GLOBAL",
+                "key": "maxChiediAvanzamento",
+                "value": "3",
+                "description": "numero massimo di tentativi per NodoChiediAvanzamento da PM"
+              },
+              "GLOBAL-gec.enabled": {
+                "category": "GLOBAL",
+                "key": "gec.enabled",
+                "value": "true",
+                "description": "toggle to enabled/disabled gec service"
+              },
+              "GLOBAL-scheduler.jobName_paSendRt.enabled": {
+                "category": "GLOBAL",
+                "key": "scheduler.jobName_paSendRt.enabled",
+                "value": "true",
+                "description": "Job enabled (true/false)"
+              },
+              "FATTURAZIONI-tipoVersamento.BBT": {
+                "category": "FATTURAZIONI",
+                "key": "tipoVersamento.BBT",
+                "value": "1;0;0;0;0;0;0;0",
+                "description": "codifica csv tipo versamento BBT"
+              },
+              "rpt-modello4-aciId": {
+                "category": "rpt-modello4",
+                "key": "aciId",
+                "value": "00493410583",
+                "description": "identificativo Automobile Club Italia"
+              },
+              "GLOBAL-default_durata_token_IO": {
+                "category": "GLOBAL",
+                "key": "default_durata_token_IO",
+                "value": "2000",
+                "description": " default millisecondi validità token IO"
+              },
+              "GLOBAL-idCanaleCD": {
+                "category": "GLOBAL",
+                "key": "idCanaleCD",
+                "value": "97735020584_03",
+                "description": "identificativo canale Cittadinanza Digitale"
+              },
+              "GLOBAL-timeoutForSingleProcessSeconds": {
+                "category": "GLOBAL",
+                "key": "timeoutForSingleProcessSeconds",
+                "value": "130",
+                "description": "Secondi di timeout per singolo processo"
+              },
+              "GLOBAL-scheduler.jobName_mod3Riconciliazione.enabled": {
+                "category": "GLOBAL",
+                "key": "scheduler.jobName_mod3Riconciliazione.enabled",
+                "value": "true",
+                "description": "Job enabled (true/false)"
+              },
+              "GLOBAL-ftp.env.path": {
+                "category": "GLOBAL",
+                "key": "ftp.env.path",
+                "value": "pate_",
+                "description": "cartella file rendicontazioni"
+              },
+              "GLOBAL-mybank.params.passaggioCodiceMyBank": {
+                "category": "GLOBAL",
+                "key": "mybank.params.passaggioCodiceMyBank",
+                "value": "true",
+                "description": null
+              },
+              "FATTURAZIONI-tipoVersamento.TPAY": {
+                "category": "FATTURAZIONI",
+                "key": "tipoVersamento.TPAY",
+                "value": "0;0;0;0;1;0;0;0",
+                "description": "codifica csv tipo versamento TPAY"
+              },
+              "GLOBAL-httpmethod.wfesp.pa2wfesp": {
+                "category": "GLOBAL",
+                "key": "httpmethod.wfesp.pa2wfesp",
+                "value": "get",
+                "description": null
+              },
+              "FATTURAZIONI-tipoVersamento.OBEP": {
+                "category": "FATTURAZIONI",
+                "key": "tipoVersamento.OBEP",
+                "value": "0;0;0;1;0;0;0;0",
+                "description": "codifica csv tipo versamento OBEP"
+              },
+              "GLOBAL-istitutoAttestante.identificativoUnivocoAttestante.codiceIdentificativoUnivoco": {
+                "category": "GLOBAL",
+                "key": "istitutoAttestante.identificativoUnivocoAttestante.codiceIdentificativoUnivoco",
+                "value": "15376371009",
+                "description": "CtIdentificativoUnivoco.codiceIdentificativoUnivoco"
+              },
+              "GLOBAL-idPspECommerce": {
+                "category": "GLOBAL",
+                "key": "idPspECommerce",
+                "value": "TBD",
+                "description": "id PSP eCommerce"
+              },
+              "GLOBAL-scheduler.jobName_pspChiediAvanzamentoRpt.jobDescription": {
+                "category": "GLOBAL",
+                "key": "scheduler.jobName_pspChiediAvanzamentoRpt.jobDescription",
+                "value": "Description",
+                "description": "Description"
+              },
+              "info-quadr-versioneQuadrature": {
+                "category": "info-quadr",
+                "key": "versioneQuadrature",
+                "value": "6.1",
+                "description": "Versione Quadrature"
+              },
+              "info-quadr-commissioneCaricoPa.pdf.aggregato.footer": {
+                "category": "info-quadr",
+                "key": "commissioneCaricoPa.pdf.aggregato.footer",
+                "value": "n.a.",
+                "description": null
+              },
+              "rendicontazioni-bollo.dateFormat": {
+                "category": "rendicontazioni",
+                "key": "bollo.dateFormat",
+                "value": "yyyy-MM-dd",
+                "description": null
+              },
+              "info-quadr-commissioneCaricoPa.invio.mail": {
+                "category": "info-quadr",
+                "key": "commissioneCaricoPa.invio.mail",
+                "value": "true",
+                "description": null
+              },
+              "GLOBAL-scheduler.jobName_pspNotificaCancellazione.cronExpression": {
+                "category": "GLOBAL",
+                "key": "scheduler.jobName_pspNotificaCancellazione.cronExpression",
+                "value": "0 0 1 ? * * *",
+                "description": "Cron expression (Es.[*/10 * * ? * *] will fire every ten seconds)"
+              },
+              "info-quadr-commissioneCaricoPa.template.subject.mail": {
+                "category": "info-quadr",
+                "key": "commissioneCaricoPa.template.subject.mail",
+                "value": "Report commissioniCaricoPa",
+                "description": null
+              },
+              "rpt-invia-mybank.params.passaggioCodiceMyBank": {
+                "category": "rpt-invia",
+                "key": "mybank.params.passaggioCodiceMyBank",
+                "value": "true",
+                "description": null
+              },
+              "rendicontazioni-bollo.intermediario.siglaDellaProvinciaDelDomicilioFiscale": {
+                "category": "rendicontazioni",
+                "key": "bollo.intermediario.siglaDellaProvinciaDelDomicilioFiscale",
+                "value": "MI",
+                "description": "Dati dell'intermediario della trasmissione/ Sigle della provincia del domicilio fiscale"
+              },
+              "GLOBAL-useIdempotency": {
+                "category": "GLOBAL",
+                "key": "useIdempotency",
+                "value": "false",
+                "description": "use idempotency"
+              },
+              "GLOBAL-scheduler.jobName_pspChiediListaAndChiediRt.enabled": {
+                "category": "GLOBAL",
+                "key": "scheduler.jobName_pspChiediListaAndChiediRt.enabled",
+                "value": "true",
+                "description": "Job enabled (true/false)"
+              },
+              "GLOBAL-scheduler.cancelIOPaymentActorMinutesToBack": {
+                "category": "GLOBAL",
+                "key": "scheduler.cancelIOPaymentActorMinutesToBack",
+                "value": "1",
+                "description": "cancel IO Payment Minutes To Back"
+              },
+              "GLOBAL-scheduler.paRetryPaInviaRtNegativePollerMaxRetry": {
+                "category": "GLOBAL",
+                "key": "scheduler.paRetryPaInviaRtNegativePollerMaxRetry",
+                "value": "5",
+                "description": "numero massimo di tentativi di re-invio delle RT alla PA"
+              },
+              "GLOBAL-wisp.timeoutScelta": {
+                "category": "GLOBAL",
+                "key": "wisp.timeoutScelta",
+                "value": "75",
+                "description": "wisp timeout ChiediSceltaWISP"
+              },
+              "info-quadr-commissioneCaricoPsp.pdf.dettaglio.header": {
+                "category": "info-quadr",
+                "key": "commissioneCaricoPsp.pdf.dettaglio.header",
+                "value": "Tabella dettaglio versamenti",
+                "description": null
+              },
+              "GLOBAL-scheduler.jobName_situazioneOrdine.cronExpression": {
+                "category": "GLOBAL",
+                "key": "scheduler.jobName_situazioneOrdine.cronExpression",
+                "value": "*/2 * * * *",
+                "description": "Cron expression (Es.[*/10 * * ? * *] will fire every ten seconds)"
+              },
+              "GLOBAL-scheduler.jobName_mod3GenerateReceipt.enabled": {
+                "category": "GLOBAL",
+                "key": "scheduler.jobName_mod3GenerateReceipt.enabled",
+                "value": "true",
+                "description": "Job enabled (true/false)"
+              },
+              "GLOBAL-idCanaleECommerce": {
+                "category": "GLOBAL",
+                "key": "idCanaleECommerce",
+                "value": "TBD",
+                "description": "id Canale eCommerce"
+              },
+              "GLOBAL-istitutoAttestante.provinciaAttestante": {
+                "category": "GLOBAL",
+                "key": "istitutoAttestante.provinciaAttestante",
+                "value": "RM",
+                "description": "provinciaAttestante"
+              },
+              "GLOBAL-mod3_descoping": {
+                "category": "GLOBAL",
+                "key": "mod3_descoping",
+                "value": "true",
+                "description": "check mod3 descoping"
+              },
+              "GLOBAL-timeout.paaChiediNumeroAvviso": {
+                "category": "GLOBAL",
+                "key": "timeout.paaChiediNumeroAvviso",
+                "value": "TIMEOUT_A",
+                "description": "Tipo timeout"
+              },
+              "GLOBAL-timeout.paaAttivaRPT.pull": {
+                "category": "GLOBAL",
+                "key": "timeout.paaAttivaRPT.pull",
+                "value": "TIMEOUT_C",
+                "description": "timeout"
+              },
+              "GLOBAL-sendBizEventsToEventHub": {
+                "category": "GLOBAL",
+                "key": "sendBizEventsToEventHub",
+                "value": "true",
+                "description": "sendBizEventsToEventHub"
+              },
+              "info-quadr-commissioneCaricoPsp.pdf.dettaglio.footer": {
+                "category": "info-quadr",
+                "key": "commissioneCaricoPsp.pdf.dettaglio.footer",
+                "value": "n.a.",
+                "description": null
+              },
+              "GLOBAL-scheduler.jobName_pspRetryAckNegative.enabled": {
+                "category": "GLOBAL",
+                "key": "scheduler.jobName_pspRetryAckNegative.enabled",
+                "value": "true",
+                "description": "Job enabled (true/false)"
+              },
+              "GLOBAL-urlFittizioRedirectEC": {
+                "category": "GLOBAL",
+                "key": "urlFittizioRedirectEC",
+                "value": "http://url.fittizio",
+                "description": "urlFittizioRedirectEC"
+              },
+              "GLOBAL-istitutoAttestante.denomUnitOperAttestante": {
+                "category": "GLOBAL",
+                "key": "istitutoAttestante.denomUnitOperAttestante",
+                "value": "n/a",
+                "description": "denomUnitOperAttestante"
+              },
+              "info-quadr-commissioneCaricoPa.pdf.aggregato.header": {
+                "category": "info-quadr",
+                "key": "commissioneCaricoPa.pdf.aggregato.header",
+                "value": "Tabella aggregato versamenti",
+                "description": null
+              },
+              "GLOBAL-idPspAGID": {
+                "category": "GLOBAL",
+                "key": "idPspAGID",
+                "value": "AGID_01",
+                "description": "id PSP AGID"
+              },
+              "GLOBAL-timeout.pspInviaRPT": {
+                "category": "GLOBAL",
+                "key": "timeout.pspInviaRPT",
+                "value": "TIMEOUT_B",
+                "description": "Tipo timeout"
+              },
+              "GLOBAL-IO_token_duration_validity_millis": {
+                "category": "GLOBAL",
+                "key": "IO_token_duration_validity_millis",
+                "value": "3600000",
+                "description": " default millisecondi validità token IO"
+              },
+              "rendicontazioni-ftp.internalFTPComponentEndpointHost": {
+                "category": "rendicontazioni",
+                "key": "ftp.internalFTPComponentEndpointHost",
+                "value": "0.0.0.0",
+                "description": null
+              },
+              "rt-invia-idFaultBean.nodo": {
+                "category": "rt-invia",
+                "key": "idFaultBean.nodo",
+                "value": "NodoDeiPagamentiSPC",
+                "description": "identificativo del nodo per valorizzazione dell'elemento id nel Fault Bean, in caso di errore generato dal FESP"
+              }
+            },
+            "ftpServers": null,
+            "languages": null,
+            "gdeConfigurations": null,
+            "metadataDict": null
+          },
+          "contentType": "application/json"
+        }
+      }
+  }
+]
