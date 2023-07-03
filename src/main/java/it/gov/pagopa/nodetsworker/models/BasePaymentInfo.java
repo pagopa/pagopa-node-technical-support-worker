@@ -6,8 +6,6 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.experimental.SuperBuilder;
 
-import java.time.LocalDateTime;
-
 @Getter
 @Setter
 @NoArgsConstructor
@@ -17,13 +15,14 @@ public class BasePaymentInfo {
 
     private String organizationFiscalCode;
     private String noticeNumber;
+    private String iuv;
     private String pspId;
     private String brokerPspId;
     private String channelId;
     private String outcome;
     private String status;
-    private LocalDateTime insertedTimestamp;
-    private LocalDateTime updatedTimestamp;
+    private String insertedTimestamp;
+    private String updatedTimestamp;
     private Boolean isOldPaymentModel;
     private String nodeId;
 }

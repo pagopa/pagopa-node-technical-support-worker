@@ -92,7 +92,7 @@ public class WorkerResource implements Serializable {
             @QueryParam("dateFrom") LocalDate dateFrom,
             @QueryParam("dateTo") LocalDate dateTo
     ) {
-        return Response.ok(workerService.getAttemptByIUVPaymentToken(organizationFiscalCode, iuv, paymentToken, dateFrom, dateTo)).build();
+        return Response.ok(workerService.getInfoByNoticeNumberAndPaymentToken(organizationFiscalCode, iuv, paymentToken, dateFrom, dateTo)).build();
     }
 
     @APIResponses(value = {
@@ -109,6 +109,6 @@ public class WorkerResource implements Serializable {
             @QueryParam("dateFrom") LocalDate dateFrom,
             @QueryParam("dateTo") LocalDate dateTo
     ) {
-        return Response.ok(workerService.getAttemptByIUVCCP(organizationFiscalCode, iuv, ccp, dateFrom, dateTo)).build();
+        return Response.ok(workerService.getAttemptByIUVAndCCP(organizationFiscalCode, iuv, ccp, dateFrom, dateTo)).build();
     }
 }

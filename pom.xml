@@ -122,6 +122,11 @@
       <version>1.0.0</version>
     </dependency>
     <dependency>
+      <groupId>com.azure</groupId>
+      <artifactId>azure-data-tables</artifactId>
+      <version>12.3.12</version>
+    </dependency>
+    <dependency>
       <groupId>org.testcontainers</groupId>
       <artifactId>junit-jupiter</artifactId>
       <version>1.16.0</version>

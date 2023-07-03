@@ -1,6 +1,6 @@
 package it.gov.pagopa.nodetsworker.service.mapper;
 
-import it.gov.pagopa.nodetsworker.repository.EventEntity;
+import it.gov.pagopa.nodetsworker.repository.model.EventEntity;
 import it.gov.pagopa.nodetsworker.service.dto.EventDto;
 import org.mapstruct.Mapper;
 import org.mapstruct.MappingConstants.ComponentModel;

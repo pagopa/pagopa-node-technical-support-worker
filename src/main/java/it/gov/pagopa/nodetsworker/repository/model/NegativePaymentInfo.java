@@ -1,4 +1,4 @@
-package it.gov.pagopa.nodetsworker.repository;
+package it.gov.pagopa.nodetsworker.repository.model;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -13,7 +13,7 @@ import lombok.NoArgsConstructor;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-class NegativePaymentInfo {
+public class NegativePaymentInfo {
   private LocalDateTime paymentDateTime;
   private LocalDate dueDate;
   private String paymentToken;

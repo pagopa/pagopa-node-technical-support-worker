@@ -6,6 +6,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.experimental.SuperBuilder;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 
 @Getter
@@ -16,18 +17,14 @@ import java.time.LocalDate;
 public class PaymentAttemptInfo extends BasePaymentAttemptInfo {
 
     private String paymentToken;
-    private Boolean isOldPaymentModel = false;
-
     private Boolean pmReceipt;
     private String paymentMethod;
     private String paymentChannel;
-    private Boolean flagPayPal;
     private Long stationVersion;
-    private Long fee;
-    private Long feeSpo;
-    private Long feeOrganization;
+    private BigDecimal fee;
+    private BigDecimal feeOrganization;
     private String bundleId;
     private String bundleOrganizationId;
-    private LocalDate applicationDate;
-    private LocalDate transferDate;
+    private String applicationDate;
+    private String transferDate;
 }

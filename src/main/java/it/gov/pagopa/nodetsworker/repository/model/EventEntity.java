@@ -1,9 +1,10 @@
-package it.gov.pagopa.nodetsworker.repository;
+package it.gov.pagopa.nodetsworker.repository.model;
 
 import io.quarkus.mongodb.panache.PanacheMongoEntity;
 import io.quarkus.mongodb.panache.PanacheQuery;
 import io.quarkus.mongodb.panache.common.MongoEntity;
 import io.quarkus.panache.common.Parameters;
+import lombok.Builder;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
@@ -11,6 +12,7 @@ import java.time.LocalDate;
 
 @Data
 @EqualsAndHashCode(callSuper = true)
+@Builder
 @MongoEntity(collection = "events", clientName = "events")
 public class EventEntity extends PanacheMongoEntity {
 
@@ -50,12 +52,26 @@ public class EventEntity extends PanacheMongoEntity {
 
   public static PanacheQuery<EventEntity> findByCIAndNAV(
       String creditorInstitution, String nav, LocalDate dateFrom, LocalDate dateTo) {
-    return find("idDominio = :idDominio and noticeNumber = :noticeNumber and esito = 'CAMBIO_STATO'",
+    return find("idDominio = :idDominio and noticeNumber = :noticeNumber and esito = 'CAMBIO_STATO' and status like 'payment_'",
+            Parameters.with("idDominio", creditorInstitution).and("noticeNumber",nav))
+            .project(EventEntity.class);
+  }
+  public static PanacheQuery<EventEntity> findByCIAndNAVAndToken(
+          String creditorInstitution, String nav,String paymentToken, LocalDate dateFrom, LocalDate dateTo) {
+    return find("idDominio = :idDominio and noticeNumber = :noticeNumber and esito = 'CAMBIO_STATO' and status like 'payment_'",
             Parameters.with("idDominio", creditorInstitution).and("noticeNumber",nav))
             .project(EventEntity.class);
   }
   public static PanacheQuery<EventEntity> findByCIAndIUV(
-          String creditorInstitution, String nav, LocalDate dateFrom, LocalDate dateTo) {
-    return find("idDominio", creditorInstitution).project(EventEntity.class);
+          String creditorInstitution, String iuv, LocalDate dateFrom, LocalDate dateTo) {
+    return find("idDominio = :idDominio and iuv = :iuv and esito = 'CAMBIO_STATO' and status like 'payment_'",
+            Parameters.with("idDominio", creditorInstitution).and("iuv",iuv))
+            .project(EventEntity.class);
+  }
+  public static PanacheQuery<EventEntity> findByCIAndIUVAndCCP(
+          String creditorInstitution, String iuv,String ccp, LocalDate dateFrom, LocalDate dateTo) {
+    return find("idDominio = :idDominio and iuv = :iuv and esito = 'CAMBIO_STATO' and status like 'payment_'",
+            Parameters.with("idDominio", creditorInstitution).and("iuv",iuv))
+            .project(EventEntity.class);
   }
 }

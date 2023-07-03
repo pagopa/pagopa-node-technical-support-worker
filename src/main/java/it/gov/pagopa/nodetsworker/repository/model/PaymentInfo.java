@@ -1,4 +1,4 @@
-package it.gov.pagopa.nodetsworker.repository;
+package it.gov.pagopa.nodetsworker.repository.model;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
