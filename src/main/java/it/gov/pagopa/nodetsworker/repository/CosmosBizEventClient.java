@@ -34,8 +34,8 @@ public class CosmosBizEventClient {
     @ConfigProperty(name = "biz.key")
     private String key;
 
-    private static String dbname = "db";
-    private static String tablename = "biz-events";
+    public static String dbname = "db";
+    public static String tablename = "biz-events";
 
     private CosmosClient client;
 
@@ -65,17 +65,16 @@ public class CosmosBizEventClient {
                 new SqlParameter("@organizationFiscalCode", organizationFiscalCode),
                 new SqlParameter("@noticeNumber", noticeNumber),
                 new SqlParameter("@paymentToken", paymentToken),
-                new SqlParameter("@from", dateFrom.atStartOfDay()),
-                new SqlParameter("@to", LocalDateTime.of(dateTo, LocalTime.MAX))
+                new SqlParameter("@from", Util.toMillis(dateFrom.atStartOfDay())),
+                new SqlParameter("@to", Util.toMillis(LocalDateTime.of(dateTo, LocalTime.MAX)))
         );
         SqlQuerySpec q = new SqlQuerySpec("SELECT * FROM c where" +
                 " c.creditor.idPA = @organizationFiscalCode" +
                 " and c.debtorPosition.noticeNumber = @noticeNumber" +
                 " and c.paymentInfo.paymentToken = @paymentToken" +
-                Util.ifNotNull(dateFrom," and c.paymentInfo.paymentDateTime > @from") +
-                Util.ifNotNull(dateTo," and c.paymentInfo.paymentDateTime < @to")
-        )
-                .setParameters(paramList);
+                " and c.timestamp > @from" +
+                " and c.timestamp < @to"
+        ).setParameters(paramList);
         return query(q);
     }
 
@@ -84,17 +83,16 @@ public class CosmosBizEventClient {
                 new SqlParameter("@organizationFiscalCode", organizationFiscalCode),
                 new SqlParameter("@iuv", iuv),
                 new SqlParameter("@ccp", ccp),
-                new SqlParameter("@from", dateFrom.atStartOfDay()),
-                new SqlParameter("@to", LocalDateTime.of(dateTo, LocalTime.MAX))
+                new SqlParameter("@from", Util.toMillis(dateFrom.atStartOfDay())),
+                new SqlParameter("@to", Util.toMillis(LocalDateTime.of(dateTo, LocalTime.MAX)))
         );
         SqlQuerySpec q = new SqlQuerySpec("SELECT * FROM c where" +
                 " c.creditor.idPA = @organizationFiscalCode" +
                 " and c.debtorPosition.iuv = @iuv" +
                 " and c.paymentInfo.paymentToken = @ccp" +
-                Util.ifNotNull(dateFrom," and c.paymentInfo.paymentDateTime > @from") +
-                Util.ifNotNull(dateTo," and c.paymentInfo.paymentDateTime < @to")
-        )
-                .setParameters(paramList);
+                " and c.timestamp > @from" +
+                " and c.timestamp < @to"
+        ).setParameters(paramList);
         return query(q);
     }
 
@@ -102,8 +100,8 @@ public class CosmosBizEventClient {
         List<SqlParameter> paramList = Arrays.asList(
                 new SqlParameter("@organizationFiscalCode", organizationFiscalCode),
                 new SqlParameter("@noticeNumber", noticeNumber),
-                new SqlParameter("@from", dateFrom.atStartOfDay()),
-                new SqlParameter("@to", LocalDateTime.of(dateTo, LocalTime.MAX))
+                new SqlParameter("@from", Util.toMillis(dateFrom.atStartOfDay())),
+                new SqlParameter("@to", Util.toMillis(LocalDateTime.of(dateTo, LocalTime.MAX)))
         );
 
         SqlQuerySpec q = new SqlQuerySpec("SELECT count(1) as count FROM c where" +
@@ -119,18 +117,16 @@ public class CosmosBizEventClient {
         List<SqlParameter> paramList = Arrays.asList(
                 new SqlParameter("@organizationFiscalCode", organizationFiscalCode),
                 new SqlParameter("@iuv", iuv),
-                new SqlParameter("@from", dateFrom.atStartOfDay()),
-                new SqlParameter("@to", LocalDateTime.of(dateTo, LocalTime.MAX))
+                new SqlParameter("@from", Util.toMillis(dateFrom.atStartOfDay())),
+                new SqlParameter("@to", Util.toMillis(LocalDateTime.of(dateTo, LocalTime.MAX)))
         );
-
 
         SqlQuerySpec q = new SqlQuerySpec("SELECT count(1) as count FROM c where" +
                 " c.creditor.idPA = @organizationFiscalCode" +
                 " and c.debtorPosition.iuv = @iuv" +
-                " and c.paymentInfo.paymentDateTime > @from" +
-                " and c.paymentInfo.paymentDateTime < @to"
-        )
-                .setParameters(paramList);
+                " and c.timestamp > @from" +
+                " and c.timestamp < @to"
+        ).setParameters(paramList);
         return queryCount(q);
     }
 

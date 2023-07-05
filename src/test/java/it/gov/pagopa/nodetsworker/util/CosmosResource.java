@@ -31,11 +31,11 @@ public class CosmosResource implements QuarkusTestResourceLifecycleManager {
   public Map<String, String> start() {
 
     cosmos = new CosmosDBEmulatorContainer(
-            DockerImageName.parse("mcr.microsoft.com/cosmosdb/linux/azure-cosmos-emulator:latest")
+            DockerImageName.parse("mcr.microsoft.com/cosmosdb/linux/azure-cosmos-emulator")
     )
     .withEnv("AZURE_COSMOS_EMULATOR_IP_ADDRESS_OVERRIDE", InetAddress.getLocalHost().getHostAddress())
     .withEnv("AZURE_COSMOS_EMULATOR_PARTITION_COUNT", "3")
-    .withEnv("AZURE_COSMOS_EMULATOR_ENABLE_DATA_PERSISTENCE", "true")
+    .withEnv("AZURE_COSMOS_EMULATOR_ENABLE_DATA_PERSISTENCE", "false")
     .withExposedPorts(exposedPorts);
 
     cosmos.start();
@@ -51,7 +51,7 @@ public class CosmosResource implements QuarkusTestResourceLifecycleManager {
     System.setProperty("javax.net.ssl.trustStoreType", "PKCS12");
 
     Map<String, String> conf = new HashMap<>();
-    conf.put("mockserver.biz.endpoint", cosmos.getEmulatorEndpoint());
+    conf.put("mockserver.biz.endpoint", "https://" + InetAddress.getLocalHost().getHostAddress() + ":" + cosmos.getMappedPort(8081));
     conf.put("mockserver.biz.key", cosmos.getEmulatorKey());
     return conf;
   }
@@ -59,6 +59,7 @@ public class CosmosResource implements QuarkusTestResourceLifecycleManager {
   @Override
   public void stop() {
     cosmos.stop();
+    startedProxies.forEach(p->p.shutdown());
   }
 
   private static void startTcpProxy(Integer... ports) {

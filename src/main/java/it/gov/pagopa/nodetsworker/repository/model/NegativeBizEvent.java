@@ -1,12 +1,18 @@
 package it.gov.pagopa.nodetsworker.repository.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.util.List;
 
 @Data
 @Builder
+@NoArgsConstructor
+@AllArgsConstructor
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class NegativeBizEvent {
   private String version;
   private String id;
@@ -20,5 +26,4 @@ public class NegativeBizEvent {
   private NegativePaymentInfo paymentInfo;
   private List<NegativeTransfer> transferList;
   private Object transactionDetails;
-
 }

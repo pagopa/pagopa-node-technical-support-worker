@@ -12,6 +12,8 @@ import io.quarkus.test.junit.QuarkusTest;
 import io.restassured.common.mapper.TypeRef;
 import it.gov.pagopa.nodetsworker.models.PaymentInfo;
 import it.gov.pagopa.nodetsworker.models.TransactionResponse;
+import it.gov.pagopa.nodetsworker.repository.CosmosBizEventClient;
+import it.gov.pagopa.nodetsworker.repository.CosmosNegBizEventClient;
 import it.gov.pagopa.nodetsworker.util.AppConstantTestHelper;
 import it.gov.pagopa.nodetsworker.util.AzuriteResource;
 import it.gov.pagopa.nodetsworker.util.CosmosResource;
@@ -56,16 +58,16 @@ class ResourceTest {
     return tableClient;
   }
 
-  private CosmosClient getCosmosClient(){
-    if(clientbiz==null) {
-      clientbiz = new CosmosClientBuilder().endpoint(bizendpoint).key(bizkey).buildClient();
-      clientbiz.createDatabase("db");
-      clientbiz.getDatabase("db").createContainerIfNotExists("biz-events","/timestamp");
-      clientbiz.getDatabase("db").createContainerIfNotExists("negative-biz-events","/timestamp");
-    }
-    return clientbiz;
-
-  }
+//  private CosmosClient getCosmosClient(){
+//    if(clientbiz==null) {
+//      clientbiz = new CosmosClientBuilder().endpoint(bizendpoint).key(bizkey).buildClient();
+//      clientbiz.createDatabaseIfNotExists(CosmosBizEventClient.dbname);
+//      clientbiz.getDatabase(CosmosBizEventClient.dbname).createContainerIfNotExists(CosmosBizEventClient.tablename,"/timestamp");
+//      clientbiz.getDatabase(CosmosBizEventClient.dbname).createContainerIfNotExists(CosmosNegBizEventClient.tablename,"/timestamp");
+//    }
+//    return clientbiz;
+//
+//  }
 
   @SneakyThrows
   @Test

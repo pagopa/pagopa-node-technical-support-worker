@@ -12,7 +12,6 @@ import java.util.List;
 
 @Data
 @Builder
-@MongoEntity(collection = "biz-events", clientName = "biz")
 @NoArgsConstructor
 @AllArgsConstructor
 @JsonIgnoreProperties(ignoreUnknown = true)
