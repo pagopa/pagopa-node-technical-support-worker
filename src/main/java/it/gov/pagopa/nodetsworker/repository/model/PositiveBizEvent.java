@@ -28,5 +28,5 @@ public class PositiveBizEvent  {
   private PaymentInfo paymentInfo;
   private List<Transfer> transferList;
   private Object transactionDetails;
-  private LocalDateTime timestamp;
+  private Long timestamp;
 }

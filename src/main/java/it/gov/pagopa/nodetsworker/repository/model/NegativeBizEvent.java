@@ -26,4 +26,5 @@ public class NegativeBizEvent {
   private NegativePaymentInfo paymentInfo;
   private List<NegativeTransfer> transferList;
   private Object transactionDetails;
+  private Long timestamp;
 }

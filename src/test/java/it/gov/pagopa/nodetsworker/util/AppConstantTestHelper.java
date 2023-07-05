@@ -4,10 +4,8 @@ import com.azure.data.tables.models.TableEntity;
 import io.restassured.http.Header;
 import it.gov.pagopa.nodetsworker.repository.model.*;
 
-import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.HashMap;
 import java.util.UUID;
 
 public class AppConstantTestHelper {
@@ -19,22 +17,29 @@ public class AppConstantTestHelper {
 
   public static final String PA_CODE = "12345678900";
   public static final String outcomeOK = "OK";
+  public static final String outcomeKO = "KO";
 
   public static final Header HEADER = new Header("Content-Type", "application/json");
 
-  public static final TableEntity newRe(String pa,String noticeNumber){
+  public static final TableEntity newRe(String pa,String noticeNumber,String iuv){
     TableEntity entity = new TableEntity(LocalDateTime.now().minusDays(1).format(DateTimeFormatter.ISO_DATE_TIME), String.valueOf(noticeNumber));
     entity.addProperty("idDominio",pa);
     entity.addProperty("noticeNumber",noticeNumber);
+    entity.addProperty("iuv",iuv);
     entity.addProperty("esito","CAMBIO_STATO");
     entity.addProperty("paymentToken","pt_"+noticeNumber);
+    entity.addProperty("ccp","ccp_"+iuv);
+    entity.addProperty("stazione","77777777777_01");
+    entity.addProperty("psp","pspTest");
+    entity.addProperty("canale","canaleTest");
+    entity.addProperty("status","PAID");
     return entity;
   }
 
-  public static final PositiveBizEvent newBiz(String pa, String noticeNumber){
+  public static final PositiveBizEvent newPositiveBiz(String pa,String noticeNumber, String iuv){
     PositiveBizEvent p = PositiveBizEvent.builder()
             .id(UUID.randomUUID().toString())
-            .timestamp(LocalDateTime.now())
+            .timestamp(Util.toMillis(LocalDateTime.now()))
             .psp(
                 Psp.builder()
                         .psp("pspTest")
@@ -44,25 +49,27 @@ public class AppConstantTestHelper {
             .creditor(
                     Creditor.builder().idPA(pa).build()
             ).debtorPosition(
-                    DebtorPosition.builder().noticeNumber(noticeNumber).build()
+                    DebtorPosition.builder().modelType("1").iuv(iuv).noticeNumber(noticeNumber).build()
             ).paymentInfo(
                     PaymentInfo.builder().paymentDateTime(LocalDateTime.now().minusDays(1)).build()
             )
             .build();
     return p;
   }
-  public static final NegativeBizEvent newNegBiz(String pa, String noticeNumber){
+  public static final NegativeBizEvent newNegBiz(String pa, String noticeNumber, String iuv,boolean reawakable){
     NegativeBizEvent p = NegativeBizEvent.builder()
             .id(UUID.randomUUID().toString())
+            .timestamp(Util.toMillis(LocalDateTime.now()))
             .creditor(
                     Creditor.builder().idPA(pa).build()
             ).debtorPosition(
-                    DebtorPosition.builder().noticeNumber(noticeNumber).build()
+                    DebtorPosition.builder().iuv(iuv).noticeNumber(noticeNumber).build()
             ).paymentInfo(
                     NegativePaymentInfo.builder()
                         .paymentDateTime(LocalDateTime.now().minusDays(1))
                         .build()
             )
+            .reAwakable(reawakable)
             .build();
     return p;
   }
