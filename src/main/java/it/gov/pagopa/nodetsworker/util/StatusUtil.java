@@ -3,6 +3,7 @@ package it.gov.pagopa.nodetsworker.util;
 public class StatusUtil {
 
     public static String statoByReStatus(String reStatus){
+        if(reStatus == null) return null;
         switch (reStatus) {
             case "payment_PAID":
             case "payment_PAID_NORPT":

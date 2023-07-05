@@ -33,13 +33,21 @@ public class CosmosNegBizEventClient {
     private static String dbname = "db";
     private static String tablename = "negative-biz-events";
 
+    private CosmosClient client;
+
     @Inject
     Logger log;
 
+    private CosmosClient getClient(){
+        if(client==null){
+            client = new CosmosClientBuilder().endpoint(endpoint).key(key).buildClient();
+        }
+        return client;
+    }
+
     private CosmosPagedIterable<NegativeBizEvent> query(SqlQuerySpec query){
         log.info("executing query:"+query.getQueryText());
-        CosmosClient client = new CosmosClientBuilder().endpoint(endpoint).key(key).buildClient();
-        CosmosContainer container = client.getDatabase(dbname).getContainer(tablename);
+        CosmosContainer container = getClient().getDatabase(dbname).getContainer(tablename);
         return container.queryItems(query, new CosmosQueryRequestOptions(), NegativeBizEvent.class);
     }
 

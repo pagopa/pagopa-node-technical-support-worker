@@ -30,6 +30,7 @@ public class ReTableService {
   public TableClient getTableClient(){
     if(tableServiceClient==null){
       tableServiceClient = new TableServiceClientBuilder().connectionString(connString).buildClient();
+      tableServiceClient.createTableIfNotExists(tableName);
     }
     return tableServiceClient.getTableClient(tableName);
   }
@@ -65,9 +66,11 @@ public class ReTableService {
   }
 
   public List<EventEntity> findReByCiAndNN(LocalDate datefrom, LocalDate dateTo, String creditorInstitution, String noticeNumber){
+
+    String filter = String.format("idDominio eq '%s' and noticeNumber eq '%s' and esito eq 'CAMBIO_STATO'" +
+            " and PartitionKey ge '%s' and PartitionKey le '%s'",creditorInstitution, noticeNumber,datefrom,dateTo);
     ListEntitiesOptions options = new ListEntitiesOptions()
-            .setFilter(String.format("PartitionKey gt '%s' and PartitionKey lt '%s' and idDominio eq '%s' and noticeNumber eq '%s' and esito eq 'CAMBIO_STATO'",
-                    datefrom,dateTo, creditorInstitution, noticeNumber))
+            .setFilter(filter)
             .setSelect(propertiesToSelect);
     return getTableClient().listEntities(options, null, null).stream().map(e->{return tableEntityToEventEntity(e);}).collect(Collectors.toList());
   }

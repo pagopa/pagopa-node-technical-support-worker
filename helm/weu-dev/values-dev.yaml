@@ -1,0 +1,83 @@
+pagopa-tech-support:
+  namespace: "techsupport"
+  image:
+    repository: pagopadcommonacr.azurecr.io/pagopanodetechnicalsupportworker
+    tag: '1.0.0-SNAPSHOT'
+  readinessProbe:
+    httpGet:
+      path: /q/health/ready
+      port: 8080
+    initialDelaySeconds: 8
+    failureThreshold: 10
+    periodSeconds: 2
+  livenessProbe:
+    httpGet:
+      path: /q/health/live
+      port: 8080
+    initialDelaySeconds: 8
+    failureThreshold: 10
+    periodSeconds: 2
+  envConfig:
+    APP_ENVIRONMENT: "dev"
+    TZ: "Europe/Rome"
+    OTEL_ENDPOINT: "http://otel-collector.elastic-system.svc.cluster.local:4317"
+    ADAPTER_API_CONFIG_CACHE_URL: "https://api.dev.platform.pagopa.it/api-config-cache/p/v1"
+  envFieldRef:
+    APP_NAME: "metadata.labels['app.kubernetes.io/instance']"
+    APP_VERSION: "metadata.labels['app.kubernetes.io/version']"
+  secretProvider:
+    create: true
+    envSecrets:
+      ADAPTER_API_CONFIG_CACHE_API_KEY: "api-config-cache-subscription-key-string"
+      OTEL_AUTH_BEARER: "otel-auth-bearer"
+      MONGODB_CONNECTION_STRING: "mongodb-connection-string"
+      QUEUE_CONVERSION_CONNECTION_STRING: "azure-queue-conversion-connection-string"
+      EVENT_HUB_RE_CONNECTION_STRING: "azure-event-hub-re-connection-string"
+    keyvault:
+      name: "pagopa-d-fdr-kv"
+      tenantId: "7788edaf-0346-4068-9d79-c868aed15b3d"
+  tmpVolumeMount:
+    create: true
+  resources:
+    requests:
+      memory: "2Gi"
+      cpu: "200m"
+    limits:
+      memory: "3Gi"
+      cpu: "400m"
+  autoscaling:
+    enable: true
+    minReplica: 1
+    maxReplica: 2
+    pollingInterval: 10 # seconds
+    cooldownPeriod: 50 # seconds
+    triggers:
+      - type: cpu
+        metadata:
+          type: Utilization
+          value: "75"
+      - type: memory
+        metadata:
+          type: Utilization
+          value: "75"
+  affinity:
+    nodeAffinity:
+      requiredDuringSchedulingIgnoredDuringExecution:
+        nodeSelectorTerms:
+          - matchExpressions:
+              - key: node_type
+                operator: In
+                values:
+                  - user
+  serviceMonitor:
+    create: true
+    endpoints:
+      - interval: 5s
+        targetPort: 8080
+        path: /q/metrics
+  service:
+    create: true
+  ingress:
+    create: true
+    host: "weudev.techsupport.internal.dev.platform.pagopa.it"
+    path: /pagopa-tech-support(/|$)(.*)

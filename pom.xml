@@ -138,6 +138,18 @@
       <version>1.18.1</version>
       <scope>test</scope>
     </dependency>
+    <dependency>
+      <groupId>org.testcontainers</groupId>
+      <artifactId>azure</artifactId>
+      <version>1.18.3</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>com.github.terma</groupId>
+      <artifactId>javaniotcpproxy</artifactId>
+      <version>1.6</version>
+      <scope>test</scope>
+    </dependency>
   </dependencies>
   <build>
     <plugins>

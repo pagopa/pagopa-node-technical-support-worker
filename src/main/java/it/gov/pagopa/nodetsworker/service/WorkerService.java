@@ -48,7 +48,7 @@ public class WorkerService {
     ReTableService reTableService;
 
     private PaymentInfo eventToPaymentInfo(ConfigDataV1 config,EventEntity ee){
-        String brokerid = config.getChannels().get(ee.getCanale()).getBrokerPspCode();
+        String brokerid = Optional.ofNullable(config.getChannels().get(ee.getCanale())).map(s->s.getBrokerPspCode()).orElse(null);
         return PaymentInfo.builder()
                 .pspId(ee.getPsp())
                 .nodeId(ee.getServiceIdentifier())
@@ -116,7 +116,7 @@ public class WorkerService {
 
         DateRequest dateRequest = verifyDate(dateFrom, dateTo);
         ConfigDataV1 config = configObject.getClonedCache();
-        List<EventEntity> reStorageEvents = reTableService.findReByCiAndNN(dateFrom, dateTo, organizationFiscalCode, noticeNumber);
+        List<EventEntity> reStorageEvents = reTableService.findReByCiAndNN(dateRequest.getFrom(), dateRequest.getTo(), organizationFiscalCode, noticeNumber);
 
         Map<String, List<EventEntity>> reGroups = reStorageEvents.stream().collect(Collectors.groupingBy(EventEntity::getPaymentToken));
 
@@ -128,8 +128,8 @@ public class WorkerService {
             Optional<Count> pos = positiveBizClient.countEventsByCiAndNN(
                     lastEvent.getIdDominio(),
                     lastEvent.getNoticeNumber(),
-                    dateFrom,
-                    dateTo
+                    dateRequest.getFrom(),
+                    dateRequest.getTo()
             ).stream().findFirst();
             if(pos.isPresent() && pos.get().getCount()>0){
                 outcome = outcomeOK;
@@ -137,8 +137,8 @@ public class WorkerService {
                 Optional<NegativeBizEvent> neg = negativeBizClient.findEventsByCiAndNN(
                         lastEvent.getIdDominio(),
                         lastEvent.getNoticeNumber(),
-                        dateFrom,
-                        dateTo
+                        dateRequest.getFrom(),
+                        dateRequest.getTo()
                 ).stream().findFirst();
                 if(neg.isPresent()){
                     if(!neg.get().getReAwakable()){
@@ -152,8 +152,8 @@ public class WorkerService {
         }).collect(Collectors.toList());
 
         return TransactionResponse.builder()
-                .dateFrom(dateFrom)
-                .dateTo(dateTo)
+                .dateFrom(dateRequest.getFrom())
+                .dateTo(dateRequest.getTo())
                 .payments(collect)
             .build();
 
@@ -165,7 +165,7 @@ public class WorkerService {
                                                 LocalDate dateTo){
         DateRequest dateRequest = verifyDate(dateFrom, dateTo);
         ConfigDataV1 config = configObject.getClonedCache();
-        List<EventEntity> reStorageEvents = reTableService.findReByCiAndIUV(dateFrom, dateTo, organizationFiscalCode, iuv);
+        List<EventEntity> reStorageEvents = reTableService.findReByCiAndIUV(dateRequest.getFrom(), dateRequest.getTo(), organizationFiscalCode, iuv);
 
         Map<String, List<EventEntity>> reGroups = reStorageEvents.stream().collect(Collectors.groupingBy(EventEntity::getCcp));
 
@@ -177,8 +177,8 @@ public class WorkerService {
             Optional<Count> pos = positiveBizClient.countEventsByCiAndIUV(
                     lastEvent.getIdDominio(),
                     lastEvent.getIuv(),
-                    dateFrom,
-                    dateTo
+                    dateRequest.getFrom(),
+                    dateRequest.getTo()
             ).stream().findFirst();
             if(pos.isPresent() && pos.get().getCount()>0){
                 outcome = outcomeOK;
@@ -186,8 +186,8 @@ public class WorkerService {
                 Optional<NegativeBizEvent> neg = negativeBizClient.findEventsByCiAndIUV(
                         lastEvent.getIdDominio(),
                         lastEvent.getIuv(),
-                        dateFrom,
-                        dateTo
+                        dateRequest.getFrom(),
+                        dateRequest.getTo()
                 ).stream().findFirst();
                 if(neg.isPresent()){
                     if(!neg.get().getReAwakable()){
@@ -212,7 +212,8 @@ public class WorkerService {
     public TransactionResponse getInfoByNoticeNumberAndPaymentToken(String organizationFiscalCode, String noticeNumber, String paymentToken, LocalDate dateFrom, LocalDate dateTo) {
         DateRequest dateRequest = verifyDate(dateFrom, dateTo);
         ConfigDataV1 config = configObject.getClonedCache();
-        List<EventEntity> reStorageEvents = reTableService.findReByCiAndNNAndToken(dateFrom, dateTo, organizationFiscalCode, noticeNumber,paymentToken);
+        List<EventEntity> reStorageEvents = reTableService.findReByCiAndNNAndToken(dateRequest.getFrom(),
+                dateRequest.getTo(), organizationFiscalCode, noticeNumber,paymentToken);
 
         Map<String, List<EventEntity>> reGroups = reStorageEvents.stream().collect(Collectors.groupingBy(EventEntity::getPaymentToken));
         List<BasePaymentInfo> collect = reGroups.keySet().stream().map(gkey->{
@@ -225,8 +226,8 @@ public class WorkerService {
                     lastEvent.getIdDominio(),
                     lastEvent.getIuv(),
                     lastEvent.getCcp(),
-                    dateFrom,
-                    dateTo
+                    dateRequest.getFrom(),
+                    dateRequest.getTo()
             ).stream().findFirst();
             if(pos.isPresent()){
                 outcome = outcomeOK;
@@ -237,8 +238,8 @@ public class WorkerService {
                         lastEvent.getIdDominio(),
                         lastEvent.getIuv(),
                         lastEvent.getPaymentToken(),
-                        dateFrom,
-                        dateTo
+                        dateRequest.getFrom(),
+                        dateRequest.getTo()
                 ).stream().findFirst();
                 if(neg.isPresent()){
                     if(!neg.get().getReAwakable()){
@@ -262,7 +263,8 @@ public class WorkerService {
     public TransactionResponse getAttemptByIUVAndCCP(String organizationFiscalCode, String iuv, String ccp, LocalDate dateFrom, LocalDate dateTo) {
         DateRequest dateRequest = verifyDate(dateFrom, dateTo);
         ConfigDataV1 config = configObject.getClonedCache();
-        List<EventEntity> reStorageEvents = reTableService.findReByCiAndIUVAndCCP(dateFrom, dateTo, organizationFiscalCode, iuv,ccp);
+        List<EventEntity> reStorageEvents = reTableService.findReByCiAndIUVAndCCP(dateRequest.getFrom(),
+                dateRequest.getTo(), organizationFiscalCode, iuv,ccp);
 
         Map<String, List<EventEntity>> reGroups = reStorageEvents.stream().collect(Collectors.groupingBy(EventEntity::getCcp));
 
@@ -276,8 +278,8 @@ public class WorkerService {
                     lastEvent.getIdDominio(),
                     lastEvent.getIuv(),
                     lastEvent.getCcp(),
-                    dateFrom,
-                    dateTo
+                    dateRequest.getFrom(),
+                    dateRequest.getTo()
             ).stream().findFirst();
             if(pos.isPresent()){
                 outcome = outcomeOK;
@@ -288,8 +290,8 @@ public class WorkerService {
                         lastEvent.getIdDominio(),
                         lastEvent.getIuv(),
                         lastEvent.getPaymentToken(),
-                        dateFrom,
-                        dateTo
+                        dateRequest.getFrom(),
+                        dateRequest.getTo()
                 ).stream().findFirst();
                 if(neg.isPresent()){
                     if(!neg.get().getReAwakable()){
@@ -321,8 +323,8 @@ public class WorkerService {
             throw new AppException(AppErrorCodeMessageEnum.POSITION_SERVICE_DATE_BAD_REQUEST, "Date from must be before date to");
         }
         if (dateFrom == null && dateTo == null) {
-            dateFrom = LocalDate.now();
-            dateTo = dateFrom.minusDays(10);
+            dateTo = LocalDate.now();
+            dateFrom = dateTo.minusDays(10);
         }
         return DateRequest.builder()
                 .from(dateFrom)

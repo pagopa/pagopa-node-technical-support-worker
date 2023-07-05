@@ -1,0 +1,33 @@
+receivers:
+  otlp:
+    protocols:
+      grpc:
+        endpoint: otel-collector:4317
+
+exporters:
+  jaeger:
+    endpoint: jaeger-all-in-one:14250
+    tls:
+      insecure: true
+  otlphttp/elastic:
+    tls:
+      insecure: true
+    # Elastic APM server https endpoint without the "https://" prefix
+    endpoint: "https://kibana.dev.platform.pagopa.it:443/apm"
+    headers:
+      # Elastic APM Server secret token
+      Authorization: "Bearer 30K8q56M9r3jhKrIdhf968PO"
+
+processors:
+  batch:
+
+extensions:
+  health_check:
+
+service:
+  extensions: [ health_check ]
+  pipelines:
+    traces:
+      receivers: [ otlp ]
+      processors: [ batch ]
+      exporters: [ jaeger, otlphttp/elastic ]

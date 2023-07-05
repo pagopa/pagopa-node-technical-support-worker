@@ -1,0 +1,11 @@
+apiVersion: v2
+name: pagopa-tech-support
+description: Technical support api
+type: application
+version: "0.0.0-SNAPSHOT"
+appVersion: "0.0.0-SNAPSHOT"
+dependencies:
+  - name: microservice-chart
+    version: 3.0.0
+    repository: "https://pagopa.github.io/aks-microservice-chart-blueprint"
+    alias: pagopa-tech-support

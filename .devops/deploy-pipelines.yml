@@ -1,0 +1,398 @@
+# Only manual triggers
+trigger: none
+pr: none
+
+pool:
+  vmImage: 'ubuntu-22.04'
+
+resources:
+  repositories:
+    - repository: pagopaCommons
+      type: github
+      name: pagopa/azure-pipeline-templates
+      ref: refs/tags/v3.10.0
+      endpoint: 'io-azure-devops-github-ro'
+
+parameters:
+  - name: "WEU"
+    displayName: "Deploy in WEU"
+    type: boolean
+    default: True
+    values:
+      - False
+      - True
+  - name: "NEU"
+    displayName: "Deploy in NEU"
+    type: boolean
+    default: False
+    values:
+      - False
+      - True
+  - name: ENV
+    displayName: Target Environment
+    type: string
+    default: dev
+    values:
+      - dev
+      - uat
+      - prod
+  - name: SEMVER
+    displayName: "When packing a release, define the version bump to apply. Use only buildNumber or skip for manual deployment"
+    type: string
+    values:
+      - major
+      - minor
+      - patch
+      - buildNumber
+      - skip
+    default: skip
+  - name: SOURCE_BRANCH
+    displayName: "Use for checkout a different branch"
+    type: string
+    default: ' '
+  - name: "SKIP_BUILD"
+    displayName: "Skip Build"
+    type: boolean
+    default: False
+    values:
+      - False
+      - True
+  - name: "FORCE_REPLACE_DOCKER_IMAGE"
+    displayName: "Force the existing docker image to be replaced"
+    type: boolean
+    default: False
+    values:
+      - False
+      - True
+  - name: "FORCE_REDEPLOY"
+    displayName: "Force re-deploy"
+    type: boolean
+    default: False
+    values:
+      - False
+      - True
+
+variables:
+  imageRepository: '$(IMAGE_REPOSITORY_NAME)'
+  nameSpace: '$(K8S_NAMESPACE)'
+  MAVEN_CACHE_FOLDER: $(Pipeline.Workspace)/.m2/repository
+  MAVEN_OPTS: '-Dmaven.repo.local=$(MAVEN_CACHE_FOLDER)'
+  GRAALVM_VERSION: '22.3.1'
+  APPROVE_NOTIFY_GROUP: '[pagoPA-iac]\pagopa-iac-externals-team'
+  APPROVE_NOTIFY_ADMIN: '[pagoPA-iac]\Project Administrators'
+  BRANCH_NAME: ${{ replace(variables['Build.SourceBranch'], 'refs/heads/', '') }}
+
+  WEU_value_file: "helm/weu-${{ parameters['ENV'] }}/values-${{ parameters['ENV'] }}.yaml"
+  NEU_value_file: "helm/neu-${{ parameters['ENV'] }}/values-${{ parameters['ENV'] }}.yaml"
+
+  appName: 'pagopafdr'
+
+  ${{ if eq(parameters['ENV'], 'dev') }}:
+    WEU_dockerRegistryServiceConnection: $(DEV_CONTAINER_REGISTRY_SERVICE_CONN)
+    WEU_dockerRegistryFqdn: $(DEV_CONTAINER_NAMESPACE)
+    WEU_kubernetesServiceConnection: '$(DEV_KUBERNETES_SERVICE_CONN)'
+    WEU_poolImage: '$(DEPLOY-POOL-DEV)'
+
+
+  ${{ if eq(parameters['ENV'], 'uat') }}:
+    WEU_dockerRegistryServiceConnection: $(UAT_CONTAINER_REGISTRY_SERVICE_CONN)
+    WEU_dockerRegistryFqdn: $(UAT_CONTAINER_NAMESPACE)
+    WEU_kubernetesServiceConnection: '$(UAT_KUBERNETES_SERVICE_CONN)'
+    WEU_poolImage: '$(DEPLOY-POOL-UAT)'
+
+  ${{ if eq(parameters['ENV'], 'prod') }}:
+    WEU_dockerRegistryServiceConnection: $(PROD_CONTAINER_REGISTRY_SERVICE_CONN)
+    WEU_dockerRegistryFqdn: $(PROD_CONTAINER_NAMESPACE)
+    WEU_kubernetesServiceConnection: '$(PROD_KUBERNETES_SERVICE_CONN)'
+    WEU_poolImage: '$(DEPLOY-POOL-PROD)'
+
+
+stages:
+  # Create a release on GitHub
+  - stage: release
+    displayName: "Release"
+    jobs:
+      - job: make_release
+        displayName: "Make release"
+        steps:
+          - bash: |
+              buildname="$(Build.BuildNumber) ${{ parameters.ENV }}"
+              echo "##vso[build.addbuildtag]${{ parameters.ENV }}"
+              echo "##vso[build.updatebuildnumber]$buildname"
+          - bash: |
+              echo "##vso[task.setvariable variable=LIGHTBEND_KEY]$(lightbend_key_secret)"
+          - checkout: self
+            clean: true
+            persistCredentials: true
+
+          - template: templates/maven-github-release/template.yaml@pagopaCommons
+            parameters:
+              release_branch: $(BRANCH_NAME)
+              gitEmail: $(GIT_EMAIL)
+              gitUsername: $(GIT_USERNAME)
+              gitHubConnection: $(GITHUB_CONNECTION)
+              semver: ${{ parameters.SEMVER }}
+              customHelmStep: |
+                if [[ "${{ parameters.WEU }}" = "True" ]]; then
+                  VALUES_FILE="$(WEU_value_file)"
+                  if [[ -f "$VALUES_FILE" ]]; then
+                    yq -i ".fdr.image.tag = \"$(next_version.value)\"" "$VALUES_FILE"
+                    git add "$VALUES_FILE"
+                  fi
+                fi
+                if [[ "${{ parameters.NEU }}" = "True" ]]; then
+                  VALUES_FILE="$(NEU_value_file)"
+                  if [[ -f "$VALUES_FILE" ]]; then
+                    yq -i ".fdr.image.tag = \"$(next_version.value)\"" "$VALUES_FILE"
+                    git add "$VALUES_FILE"
+                  fi
+                fi
+          - template: templates/maven-github-current-version/template.yaml@pagopaCommons
+
+  # Build and Push Docker Image
+  - stage: build
+    ${{ if parameters.SKIP_BUILD }}:
+      displayName: "Build skipped"
+    ${{ if not(parameters.SKIP_BUILD) }}:
+      displayName: "Build"
+    variables:
+      current_version: $[ stageDependencies.release.make_release.outputs['current_version.value'] ]
+    jobs:
+      - job: build
+        ${{ if parameters.SKIP_BUILD }}:
+          displayName: "Build skipped"
+        ${{ if not(parameters.SKIP_BUILD) }}:
+          displayName: "Build"
+        condition: and(succeeded(), eq(${{ parameters.SKIP_BUILD }}, false))
+        steps:
+          - checkout: self
+            persistCredentials: true
+
+          - script: |
+              git checkout $(sourceBranch)
+            displayName: Checkout and update branch
+
+#          - task: AzureKeyVault@2
+#            displayName: "Get secrets"
+#            inputs:
+#              azureSubscription: $(AZURE_SERVICE_CONNECTION)
+#              keyVaultName: 'pagopa-d-fdr-kv'
+#              secretsFilter: 'api-config-cache-subscription-key-string'
+
+          - template: templates/docker-release/template.yaml@pagopaCommons
+            parameters:
+              CONTAINER_REGISTRY_SERVICE_CONN: $(WEU_dockerRegistryServiceConnection)
+              CONTAINER_REGISTRY_FQDN: $(WEU_dockerRegistryFqdn)
+              DOCKER_IMAGE_NAME: $(imageRepository)
+              DOCKER_IMAGE_TAG: $(current_version)
+              FORCE_REPLACE_DOCKER_IMAGE: ${{ parameters.FORCE_REPLACE_DOCKER_IMAGE }}
+              ##Attenzione si usa il file Dockerfile.multistage.jvm, e non Dockerfile.multistage, perchè la lib di azure non è compatibile per la build nativa
+              DOCKERFILE: "$(Build.SourcesDirectory)/src/main/docker/Dockerfile.multistage.jvm"
+              DOCKER_BUILD_ARGS: "--build-arg APP_NAME=$(imageRepository) --build-arg QUARKUS_PROFILE=prod"
+
+  # Deploy Canary if prod or uat
+  - ${{ if and( parameters.WEU , in( parameters.ENV, 'prod', 'uat') ) }}:
+      - ${{ each step in split(variables.weight_steps, ',')}}:
+          - stage: deploy_fdr_${{ step }}
+            displayName: "Deploy ${{ parameters.ENV }} canary ${{ step }}%"
+            jobs:
+              - job: get_release_version
+                displayName: "Get Release Version"
+                steps:
+                  - template: templates/maven-github-current-version/template.yaml@pagopaCommons
+              - job: step_approval_${{ step }}
+                pool: server
+                dependsOn: get_release_version
+                condition: ${{ in( parameters.ENV, 'prod', 'uat') }}
+                variables:
+                  current_version: $[ dependencies.get_release_version.outputs['current_version.value'] ]
+                displayName: "Approval ${{ parameters.ENV }} canary ${{ step }}% "
+                timeoutInMinutes: 70
+                steps:
+                  - task: ManualValidation@0
+                    displayName: "Approval version $(current_version) ${{ parameters.ENV }} canary ${{ step }}% "
+                    timeoutInMinutes: 60
+                    inputs:
+                      notifyUsers: |
+                        $(APPROVE_NOTIFY_GROUP)
+                        $(APPROVE_NOTIFY_ADMIN)
+                      instructions: "Please approve or reject ${{ parameters.ENV }} $(current_version) canary deploy ${{ step }}%"
+                      onTimeout: 'reject'
+              - deployment: "Approved_${{ parameters.ENV }}_${{ step }}_Deploy"
+                dependsOn :
+                  - get_release_version
+                  - step_approval_${{ step }}
+                condition: in(dependencies.step_approval_${{ step }}.result, 'Succeeded', 'Skipped')
+                variables:
+                  current_version: $[ dependencies.get_release_version.outputs['current_version.value'] ]
+                displayName: "Deploy ${{ parameters.ENV }} ${{ step }}%"
+                pool: $(WEU_poolImage)
+                environment: ${{ parameters['ENV'] }}
+                strategy:
+                  runOnce:
+                    deploy:
+                      steps:
+                        - checkout: self
+                          clean: true
+                          persistCredentials: true
+
+                        - task: Bash@3
+                          name: setup_helm_microservices_chart
+                          displayName: "Setup helm chart"
+                          inputs:
+                            targetType: "inline"
+                            script: |
+                              CHART_FILE="helm/Chart.yaml"
+                              if [[ -f "$CHART_FILE" ]]; then
+                                yq -i ".version = \"$(current_version)\"" "$CHART_FILE"
+                                yq -i ".appVersion = \"$(current_version)\"" "$CHART_FILE"
+                              fi
+                              helm dep build helm
+                            failOnStderr: true
+                        - ${{ if parameters.WEU }}:
+                            - template: templates/helm-microservice-chart-deploy/template.yaml@pagopaCommons
+                              parameters:
+                                DO_DEPLOY: true
+                                ENV: ${{ parameters['ENV'] }}
+                                KUBERNETES_SERVICE_CONN: ${{ variables.WEU_kubernetesServiceConnection }}
+                                NAMESPACE: "fdr"
+                                APP_NAME: "$(appName)-canary"
+                                VALUE_FILE: $(WEU_value_file)
+                                DEPLOY_VERSION: $(current_version)
+                                #APPINSIGHTS_SERVICE_CONN: ${{ variables.WEU_appInsightsServiceConn }}
+                                #APPINSIGHTS_RESOURCE_ID: ${{ variables.WEU_appInsightsResourceId }}
+                                CHART_PATH: "helm"
+                                ARGUMENTS: >-
+                                  --set fdr.image.tag="$(current_version)"
+                                  --set fdr.canaryDelivery.create="true"
+                                  --set fdr.forceRedeploy=${{ parameters.FORCE_REDEPLOY }}
+                                  --set fdr.canaryDelivery.ingress.weightPercent="${{ step }}"
+  # Deploy stable
+  - stage: deploy_fdr_stable
+    displayName: "Deploy ${{ parameters.ENV }} stable"
+    jobs:
+      - job: get_release_version
+        displayName: "Get Release Version"
+        steps:
+          - template: templates/maven-github-current-version/template.yaml@pagopaCommons
+      - job: step_approval_stable
+        pool: server
+        dependsOn: get_release_version
+        condition: ${{ in( parameters.ENV, 'prod', 'uat') }}
+        variables:
+          current_version: $[ dependencies.get_release_version.outputs['current_version.value'] ]
+        displayName: "Approval ${{ parameters.ENV }} stable"
+        timeoutInMinutes: 70
+        steps:
+          - task: ManualValidation@0
+            displayName: "Approval version $(current_version) ${{ parameters.ENV }} stable"
+            timeoutInMinutes: 60
+            inputs:
+              notifyUsers: |
+                $(APPROVE_NOTIFY_GROUP)
+                $(APPROVE_NOTIFY_ADMIN)
+              instructions: "Please approve or reject ${{ parameters.ENV }} $(current_version) stable deploy"
+              onTimeout: 'reject'
+      - ${{ if parameters.WEU }}:
+          - deployment: "Approved_${{ parameters.ENV }}_Deploy"
+            dependsOn:
+              - get_release_version
+              - step_approval_stable
+            condition: in(dependencies.step_approval_stable.result, 'Succeeded', 'Skipped')
+            variables:
+              current_version: $[ dependencies.get_release_version.outputs['current_version.value'] ]
+            displayName: "Deploy ${{ parameters.ENV }} WEU stable"
+            pool: $(WEU_poolImage)
+            environment: ${{ parameters['ENV'] }}
+            strategy:
+              runOnce:
+                deploy:
+                  steps:
+                    - checkout: self
+                      clean: true
+                      persistCredentials: true
+
+                    - task: Bash@3
+                      name: setup_helm_microservices_chart
+                      displayName: "Setup helm chart"
+                      inputs:
+                        targetType: "inline"
+                        script: |
+                          CHART_FILE="helm/Chart.yaml"
+                          if [[ -f "$CHART_FILE" ]]; then
+                            yq -i ".version = \"$(current_version)\"" "$CHART_FILE"
+                            yq -i ".appVersion = \"$(current_version)\"" "$CHART_FILE"
+                          fi
+                          helm dep build helm
+                        failOnStderr: true
+                    - bash: |
+                        echo "install WEU"
+                    - template: templates/helm-microservice-chart-deploy/template.yaml@pagopaCommons
+                      parameters:
+                        DO_DEPLOY: true
+                        ENV: ${{ parameters['ENV'] }}
+                        KUBERNETES_SERVICE_CONN: ${{ variables.WEU_kubernetesServiceConnection }}
+                        NAMESPACE: "fdr"
+                        APP_NAME: $(appName)
+                        VALUE_FILE: $(WEU_value_file)
+                        DEPLOY_VERSION: $(current_version)
+                        #APPINSIGHTS_SERVICE_CONN: ${{ variables.WEU_appInsightsServiceConn }}
+                        #APPINSIGHTS_RESOURCE_ID: ${{ variables.WEU_appInsightsResourceId }}
+                        CHART_PATH: "helm"
+                        ARGUMENTS: >-
+                          --set fdr.image.tag="$(current_version)"
+                          --set fdr.forceRedeploy=${{ parameters.FORCE_REDEPLOY }}
+
+                    - ${{ if in( parameters.ENV, 'prod', 'uat') }}:
+                        - bash: |
+                            echo "uninstall WEU CANARY"
+                        - template: templates/helm-microservice-chart-deploy/template.yaml@pagopaCommons
+                          parameters:
+                            COMMAND: "uninstall"
+                            DO_DEPLOY: true
+                            ENV: ${{ parameters['ENV'] }}
+                            KUBERNETES_SERVICE_CONN: ${{ variables.WEU_kubernetesServiceConnection }}
+                            NAMESPACE: "fdr"
+                            APP_NAME: "$(appName)-canary"
+                            VALUE_FILE: $(WEU_value_file)
+                            DEPLOY_VERSION: $(current_version)
+                            #APPINSIGHTS_SERVICE_CONN: ${{ variables.WEU_appInsightsServiceConn }}
+                            #APPINSIGHTS_RESOURCE_ID: ${{ variables.WEU_appInsightsResourceId }}
+                            CHART_PATH: "helm"
+                            ARGUMENTS: "$(appName)-canary"
+
+  # uninstall canary id prod or uat
+  - ${{ if in( parameters.ENV, 'prod', 'uat') }}:
+      - stage: uninstall
+        displayName: "Uninstall ${{ parameters.ENV }} canary"
+        condition: and( ${{ in( parameters.ENV, 'prod', 'uat') }} ,failed())
+        jobs:
+          - deployment: "uninstall"
+            displayName: "Uninstall ${{ parameters.ENV }} canary"
+            pool: $(WEU_poolImage)
+            environment: ${{ parameters['ENV'] }}
+            strategy:
+              runOnce:
+                deploy:
+                  steps:
+                    - checkout: self
+                      clean: true
+                      persistCredentials: true
+
+                    - ${{ if and( parameters.WEU , in( parameters.ENV, 'prod', 'uat') ) }}:
+                        - bash: |
+                            echo "uninstall WEU CANARY"
+                        - template: templates/helm-microservice-chart-deploy/template.yaml@pagopaCommons
+                          parameters:
+                            COMMAND: "uninstall"
+                            DO_DEPLOY: true
+                            ENV: ${{ parameters['ENV'] }}
+                            KUBERNETES_SERVICE_CONN: ${{ variables.WEU_kubernetesServiceConnection }}
+                            NAMESPACE: "fdr"
+                            APP_NAME: "$(appName)-canary"
+                            VALUE_FILE: $(WEU_value_file)
+                            DEPLOY_VERSION: $(current_version)
+                            #APPINSIGHTS_SERVICE_CONN: ${{ variables.WEU_appInsightsServiceConn }}
+                            #APPINSIGHTS_RESOURCE_ID: ${{ variables.WEU_appInsightsResourceId }}
+                            CHART_PATH: "helm/fdr"
+                            ARGUMENTS: "$(appName)-canary"
