@@ -13,16 +13,16 @@ import lombok.experimental.SuperBuilder;
 @SuperBuilder
 public class BasePaymentInfo {
 
-    private String organizationFiscalCode;
-    private String noticeNumber;
-    private String iuv;
-    private String pspId;
-    private String brokerPspId;
-    private String channelId;
-    private String outcome;
-    private String status;
-    private String insertedTimestamp;
-    private String updatedTimestamp;
-    private Boolean isOldPaymentModel;
-    private String nodeId;
+  private String organizationFiscalCode;
+  private String noticeNumber;
+  private String iuv;
+  private String pspId;
+  private String brokerPspId;
+  private String channelId;
+  private String outcome;
+  private String status;
+  private String insertedTimestamp;
+  private String updatedTimestamp;
+  private Boolean isOldPaymentModel;
+  private String nodeId;
 }

@@ -1,8 +1,7 @@
 package it.gov.pagopa.nodetsworker.exceptions;
 
-import lombok.Getter;
-
 import java.io.Serializable;
+import lombok.Getter;
 
 @Getter
 public class AppException extends RuntimeException {

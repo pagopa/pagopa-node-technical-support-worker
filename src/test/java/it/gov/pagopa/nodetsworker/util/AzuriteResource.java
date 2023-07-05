@@ -1,12 +1,11 @@
 package it.gov.pagopa.nodetsworker.util;
 
 import io.quarkus.test.common.QuarkusTestResourceLifecycleManager;
+import java.util.HashMap;
+import java.util.Map;
 import lombok.SneakyThrows;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.utility.DockerImageName;
-
-import java.util.HashMap;
-import java.util.Map;
 
 public class AzuriteResource implements QuarkusTestResourceLifecycleManager {
 

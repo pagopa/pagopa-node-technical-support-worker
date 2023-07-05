@@ -1,21 +1,18 @@
 package it.gov.pagopa.nodetsworker.repository.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import io.quarkus.mongodb.panache.common.MongoEntity;
+import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-
-import java.time.LocalDateTime;
-import java.util.List;
 
 @Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class PositiveBizEvent  {
+public class PositiveBizEvent {
   private String version;
   private String id;
   private String idPaymentManager;

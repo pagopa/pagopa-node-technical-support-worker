@@ -3,11 +3,10 @@ package it.gov.pagopa.nodetsworker.resources.exceptionmapper;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import io.quarkus.runtime.annotations.RegisterForReflection;
+import java.util.List;
 import lombok.*;
 import lombok.extern.jackson.Jacksonized;
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
-
-import java.util.List;
 
 @Getter
 @Builder

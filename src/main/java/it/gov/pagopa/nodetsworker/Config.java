@@ -6,15 +6,14 @@ import io.quarkus.scheduler.ScheduledExecution;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.client.ClientRequestFilter;
+import java.net.URI;
+import java.util.Collections;
 import lombok.SneakyThrows;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.eclipse.microprofile.rest.client.RestClientBuilder;
 import org.jboss.logging.Logger;
 import org.openapi.quarkus.api_config_cache_json.api.NodeCacheApi;
 import org.openapi.quarkus.api_config_cache_json.model.ConfigDataV1;
-
-import java.net.URI;
-import java.util.Collections;
 
 @ApplicationScoped
 public class Config {
@@ -34,15 +33,15 @@ public class Config {
   @SneakyThrows
   public void init() {
     nodeCacheApi =
-            RestClientBuilder.newBuilder()
-                    .baseUri(new URI(url))
-                    .register(
-                            (ClientRequestFilter)
-                                    context ->
-                                            context
-                                                    .getHeaders()
-                                                    .put(apiKeyName, Collections.singletonList(apiKeyValue)))
-                    .build(NodeCacheApi.class);
+        RestClientBuilder.newBuilder()
+            .baseUri(new URI(url))
+            .register(
+                (ClientRequestFilter)
+                    context ->
+                        context
+                            .getHeaders()
+                            .put(apiKeyName, Collections.singletonList(apiKeyValue)))
+            .build(NodeCacheApi.class);
 
     ConfigDataV1 newCache = nodeCacheApi.cache(null);
     log.debugf("Cache init. Version [%s]", newCache.getVersion());
@@ -60,7 +59,7 @@ public class Config {
       return null;
     } else {
       return objectMapper.readValue(
-              objectMapper.writeValueAsString(this.cache), ConfigDataV1.class);
+          objectMapper.writeValueAsString(this.cache), ConfigDataV1.class);
     }
   }
 

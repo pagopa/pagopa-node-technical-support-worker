@@ -14,19 +14,17 @@ import jakarta.validation.ConstraintViolationException;
 import jakarta.validation.UnexpectedTypeException;
 import jakarta.ws.rs.WebApplicationException;
 import jakarta.ws.rs.core.Response;
-import org.jboss.logging.Logger;
-import org.jboss.resteasy.reactive.RestResponse;
-import org.jboss.resteasy.reactive.server.ServerExceptionMapper;
-import org.slf4j.MDC;
-
 import java.time.Instant;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import org.jboss.logging.Logger;
+import org.jboss.resteasy.reactive.RestResponse;
+import org.jboss.resteasy.reactive.server.ServerExceptionMapper;
 
-//import static it.gov.pagopa.fdr.util.AppMessageUtil.logErrorMessage;
-//import static it.gov.pagopa.fdr.util.MDCKeys.TRX_ID;
+// import static it.gov.pagopa.fdr.util.AppMessageUtil.logErrorMessage;
+// import static it.gov.pagopa.fdr.util.MDCKeys.TRX_ID;
 
 public class ExceptionMappers {
 
@@ -219,8 +217,8 @@ public class ExceptionMappers {
 
   @ServerExceptionMapper
   public RestResponse<ErrorResponse> mapThrowable(Throwable exception) {
-//    String errorId = MDC.get(TRX_ID);
-//    log.errorf(logErrorMessage(exception.getMessage()));
+    //    String errorId = MDC.get(TRX_ID);
+    //    log.errorf(logErrorMessage(exception.getMessage()));
 
     AppException appEx = new AppException(exception, AppErrorCodeMessageEnum.ERROR);
     AppErrorCodeMessageInterface codeMessage = appEx.getCodeMessage();
@@ -228,7 +226,7 @@ public class ExceptionMappers {
 
     ErrorResponse errorResponse =
         ErrorResponse.builder()
-//            .errorId(errorId)
+            //            .errorId(errorId)
             .httpStatusCode(status.getStatusCode())
             .httpStatusDescription(status.getReasonPhrase())
             .appErrorCode(codeMessage.errorCode())

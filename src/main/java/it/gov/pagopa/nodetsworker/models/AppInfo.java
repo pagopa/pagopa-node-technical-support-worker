@@ -6,14 +6,13 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-
 @Getter
 @Setter
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
 public class AppInfo {
-    private String name;
-    private String version;
-    private String environment;
+  private String name;
+  private String version;
+  private String environment;
 }

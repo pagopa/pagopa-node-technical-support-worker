@@ -1,11 +1,10 @@
 package it.gov.pagopa.nodetsworker.resources.response;
 
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
+import java.util.List;
 import lombok.*;
 import lombok.extern.jackson.Jacksonized;
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
-
-import java.util.List;
 
 @Getter
 @Builder

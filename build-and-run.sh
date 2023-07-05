@@ -7,7 +7,7 @@ if [ -z "$action" ]; then
   exit 0
 fi
 
-REPO=pagopa/pagopafdr
+REPO=pagopa/pagopatechsupport
 
 build () {
   conf=$1
@@ -18,7 +18,7 @@ build () {
 
   ##Attenzione si usa il file Dockerfile.multistage.jvm, e non Dockerfile.multistage, perchè la lib di azure non è compatibile per la build nativa
   docker build -f src/main/docker/Dockerfile.multistage.jvm \
-  --build-arg APP_NAME=pagopafdr --build-arg QUARKUS_PROFILE=$conf \
+  --build-arg APP_NAME=pagopatechsupport --build-arg QUARKUS_PROFILE=$conf \
   -t $REPO:$version-$conf .
 }
 
@@ -33,10 +33,10 @@ generate_openapi () {
   conf=$1
   version=$(./mvnw help:evaluate -Dexpression=project.version -q -DforceStdout)
   echo "Generate OpenAPI JSON [$version] [$conf]"
-  docker run -i -d --name exportfdr_$conf --rm -p 8080:8080 $REPO:$version-$conf
+  docker run -i -d --name exporttechsupport_$conf --rm -p 8080:8080 $REPO:$version-$conf
   sleep 10
   curl http://localhost:8080/q/openapi?format=json > openapi/$conf.json
-  docker rm -f exportfdr_$conf
+  docker rm -f exporttechsupport_$conf
 }
 
 test_curl () {
