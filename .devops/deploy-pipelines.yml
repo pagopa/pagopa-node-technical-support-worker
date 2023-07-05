@@ -85,7 +85,7 @@ variables:
   WEU_value_file: "helm/weu-${{ parameters['ENV'] }}/values-${{ parameters['ENV'] }}.yaml"
   NEU_value_file: "helm/neu-${{ parameters['ENV'] }}/values-${{ parameters['ENV'] }}.yaml"
 
-  appName: 'pagopafdr'
+  appName: 'pagopatechsupport'
 
   ${{ if eq(parameters['ENV'], 'dev') }}:
     WEU_dockerRegistryServiceConnection: $(DEV_CONTAINER_REGISTRY_SERVICE_CONN)
@@ -136,14 +136,14 @@ stages:
                 if [[ "${{ parameters.WEU }}" = "True" ]]; then
                   VALUES_FILE="$(WEU_value_file)"
                   if [[ -f "$VALUES_FILE" ]]; then
-                    yq -i ".fdr.image.tag = \"$(next_version.value)\"" "$VALUES_FILE"
+                    yq -i ".pagopa-tech-support.image.tag = \"$(next_version.value)\"" "$VALUES_FILE"
                     git add "$VALUES_FILE"
                   fi
                 fi
                 if [[ "${{ parameters.NEU }}" = "True" ]]; then
                   VALUES_FILE="$(NEU_value_file)"
                   if [[ -f "$VALUES_FILE" ]]; then
-                    yq -i ".fdr.image.tag = \"$(next_version.value)\"" "$VALUES_FILE"
+                    yq -i ".pagopa-tech-support.image.tag = \"$(next_version.value)\"" "$VALUES_FILE"
                     git add "$VALUES_FILE"
                   fi
                 fi
@@ -172,13 +172,6 @@ stages:
               git checkout $(sourceBranch)
             displayName: Checkout and update branch
 
-#          - task: AzureKeyVault@2
-#            displayName: "Get secrets"
-#            inputs:
-#              azureSubscription: $(AZURE_SERVICE_CONNECTION)
-#              keyVaultName: 'pagopa-d-fdr-kv'
-#              secretsFilter: 'api-config-cache-subscription-key-string'
-
           - template: templates/docker-release/template.yaml@pagopaCommons
             parameters:
               CONTAINER_REGISTRY_SERVICE_CONN: $(WEU_dockerRegistryServiceConnection)
@@ -193,7 +186,7 @@ stages:
   # Deploy Canary if prod or uat
   - ${{ if and( parameters.WEU , in( parameters.ENV, 'prod', 'uat') ) }}:
       - ${{ each step in split(variables.weight_steps, ',')}}:
-          - stage: deploy_fdr_${{ step }}
+          - stage: deploy_pagopa_tech_support_${{ step }}
             displayName: "Deploy ${{ parameters.ENV }} canary ${{ step }}%"
             jobs:
               - job: get_release_version
@@ -263,12 +256,12 @@ stages:
                                 #APPINSIGHTS_RESOURCE_ID: ${{ variables.WEU_appInsightsResourceId }}
                                 CHART_PATH: "helm"
                                 ARGUMENTS: >-
-                                  --set fdr.image.tag="$(current_version)"
-                                  --set fdr.canaryDelivery.create="true"
-                                  --set fdr.forceRedeploy=${{ parameters.FORCE_REDEPLOY }}
-                                  --set fdr.canaryDelivery.ingress.weightPercent="${{ step }}"
+                                  --set pagopa-tech-support.image.tag="$(current_version)"
+                                  --set pagopa-tech-support.canaryDelivery.create="true"
+                                  --set pagopa-tech-support.forceRedeploy=${{ parameters.FORCE_REDEPLOY }}
+                                  --set pagopa-tech-support.canaryDelivery.ingress.weightPercent="${{ step }}"
   # Deploy stable
-  - stage: deploy_fdr_stable
+  - stage: deploy_pagopa_tech_support_stable
     displayName: "Deploy ${{ parameters.ENV }} stable"
     jobs:
       - job: get_release_version
@@ -340,8 +333,8 @@ stages:
                         #APPINSIGHTS_RESOURCE_ID: ${{ variables.WEU_appInsightsResourceId }}
                         CHART_PATH: "helm"
                         ARGUMENTS: >-
-                          --set fdr.image.tag="$(current_version)"
-                          --set fdr.forceRedeploy=${{ parameters.FORCE_REDEPLOY }}
+                          --set pagopa-tech-support.image.tag="$(current_version)"
+                          --set pagopa-tech-support.forceRedeploy=${{ parameters.FORCE_REDEPLOY }}
 
                     - ${{ if in( parameters.ENV, 'prod', 'uat') }}:
                         - bash: |
@@ -394,5 +387,5 @@ stages:
                             DEPLOY_VERSION: $(current_version)
                             #APPINSIGHTS_SERVICE_CONN: ${{ variables.WEU_appInsightsServiceConn }}
                             #APPINSIGHTS_RESOURCE_ID: ${{ variables.WEU_appInsightsResourceId }}
-                            CHART_PATH: "helm/fdr"
+                            CHART_PATH: "helm"
                             ARGUMENTS: "$(appName)-canary"
