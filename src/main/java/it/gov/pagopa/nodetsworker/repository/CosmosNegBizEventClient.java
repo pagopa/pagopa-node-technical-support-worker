@@ -55,23 +55,6 @@ public class CosmosNegBizEventClient {
         return container.queryItems(query, new CosmosQueryRequestOptions(), NegativeBizEvent.class);
     }
 
-    public CosmosPagedIterable<NegativeBizEvent> findEventsByCiAndNN(String organizationFiscalCode, String noticeNumber, LocalDate dateFrom, LocalDate dateTo){
-        List<SqlParameter> paramList = Arrays.asList(
-                new SqlParameter("@organizationFiscalCode", organizationFiscalCode),
-                new SqlParameter("@noticeNumber", noticeNumber),
-                new SqlParameter("@from", Util.toMillis(dateFrom.atStartOfDay())),
-                new SqlParameter("@to", Util.toMillis(LocalDateTime.of(dateTo, LocalTime.MAX)))
-        );
-
-        SqlQuerySpec q = new SqlQuerySpec("SELECT * FROM c where" +
-                " c.creditor.idPA = @organizationFiscalCode" +
-                " and c.debtorPosition.noticeNumber = @noticeNumber" +
-                " and c.timestamp > @from" +
-                " and c.timestamp < @to"
-        )
-                .setParameters(paramList);
-        return query(q);
-    }
     public CosmosPagedIterable<NegativeBizEvent> findEventsByCiAndNNAndToken(String organizationFiscalCode, String noticeNumber,String paymentToken, LocalDate dateFrom, LocalDate dateTo){
         List<SqlParameter> paramList = Arrays.asList(
                 new SqlParameter("@organizationFiscalCode", organizationFiscalCode),
@@ -84,24 +67,6 @@ public class CosmosNegBizEventClient {
                 " c.creditor.idPA = @organizationFiscalCode" +
                 " and c.debtorPosition.noticeNumber = @noticeNumber" +
                 " and c.paymentInfo.paymentToken = @paymentToken" +
-                " and c.timestamp > @from" +
-                " and c.timestamp < @to"
-        )
-                .setParameters(paramList);
-        return query(q);
-    }
-
-    public CosmosPagedIterable<NegativeBizEvent> findEventsByCiAndIUV(String organizationFiscalCode,String iuv, LocalDate dateFrom, LocalDate dateTo){
-        List<SqlParameter> paramList = Arrays.asList(
-                new SqlParameter("@organizationFiscalCode", organizationFiscalCode),
-                new SqlParameter("@iuv", iuv),
-                new SqlParameter("@from", Util.toMillis(dateFrom.atStartOfDay())),
-                new SqlParameter("@to", Util.toMillis(LocalDateTime.of(dateTo, LocalTime.MAX)))
-        );
-
-        SqlQuerySpec q = new SqlQuerySpec("SELECT * FROM c where" +
-                " c.creditor.idPA = @organizationFiscalCode" +
-                " and c.debtorPosition.iuv = @iuv" +
                 " and c.timestamp > @from" +
                 " and c.timestamp < @to"
         )

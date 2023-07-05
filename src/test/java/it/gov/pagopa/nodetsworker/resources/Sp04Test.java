@@ -10,18 +10,21 @@ import io.quarkiverse.mockserver.test.MockServerTestResource;
 import io.quarkus.test.common.QuarkusTestResource;
 import io.quarkus.test.junit.QuarkusTest;
 import io.restassured.common.mapper.TypeRef;
-import it.gov.pagopa.nodetsworker.models.PaymentInfo;
-import it.gov.pagopa.nodetsworker.models.TransactionResponse;
+import it.gov.pagopa.nodetsworker.models.PaymentAttemptInfo;
 import it.gov.pagopa.nodetsworker.repository.CosmosBizEventClient;
 import it.gov.pagopa.nodetsworker.repository.CosmosNegBizEventClient;
+import it.gov.pagopa.nodetsworker.resources.response.TransactionResponse;
 import it.gov.pagopa.nodetsworker.util.AppConstantTestHelper;
 import it.gov.pagopa.nodetsworker.util.AzuriteResource;
 import it.gov.pagopa.nodetsworker.util.CosmosResource;
+import it.gov.pagopa.nodetsworker.util.Util;
 import lombok.SneakyThrows;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
+import java.time.Instant;
+import java.time.LocalDate;
 import java.util.Random;
 
 import static io.restassured.RestAssured.given;
@@ -34,7 +37,7 @@ import static org.hamcrest.Matchers.greaterThan;
 @QuarkusTestResource(MockServerTestResource.class)
 @QuarkusTestResource(AzuriteResource.class)
 @QuarkusTestResource(CosmosResource.class)
-class ResourceTest {
+class Sp04Test {
 
   @ConfigProperty(name = "re-table-storage.connection-string")
   String connString;
@@ -70,10 +73,11 @@ class ResourceTest {
 
   @SneakyThrows
   @Test
-  @DisplayName("by ci and nn with positive")
+  @DisplayName("sp04 by ci,nn,token with positive")
   void test1() {
-    String noticeNumber = String.valueOf(new Random().nextLong(11111111111l, 99999999999l));
-    String url = SP03_NN.formatted(PA_CODE, noticeNumber);
+    String noticeNumber = String.valueOf(Instant.now().toEpochMilli());
+    String token = "pt_"+noticeNumber;
+    String url = SP04_NN.formatted(PA_CODE, noticeNumber,token);
 
     getTableClient().createEntity(AppConstantTestHelper.newRe(PA_CODE, noticeNumber,null));
     getCosmosClient().getDatabase(CosmosBizEventClient.dbname).getContainer(CosmosBizEventClient.tablename).createItem(
@@ -81,14 +85,16 @@ class ResourceTest {
     );
 
     TransactionResponse res = given()
+            .param("dateFrom",Util.format(LocalDate.now()))
+            .param("dateTo",Util.format(LocalDate.now()))
         .when()
         .get(url)
         .then()
         .statusCode(200)
         .extract()
-        .as(new TypeRef<TransactionResponse<PaymentInfo>>() {});
+        .as(new TypeRef<TransactionResponse<PaymentAttemptInfo>>() {});
     assertThat(res.getPayments().size(), greaterThan(0));
-    PaymentInfo o = (PaymentInfo)res.getPayments().get(0);
+    PaymentAttemptInfo o = (PaymentAttemptInfo)res.getPayments().get(0);
     assertThat(o.getNoticeNumber(),equalTo(noticeNumber));
     assertThat(o.getOrganizationFiscalCode(),equalTo(PA_CODE));
     assertThat(o.getOutcome(),equalTo(AppConstantTestHelper.outcomeOK));
@@ -99,10 +105,11 @@ class ResourceTest {
 
   @SneakyThrows
   @Test
-  @DisplayName("by ci and nn with negative")
+  @DisplayName("sp04 by ci,nn,token with negative")
   void test2() {
-    String noticeNumber = String.valueOf(new Random().nextLong(11111111111l, 99999999999l));
-    String url = SP03_NN.formatted(PA_CODE, noticeNumber);
+    String noticeNumber = String.valueOf(Instant.now().toEpochMilli());
+    String token = "pt_"+noticeNumber;
+    String url = SP04_NN.formatted(PA_CODE, noticeNumber, token);
 
     getTableClient().createEntity(AppConstantTestHelper.newRe(PA_CODE, noticeNumber,null));
     getCosmosClient().getDatabase(CosmosBizEventClient.dbname).getContainer(CosmosNegBizEventClient.tablename).createItem(
@@ -110,14 +117,16 @@ class ResourceTest {
     );
 
     TransactionResponse res = given()
+            .param("dateFrom",Util.format(LocalDate.now()))
+            .param("dateTo",Util.format(LocalDate.now()))
             .when()
             .get(url)
             .then()
             .statusCode(200)
             .extract()
-            .as(new TypeRef<TransactionResponse<PaymentInfo>>() {});
+            .as(new TypeRef<TransactionResponse<PaymentAttemptInfo>>() {});
     assertThat(res.getPayments().size(), greaterThan(0));
-    PaymentInfo o = (PaymentInfo)res.getPayments().get(0);
+    PaymentAttemptInfo o = (PaymentAttemptInfo)res.getPayments().get(0);
     assertThat(o.getNoticeNumber(),equalTo(noticeNumber));
     assertThat(o.getOrganizationFiscalCode(),equalTo(PA_CODE));
     assertThat(o.getOutcome(),equalTo(AppConstantTestHelper.outcomeKO));
@@ -128,10 +137,11 @@ class ResourceTest {
 
   @SneakyThrows
   @Test
-  @DisplayName("by ci and iuv with positive")
+  @DisplayName("sp04 by ci,iuv,ccp with positive")
   void test3() {
-    String iuv = String.valueOf(new Random().nextLong(11111111111l, 99999999999l));
-    String url = SP03_IUV.formatted(PA_CODE, iuv);
+    String iuv = String.valueOf(Instant.now().toEpochMilli());
+    String ccp = "ccp_"+iuv;
+    String url = SP04_IUV.formatted(PA_CODE, iuv, ccp);
 
     getTableClient().createEntity(AppConstantTestHelper.newRe(PA_CODE, null,iuv));
     getCosmosClient().getDatabase(CosmosBizEventClient.dbname).getContainer(CosmosBizEventClient.tablename).createItem(
@@ -139,14 +149,16 @@ class ResourceTest {
     );
 
     TransactionResponse res = given()
+            .param("dateFrom",Util.format(LocalDate.now()))
+            .param("dateTo",Util.format(LocalDate.now()))
             .when()
             .get(url)
             .then()
             .statusCode(200)
             .extract()
-            .as(new TypeRef<TransactionResponse<PaymentInfo>>() {});
+            .as(new TypeRef<TransactionResponse<PaymentAttemptInfo>>() {});
     assertThat(res.getPayments().size(), greaterThan(0));
-    PaymentInfo o = (PaymentInfo)res.getPayments().get(0);
+    PaymentAttemptInfo o = (PaymentAttemptInfo)res.getPayments().get(0);
     assertThat(o.getIuv(),equalTo(iuv));
     assertThat(o.getOrganizationFiscalCode(),equalTo(PA_CODE));
     assertThat(o.getOutcome(),equalTo(AppConstantTestHelper.outcomeOK));
@@ -157,10 +169,11 @@ class ResourceTest {
 
   @SneakyThrows
   @Test
-  @DisplayName("by ci and iuv with negative")
+  @DisplayName("sp04 by ci,iuv,ccp with negative")
   void test4() {
-    String iuv = String.valueOf(new Random().nextLong(11111111111l, 99999999999l));
-    String url = SP03_IUV.formatted(PA_CODE, iuv);
+    String iuv = String.valueOf(Instant.now().toEpochMilli());
+    String ccp = "ccp_"+iuv;
+    String url = SP04_IUV.formatted(PA_CODE, iuv, ccp);
 
     getTableClient().createEntity(AppConstantTestHelper.newRe(PA_CODE, null,iuv));
     getCosmosClient().getDatabase(CosmosBizEventClient.dbname).getContainer(CosmosNegBizEventClient.tablename).createItem(
@@ -168,20 +181,54 @@ class ResourceTest {
     );
 
     TransactionResponse res = given()
+            .param("dateFrom",Util.format(LocalDate.now()))
+            .param("dateTo",Util.format(LocalDate.now()))
             .when()
             .get(url)
             .then()
             .statusCode(200)
             .extract()
-            .as(new TypeRef<TransactionResponse<PaymentInfo>>() {});
+            .as(new TypeRef<TransactionResponse<PaymentAttemptInfo>>() {});
     assertThat(res.getPayments().size(), greaterThan(0));
-    PaymentInfo o = (PaymentInfo)res.getPayments().get(0);
+    PaymentAttemptInfo o = (PaymentAttemptInfo)res.getPayments().get(0);
     assertThat(o.getIuv(),equalTo(iuv));
     assertThat(o.getOrganizationFiscalCode(),equalTo(PA_CODE));
     assertThat(o.getOutcome(),equalTo(AppConstantTestHelper.outcomeKO));
     assertThat(o.getPspId(),equalTo("pspTest"));
     assertThat(o.getChannelId(),equalTo("canaleTest"));
     assertThat(o.getBrokerPspId(),equalTo("intTest"));
+  }
+
+  @SneakyThrows
+  @Test
+  @DisplayName("dateFrom 400")
+  void test5() {
+    String iuv = String.valueOf(new Random().nextLong(11111111111l, 99999999999l));
+    String ccp = "ccp_"+iuv;
+    String url = SP04_IUV.formatted(PA_CODE, iuv, ccp);
+
+    given()
+            .param("dateFrom",Util.format(LocalDate.now()))
+            .when()
+            .get(url)
+            .then()
+            .statusCode(400);
+  }
+
+  @SneakyThrows
+  @Test
+  @DisplayName("dateTo 400")
+  void test6() {
+    String iuv = String.valueOf(new Random().nextLong(11111111111l, 99999999999l));
+    String ccp = "ccp_"+iuv;
+    String url = SP04_IUV.formatted(PA_CODE, iuv, ccp);
+
+    given()
+            .param("dateTo",Util.format(LocalDate.now()))
+            .when()
+            .get(url)
+            .then()
+            .statusCode(400);
   }
 
 }

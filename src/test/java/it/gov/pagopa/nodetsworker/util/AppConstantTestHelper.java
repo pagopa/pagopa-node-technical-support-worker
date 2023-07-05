@@ -4,14 +4,17 @@ import com.azure.data.tables.models.TableEntity;
 import io.restassured.http.Header;
 import it.gov.pagopa.nodetsworker.repository.model.*;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.Optional;
 import java.util.UUID;
 
 public class AppConstantTestHelper {
 
   public static final String SP03_NN  = "/organizations/%s/noticeNumber/%s";
   public static final String SP03_IUV = "/organizations/%s/iuv/%s";
+
   public static final String SP04_NN  = "/organizations/%s/iuv/%s/paymentToken/%s";
   public static final String SP04_IUV = "/organizations/%s/iuv/%s/ccp/%s";
 
@@ -22,7 +25,7 @@ public class AppConstantTestHelper {
   public static final Header HEADER = new Header("Content-Type", "application/json");
 
   public static final TableEntity newRe(String pa,String noticeNumber,String iuv){
-    TableEntity entity = new TableEntity(LocalDateTime.now().minusDays(1).format(DateTimeFormatter.ISO_DATE_TIME), String.valueOf(noticeNumber));
+    TableEntity entity = new TableEntity(Util.format(LocalDate.now()), String.valueOf(Optional.ofNullable(noticeNumber).orElse(iuv)));
     entity.addProperty("idDominio",pa);
     entity.addProperty("noticeNumber",noticeNumber);
     entity.addProperty("iuv",iuv);
@@ -51,7 +54,7 @@ public class AppConstantTestHelper {
             ).debtorPosition(
                     DebtorPosition.builder().modelType("1").iuv(iuv).noticeNumber(noticeNumber).build()
             ).paymentInfo(
-                    PaymentInfo.builder().paymentDateTime(LocalDateTime.now().minusDays(1)).build()
+                    PaymentInfo.builder().paymentToken(noticeNumber!=null?"pt_"+noticeNumber:"ccp_"+iuv).paymentDateTime(LocalDateTime.now()).build()
             )
             .build();
     return p;
@@ -63,10 +66,11 @@ public class AppConstantTestHelper {
             .creditor(
                     Creditor.builder().idPA(pa).build()
             ).debtorPosition(
-                    DebtorPosition.builder().iuv(iuv).noticeNumber(noticeNumber).build()
+                    DebtorPosition.builder().iuv(iuv).noticeNumber(noticeNumber).modelType("1").build()
             ).paymentInfo(
                     NegativePaymentInfo.builder()
-                        .paymentDateTime(LocalDateTime.now().minusDays(1))
+                            .paymentToken(noticeNumber!=null?"pt_"+noticeNumber:"ccp_"+iuv)
+                        .paymentDateTime(LocalDateTime.now())
                         .build()
             )
             .reAwakable(reawakable)

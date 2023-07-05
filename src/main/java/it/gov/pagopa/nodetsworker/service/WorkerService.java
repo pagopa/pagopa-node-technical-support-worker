@@ -3,7 +3,10 @@ package it.gov.pagopa.nodetsworker.service;
 import it.gov.pagopa.nodetsworker.Config;
 import it.gov.pagopa.nodetsworker.exceptions.AppErrorCodeMessageEnum;
 import it.gov.pagopa.nodetsworker.exceptions.AppException;
-import it.gov.pagopa.nodetsworker.models.*;
+import it.gov.pagopa.nodetsworker.models.BasePaymentInfo;
+import it.gov.pagopa.nodetsworker.models.DateRequest;
+import it.gov.pagopa.nodetsworker.models.PaymentAttemptInfo;
+import it.gov.pagopa.nodetsworker.models.PaymentInfo;
 import it.gov.pagopa.nodetsworker.repository.CosmosBizEventClient;
 import it.gov.pagopa.nodetsworker.repository.CosmosNegBizEventClient;
 import it.gov.pagopa.nodetsworker.repository.ReTableService;
@@ -11,6 +14,7 @@ import it.gov.pagopa.nodetsworker.repository.model.Count;
 import it.gov.pagopa.nodetsworker.repository.model.EventEntity;
 import it.gov.pagopa.nodetsworker.repository.model.NegativeBizEvent;
 import it.gov.pagopa.nodetsworker.repository.model.PositiveBizEvent;
+import it.gov.pagopa.nodetsworker.resources.response.TransactionResponse;
 import it.gov.pagopa.nodetsworker.service.mapper.EventMapper;
 import it.gov.pagopa.nodetsworker.util.StatusUtil;
 import jakarta.enterprise.context.ApplicationScoped;
@@ -19,6 +23,7 @@ import org.jboss.logging.Logger;
 import org.openapi.quarkus.api_config_cache_json.model.ConfigDataV1;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -84,7 +89,9 @@ public class WorkerService {
         Long stationVersion = Optional.ofNullable(config.getStations().get(pai.getStationId())).map(s->s.getVersion()).orElse(null);
         pai.setPaymentToken(pbe.getPaymentInfo().getPaymentToken());
         pai.setIsOldPaymentModel(pbe.getDebtorPosition().getModelType().equals("1"));
-        pai.setBrokerPspId(pbe.getPsp().getIdBrokerPsp());
+        if(pai.getBrokerPspId()==null){
+            pai.setBrokerPspId(pbe.getPsp().getIdBrokerPsp());
+        }
         pai.setStationVersion(stationVersion);
         pai.setAmount(pbe.getPaymentInfo().getAmount());
         pai.setFee(pbe.getPaymentInfo().getFee());
@@ -101,7 +108,9 @@ public class WorkerService {
     private void enrichPaymentAttemptInfo(ConfigDataV1 config,PaymentAttemptInfo pai, NegativeBizEvent nbe){
         Long stationVersion = Optional.ofNullable(config.getStations().get(pai.getStationId())).map(s->s.getVersion()).orElse(null);
         pai.setIsOldPaymentModel(nbe.getDebtorPosition().getModelType().equals("1"));
-        pai.setBrokerPspId(nbe.getPsp().getIdBrokerPsp());
+        if(pai.getBrokerPspId()==null) {
+            pai.setBrokerPspId(nbe.getPsp().getIdBrokerPsp());
+        }
         pai.setStationVersion(stationVersion);
         pai.setAmount(nbe.getPaymentInfo().getAmount());
         pai.setPaymentMethod(nbe.getPaymentInfo().getPaymentMethod());
@@ -114,16 +123,20 @@ public class WorkerService {
                                                      LocalDate dateFrom,
                                                      LocalDate dateTo){
 
+        log.infof("getInfoByNoticeNumber %s,%s,%s,%s",organizationFiscalCode,noticeNumber,dateFrom,dateTo);
+
         DateRequest dateRequest = verifyDate(dateFrom, dateTo);
         ConfigDataV1 config = configObject.getClonedCache();
         List<EventEntity> reStorageEvents = reTableService.findReByCiAndNN(dateRequest.getFrom(), dateRequest.getTo(), organizationFiscalCode, noticeNumber);
 
         Map<String, List<EventEntity>> reGroups = reStorageEvents.stream().collect(Collectors.groupingBy(EventEntity::getPaymentToken));
 
-        List<BasePaymentInfo> collect = reGroups.keySet().stream().map(gkey->{
-            List<EventEntity> events = reGroups.get(gkey);
+        log.infof("found %d different tokens",reGroups.size());
+
+        List<BasePaymentInfo> collect = reGroups.keySet().stream().map(paymentToken->{
+            List<EventEntity> events = reGroups.get(paymentToken);
             EventEntity lastEvent = events.get(events.size()-1);
-            String outcome = null;
+            PaymentInfo pi = eventToPaymentInfo(config,lastEvent);
 
             Optional<Count> pos = positiveBizClient.countEventsByCiAndNN(
                     lastEvent.getIdDominio(),
@@ -132,22 +145,21 @@ public class WorkerService {
                     dateRequest.getTo()
             ).stream().findFirst();
             if(pos.isPresent() && pos.get().getCount()>0){
-                outcome = outcomeOK;
+                pi.setOutcome(outcomeOK);
             }else{
-                Optional<NegativeBizEvent> neg = negativeBizClient.findEventsByCiAndNN(
+                Optional<NegativeBizEvent> neg = negativeBizClient.findEventsByCiAndNNAndToken(
                         lastEvent.getIdDominio(),
                         lastEvent.getNoticeNumber(),
+                        paymentToken,
                         dateRequest.getFrom(),
                         dateRequest.getTo()
                 ).stream().findFirst();
                 if(neg.isPresent()){
                     if(!neg.get().getReAwakable()){
-                        outcome = outcomeKO;
+                        pi.setOutcome(outcomeKO);
                     }
                 }
             }
-            PaymentInfo pi = eventToPaymentInfo(config,lastEvent);
-            pi.setOutcome(outcome);
             return pi;
         }).collect(Collectors.toList());
 
@@ -163,16 +175,21 @@ public class WorkerService {
                                                 String iuv,
                                                 LocalDate dateFrom,
                                                 LocalDate dateTo){
+
+        log.infof("getInfoByIUV %s,%s,%s,%s",organizationFiscalCode,iuv,dateFrom,dateTo);
+
         DateRequest dateRequest = verifyDate(dateFrom, dateTo);
         ConfigDataV1 config = configObject.getClonedCache();
         List<EventEntity> reStorageEvents = reTableService.findReByCiAndIUV(dateRequest.getFrom(), dateRequest.getTo(), organizationFiscalCode, iuv);
 
         Map<String, List<EventEntity>> reGroups = reStorageEvents.stream().collect(Collectors.groupingBy(EventEntity::getCcp));
 
-        List<BasePaymentInfo> collect = reGroups.keySet().stream().map(gkey->{
-            List<EventEntity> events = reGroups.get(gkey);
+        log.infof("found %d different ccps",reGroups.size());
+
+        List<BasePaymentInfo> collect = reGroups.keySet().stream().map(ccp->{
+            List<EventEntity> events = reGroups.get(ccp);
             EventEntity lastEvent = events.get(events.size()-1);
-            String outcome = null;
+            PaymentInfo pi = eventToPaymentInfo(config,lastEvent);
 
             Optional<Count> pos = positiveBizClient.countEventsByCiAndIUV(
                     lastEvent.getIdDominio(),
@@ -181,23 +198,22 @@ public class WorkerService {
                     dateRequest.getTo()
             ).stream().findFirst();
             if(pos.isPresent() && pos.get().getCount()>0){
-                outcome = outcomeOK;
+                pi.setOutcome(outcomeOK);
             }else{
-                Optional<NegativeBizEvent> neg = negativeBizClient.findEventsByCiAndIUV(
+                Optional<NegativeBizEvent> neg = negativeBizClient.findEventsByCiAndIUVAndCCP(
                         lastEvent.getIdDominio(),
                         lastEvent.getIuv(),
+                        ccp,
                         dateRequest.getFrom(),
                         dateRequest.getTo()
                 ).stream().findFirst();
                 if(neg.isPresent()){
                     if(!neg.get().getReAwakable()){
-                        outcome = outcomeKO;
+                        pi.setOutcome(outcomeKO);
                     }
                 }
             }
 
-            PaymentInfo pi = eventToPaymentInfo(config,lastEvent);
-            pi.setOutcome(outcome);
             return pi;
         }).collect(Collectors.toList());
 
@@ -209,104 +225,101 @@ public class WorkerService {
 
     }
 
-    public TransactionResponse getInfoByNoticeNumberAndPaymentToken(String organizationFiscalCode, String noticeNumber, String paymentToken, LocalDate dateFrom, LocalDate dateTo) {
+    public TransactionResponse getAttemptByNoticeNumberAndPaymentToken(String organizationFiscalCode, String noticeNumber, String paymentToken, LocalDate dateFrom, LocalDate dateTo) {
+
+        log.infof("getInfoByNoticeNumberAndPaymentToken %s,%s,%s,%s,%s",organizationFiscalCode,noticeNumber,paymentToken,dateFrom,dateTo);
+
         DateRequest dateRequest = verifyDate(dateFrom, dateTo);
-        ConfigDataV1 config = configObject.getClonedCache();
-        List<EventEntity> reStorageEvents = reTableService.findReByCiAndNNAndToken(dateRequest.getFrom(),
-                dateRequest.getTo(), organizationFiscalCode, noticeNumber,paymentToken);
-
-        Map<String, List<EventEntity>> reGroups = reStorageEvents.stream().collect(Collectors.groupingBy(EventEntity::getPaymentToken));
-        List<BasePaymentInfo> collect = reGroups.keySet().stream().map(gkey->{
-            List<EventEntity> events = reGroups.get(gkey);
+        List<EventEntity> events = reTableService.findReByCiAndNNAndToken(dateRequest.getFrom(),dateRequest.getTo(), organizationFiscalCode, noticeNumber,paymentToken);
+        List<BasePaymentInfo> pais = new ArrayList<>();
+        if(events.size()>0){
             EventEntity lastEvent = events.get(events.size()-1);
-            PaymentAttemptInfo pi = eventToPaymentAttemptInfo(config,lastEvent);
-            String outcome = null;
+            ConfigDataV1 config = configObject.getClonedCache();
+            PaymentAttemptInfo pai = eventToPaymentAttemptInfo(config,lastEvent);
 
-            Optional<PositiveBizEvent> pos = positiveBizClient.findEventsByCiAndIUVAndCCP(
-                    lastEvent.getIdDominio(),
-                    lastEvent.getIuv(),
-                    lastEvent.getCcp(),
+            Optional<PositiveBizEvent> pos = positiveBizClient.findEventsByCiAndNNAndToken(
+                    organizationFiscalCode,
+                    noticeNumber,
+                    paymentToken,
                     dateRequest.getFrom(),
                     dateRequest.getTo()
             ).stream().findFirst();
             if(pos.isPresent()){
-                outcome = outcomeOK;
-                pi.setOutcome(outcome);
-                enrichPaymentAttemptInfo(config,pi,pos.get());
+                pai.setOutcome(outcomeOK);
+                enrichPaymentAttemptInfo(config,pai,pos.get());
             }else{
                 Optional<NegativeBizEvent> neg = negativeBizClient.findEventsByCiAndNNAndToken(
-                        lastEvent.getIdDominio(),
-                        lastEvent.getIuv(),
-                        lastEvent.getPaymentToken(),
+                        organizationFiscalCode,
+                        noticeNumber,
+                        paymentToken,
                         dateRequest.getFrom(),
                         dateRequest.getTo()
                 ).stream().findFirst();
                 if(neg.isPresent()){
                     if(!neg.get().getReAwakable()){
-                        outcome = outcomeKO;
+                        pai.setOutcome(outcomeKO);
                     }
-                    enrichPaymentAttemptInfo(config,pi,neg.get());
+                    enrichPaymentAttemptInfo(config,pai,neg.get());
                 }
             }
-            return pi;
-        }).collect(Collectors.toList());
+            pais.add(pai);
+        }
+
 
         return TransactionResponse.builder()
                 .dateFrom(dateFrom)
                 .dateTo(dateTo)
-                .payments(collect)
+                .payments(pais)
                 .build();
     }
 
 
 
     public TransactionResponse getAttemptByIUVAndCCP(String organizationFiscalCode, String iuv, String ccp, LocalDate dateFrom, LocalDate dateTo) {
+
+        log.infof("getAttemptByIUVAndCCP %s,%s,%s,%s,%s",organizationFiscalCode,iuv,ccp,dateFrom,dateTo);
+
         DateRequest dateRequest = verifyDate(dateFrom, dateTo);
         ConfigDataV1 config = configObject.getClonedCache();
-        List<EventEntity> reStorageEvents = reTableService.findReByCiAndIUVAndCCP(dateRequest.getFrom(),
-                dateRequest.getTo(), organizationFiscalCode, iuv,ccp);
-
-        Map<String, List<EventEntity>> reGroups = reStorageEvents.stream().collect(Collectors.groupingBy(EventEntity::getCcp));
-
-        List<BasePaymentInfo> collect = reGroups.keySet().stream().map(gkey->{
-            List<EventEntity> events = reGroups.get(gkey);
-            EventEntity lastEvent = events.get(events.size()-1);
-            PaymentAttemptInfo pi = eventToPaymentAttemptInfo(config,lastEvent);
+        List<EventEntity> events = reTableService.findReByCiAndIUVAndCCP(dateRequest.getFrom(),dateRequest.getTo(), organizationFiscalCode, iuv,ccp);
+        List<BasePaymentInfo> pais = new ArrayList<>();
+        if(events.size()>0) {
+            EventEntity lastEvent = events.get(events.size() - 1);
+            PaymentAttemptInfo pai = eventToPaymentAttemptInfo(config, lastEvent);
             String outcome = null;
 
             Optional<PositiveBizEvent> pos = positiveBizClient.findEventsByCiAndIUVAndCCP(
-                    lastEvent.getIdDominio(),
-                    lastEvent.getIuv(),
-                    lastEvent.getCcp(),
+                    organizationFiscalCode,
+                    iuv,
+                    ccp,
                     dateRequest.getFrom(),
                     dateRequest.getTo()
             ).stream().findFirst();
-            if(pos.isPresent()){
-                outcome = outcomeOK;
-                pi.setOutcome(outcome);
-                enrichPaymentAttemptInfo(config,pi,pos.get());
-            }else{
+            if (pos.isPresent()) {
+                pai.setOutcome(outcomeOK);
+                enrichPaymentAttemptInfo(config, pai, pos.get());
+            } else {
                 Optional<NegativeBizEvent> neg = negativeBizClient.findEventsByCiAndIUVAndCCP(
-                        lastEvent.getIdDominio(),
-                        lastEvent.getIuv(),
-                        lastEvent.getPaymentToken(),
+                        organizationFiscalCode,
+                        iuv,
+                        ccp,
                         dateRequest.getFrom(),
                         dateRequest.getTo()
                 ).stream().findFirst();
-                if(neg.isPresent()){
-                    if(!neg.get().getReAwakable()){
-                        outcome = outcomeKO;
+                if (neg.isPresent()) {
+                    if (!neg.get().getReAwakable()) {
+                        pai.setOutcome(outcomeKO);
                     }
-                    enrichPaymentAttemptInfo(config,pi,neg.get());
+                    enrichPaymentAttemptInfo(config, pai, neg.get());
                 }
             }
-            return pi;
-        }).collect(Collectors.toList());
+            pais.add(pai);
+        }
 
         return TransactionResponse.builder()
                 .dateFrom(dateFrom)
                 .dateTo(dateTo)
-                .payments(collect)
+                .payments(pais)
                 .build();
     }
 

@@ -1,22 +1,18 @@
 package it.gov.pagopa.nodetsworker.resources;
 
 import it.gov.pagopa.nodetsworker.models.ProblemJson;
-import it.gov.pagopa.nodetsworker.models.TransactionResponse;
+import it.gov.pagopa.nodetsworker.resources.response.TransactionResponse;
 import it.gov.pagopa.nodetsworker.service.WorkerService;
+import jakarta.inject.Inject;
+import jakarta.validation.constraints.NotNull;
+import jakarta.ws.rs.*;
+import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.Response;
 import org.eclipse.microprofile.openapi.annotations.media.Content;
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
 import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
 import org.eclipse.microprofile.openapi.annotations.responses.APIResponses;
 
-import jakarta.inject.Inject;
-import jakarta.validation.constraints.NotNull;
-import jakarta.ws.rs.GET;
-import jakarta.ws.rs.Path;
-import jakarta.ws.rs.PathParam;
-import jakarta.ws.rs.Produces;
-import jakarta.ws.rs.QueryParam;
-import jakarta.ws.rs.core.MediaType;
-import jakarta.ws.rs.core.Response;
 import java.io.Serializable;
 import java.time.LocalDate;
 
@@ -92,7 +88,7 @@ public class WorkerResource implements Serializable {
             @QueryParam("dateFrom") LocalDate dateFrom,
             @QueryParam("dateTo") LocalDate dateTo
     ) {
-        return Response.ok(workerService.getInfoByNoticeNumberAndPaymentToken(organizationFiscalCode, iuv, paymentToken, dateFrom, dateTo)).build();
+        return Response.ok(workerService.getAttemptByNoticeNumberAndPaymentToken(organizationFiscalCode, iuv, paymentToken, dateFrom, dateTo)).build();
     }
 
     @APIResponses(value = {

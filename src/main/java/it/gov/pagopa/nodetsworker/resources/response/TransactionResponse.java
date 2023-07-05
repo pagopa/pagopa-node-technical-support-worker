@@ -1,7 +1,8 @@
-package it.gov.pagopa.nodetsworker.models;
+package it.gov.pagopa.nodetsworker.resources.response;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonSubTypes;
+import it.gov.pagopa.nodetsworker.models.BasePaymentInfo;
 import lombok.*;
 
 import java.time.LocalDate;
