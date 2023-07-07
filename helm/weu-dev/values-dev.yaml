@@ -1,7 +1,7 @@
 pagopa-tech-support-api:
   namespace: "techsupport"
   image:
-    repository: pagopadcommonacr.azurecr.io/pagopanodetechnicalsupportworker
+    repository: ghcr.io/pagopa/pagopanodetechnicalsupportworker
     tag: '1.0.0-SNAPSHOT'
   readinessProbe:
     httpGet:
