@@ -22,8 +22,8 @@ pagopa-tech-support-api:
     TZ: "Europe/Rome"
     OTEL_ENDPOINT: "http://otel-collector.elastic-system.svc.cluster.local:4317"
     ADAPTER_API_CONFIG_CACHE_URL: "https://api.dev.platform.pagopa.it/api-config-cache/p/v1"
-    COSMOS_BIZ_ENDPOINT:
-    COSMOS_NEG_BIZ_ENDPOINT:
+    COSMOS_BIZ_ENDPOINT: "https://pagopa-d-weu-bizevents-ds-cosmos-account.documents.azure.com:443/"
+    COSMOS_NEG_BIZ_ENDPOINT: "https://pagopa-d-weu-bizevents-neg-ds-cosmos-account.documents.azure.com:443/"
   envFieldRef:
     APP_NAME: "metadata.labels['app.kubernetes.io/instance']"
     APP_VERSION: "metadata.labels['app.kubernetes.io/version']"
@@ -31,15 +31,12 @@ pagopa-tech-support-api:
     create: true
     envSecrets:
       ADAPTER_API_CONFIG_CACHE_API_KEY: "api-config-cache-subscription-key-string"
-      OTEL_AUTH_BEARER: "otel-auth-bearer"
-      MONGODB_CONNECTION_STRING: "mongodb-connection-string"
-      QUEUE_CONVERSION_CONNECTION_STRING: "azure-queue-conversion-connection-string"
       EVENT_HUB_RE_CONNECTION_STRING: "azure-event-hub-re-connection-string"
-      COSMOS_BIZ_KEY: ""
-      COSMOS_NEG_BIZ_KEY: ""
-      RE_TABLE_STORAGE_CONN_STRING:
+      COSMOS_BIZ_KEY: "cosmos-biz-account-key"
+      COSMOS_NEG_BIZ_KEY: "cosmos-neg-biz-account-key"
+      RE_TABLE_STORAGE_CONN_STRING: "re-datastore-connection-string"
     keyvault:
-      name: "pagopa-d-techsupportapi-kv"
+      name: "pagopa-d-nodo-kv"
       tenantId: "7788edaf-0346-4068-9d79-c868aed15b3d"
   tmpVolumeMount:
     create: true
