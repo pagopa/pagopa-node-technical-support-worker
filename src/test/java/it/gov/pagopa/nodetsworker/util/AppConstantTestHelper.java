@@ -31,8 +31,10 @@ public class AppConstantTestHelper {
     entity.addProperty("noticeNumber", noticeNumber);
     entity.addProperty("iuv", iuv);
     entity.addProperty("esito", "CAMBIO_STATO");
-    entity.addProperty("paymentToken", "pt_" + noticeNumber);
-    entity.addProperty("ccp", "ccp_" + iuv);
+    if(noticeNumber!=null)
+      entity.addProperty("paymentToken", "pt_" + noticeNumber);
+    if(iuv!=null)
+      entity.addProperty("ccp", "ccp_" + iuv);
     entity.addProperty("stazione", "77777777777_01");
     entity.addProperty("psp", "pspTest");
     entity.addProperty("canale", "canaleTest");

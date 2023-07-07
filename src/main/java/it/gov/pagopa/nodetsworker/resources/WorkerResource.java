@@ -21,10 +21,7 @@ public class WorkerResource implements Serializable {
 
   @Inject WorkerService workerService;
 
-  /**
-   * ###### ######## ##### ####### ## ## ## ## ## ## ## ## ## ## ## ## ## ## ###### ######## ## ##
-   * ####### ## ## ## ## ## ## ## ## ## ## ## ## ###### ## ##### #######
-   */
+  /** SP03 */
   @APIResponses(
       value = {
         @APIResponse(
@@ -97,10 +94,7 @@ public class WorkerResource implements Serializable {
         .build();
   }
 
-  /**
-   * ###### ######## ##### ## ## ## ## ## ## ## ## ## ## ## ## ## ## ## ## ###### ######## ## ## ##
-   * ## ## ## ## ## ######### ## ## ## ## ## ## ###### ## ##### ##
-   */
+  /** SP04 */
   @APIResponses(
       value = {
         @APIResponse(

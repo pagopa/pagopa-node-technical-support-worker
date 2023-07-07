@@ -108,6 +108,7 @@ class Sp04Test {
     assertThat(o.getPspId(), equalTo("pspTest"));
     assertThat(o.getChannelId(), equalTo("canaleTest"));
     assertThat(o.getBrokerPspId(), equalTo("intTest"));
+    assertThat(o.getPaymentToken(), equalTo(token));
   }
 
   @SneakyThrows
@@ -144,6 +145,7 @@ class Sp04Test {
     assertThat(o.getPspId(), equalTo("pspTest"));
     assertThat(o.getChannelId(), equalTo("canaleTest"));
     assertThat(o.getBrokerPspId(), equalTo("intTest"));
+    assertThat(o.getPaymentToken(), equalTo(token));
   }
 
   @SneakyThrows
@@ -180,6 +182,7 @@ class Sp04Test {
     assertThat(o.getPspId(), equalTo("pspTest"));
     assertThat(o.getChannelId(), equalTo("canaleTest"));
     assertThat(o.getBrokerPspId(), equalTo("intTest"));
+    assertThat(o.getPaymentToken(), equalTo(ccp));
   }
 
   @SneakyThrows
@@ -216,6 +219,7 @@ class Sp04Test {
     assertThat(o.getPspId(), equalTo("pspTest"));
     assertThat(o.getChannelId(), equalTo("canaleTest"));
     assertThat(o.getBrokerPspId(), equalTo("intTest"));
+    assertThat(o.getPaymentToken(), equalTo(ccp));
   }
 
   @SneakyThrows

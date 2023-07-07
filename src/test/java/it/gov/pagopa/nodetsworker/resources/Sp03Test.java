@@ -15,7 +15,10 @@ import com.azure.data.tables.TableServiceClientBuilder;
 import io.quarkiverse.mockserver.test.MockServerTestResource;
 import io.quarkus.test.common.QuarkusTestResource;
 import io.quarkus.test.junit.QuarkusTest;
+import io.restassured.RestAssured;
 import io.restassured.common.mapper.TypeRef;
+import io.restassured.filter.log.RequestLoggingFilter;
+import io.restassured.filter.log.ResponseLoggingFilter;
 import it.gov.pagopa.nodetsworker.models.PaymentInfo;
 import it.gov.pagopa.nodetsworker.repository.CosmosBizEventClient;
 import it.gov.pagopa.nodetsworker.repository.CosmosNegBizEventClient;
@@ -218,7 +221,7 @@ class Sp03Test {
   @Test
   @DisplayName("dateFrom 400")
   void test5() {
-    String iuv = String.valueOf(new Random().nextLong(11111111111l, 99999999999l));
+    String iuv = String.valueOf(Instant.now().toEpochMilli());
     String url = SP03_IUV.formatted(PA_CODE, iuv);
 
     given().param("dateFrom", Util.format(LocalDate.now())).when().get(url).then().statusCode(400);
@@ -228,9 +231,21 @@ class Sp03Test {
   @Test
   @DisplayName("dateTo 400")
   void test6() {
-    String iuv = String.valueOf(new Random().nextLong(11111111111l, 99999999999l));
+    String iuv = String.valueOf(Instant.now().toEpochMilli());
     String url = SP03_IUV.formatted(PA_CODE, iuv);
 
     given().param("dateTo", Util.format(LocalDate.now())).when().get(url).then().statusCode(400);
+  }
+
+  @SneakyThrows
+  @Test
+  @DisplayName("bad date 400")
+  void test7() {
+    String iuv = String.valueOf(Instant.now().toEpochMilli());
+    String url = SP03_IUV.formatted(PA_CODE, iuv);
+
+    RestAssured.filters(new RequestLoggingFilter(), new ResponseLoggingFilter());
+
+    given().param("dateTo", "aaa").when().get(url).then().statusCode(404);
   }
 }

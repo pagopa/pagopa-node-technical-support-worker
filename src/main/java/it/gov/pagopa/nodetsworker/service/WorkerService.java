@@ -15,7 +15,7 @@ import it.gov.pagopa.nodetsworker.repository.model.EventEntity;
 import it.gov.pagopa.nodetsworker.repository.model.NegativeBizEvent;
 import it.gov.pagopa.nodetsworker.repository.model.PositiveBizEvent;
 import it.gov.pagopa.nodetsworker.resources.response.TransactionResponse;
-import it.gov.pagopa.nodetsworker.service.mapper.EventMapper;
+//import it.gov.pagopa.nodetsworker.service.mapper.EventMapper;
 import it.gov.pagopa.nodetsworker.util.StatusUtil;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
@@ -38,7 +38,7 @@ public class WorkerService {
 
   @Inject Config configObject;
 
-  @Inject EventMapper eventsMapper;
+//  @Inject EventMapper eventsMapper;
 
   @Inject CosmosBizEventClient positiveBizClient;
   @Inject CosmosNegBizEventClient negativeBizClient;
@@ -56,7 +56,7 @@ public class WorkerService {
         .channelId(ee.getCanale())
         .brokerPspId(brokerid)
         .insertedTimestamp(ee.getInsertedTimestamp())
-        .paymentToken(ee.getPaymentToken())
+        .paymentToken(ee.getPaymentToken()!=null?ee.getPaymentToken():ee.getCcp())
         .noticeNumber(ee.getNoticeNumber())
         .iuv(ee.getIuv())
         .organizationFiscalCode(ee.getIdDominio())
@@ -75,8 +75,8 @@ public class WorkerService {
         .channelId(ee.getCanale())
         .brokerPspId(brokerid)
         .insertedTimestamp(ee.getInsertedTimestamp())
-        .paymentToken(ee.getPaymentToken())
         .noticeNumber(ee.getNoticeNumber())
+        .paymentToken(ee.getPaymentToken()!=null?ee.getPaymentToken():ee.getCcp())
         .iuv(ee.getIuv())
         .organizationFiscalCode(ee.getIdDominio())
         .status(StatusUtil.statoByReStatus(ee.getStatus()))
@@ -118,6 +118,7 @@ public class WorkerService {
     if (pai.getBrokerPspId() == null) {
       pai.setBrokerPspId(nbe.getPsp().getIdBrokerPsp());
     }
+    pai.setPaymentToken(nbe.getPaymentInfo().getPaymentToken());
     pai.setStationVersion(stationVersion);
     pai.setAmount(nbe.getPaymentInfo().getAmount());
     pai.setPaymentMethod(nbe.getPaymentInfo().getPaymentMethod());
@@ -127,10 +128,6 @@ public class WorkerService {
 
   public TransactionResponse getInfoByNoticeNumber(
       String organizationFiscalCode, String noticeNumber, LocalDate dateFrom, LocalDate dateTo) {
-
-    log.infof(
-        "getInfoByNoticeNumber %s,%s,%s,%s",
-        organizationFiscalCode, noticeNumber, dateFrom, dateTo);
 
     DateRequest dateRequest = verifyDate(dateFrom, dateTo);
     ConfigDataV1 config = configObject.getClonedCache();
@@ -193,8 +190,6 @@ public class WorkerService {
   public TransactionResponse getInfoByIUV(
       String organizationFiscalCode, String iuv, LocalDate dateFrom, LocalDate dateTo) {
 
-    log.infof("getInfoByIUV %s,%s,%s,%s", organizationFiscalCode, iuv, dateFrom, dateTo);
-
     DateRequest dateRequest = verifyDate(dateFrom, dateTo);
     ConfigDataV1 config = configObject.getClonedCache();
     List<EventEntity> reStorageEvents =
@@ -248,8 +243,8 @@ public class WorkerService {
             .collect(Collectors.toList());
 
     return TransactionResponse.builder()
-        .dateFrom(dateFrom)
-        .dateTo(dateTo)
+        .dateFrom(dateRequest.getFrom())
+        .dateTo(dateRequest.getTo())
         .payments(collect)
         .build();
   }
@@ -260,10 +255,6 @@ public class WorkerService {
       String paymentToken,
       LocalDate dateFrom,
       LocalDate dateTo) {
-
-    log.infof(
-        "getInfoByNoticeNumberAndPaymentToken %s,%s,%s,%s,%s",
-        organizationFiscalCode, noticeNumber, paymentToken, dateFrom, dateTo);
 
     DateRequest dateRequest = verifyDate(dateFrom, dateTo);
     List<EventEntity> events =
@@ -313,14 +304,15 @@ public class WorkerService {
       pais.add(pai);
     }
 
-    return TransactionResponse.builder().dateFrom(dateFrom).dateTo(dateTo).payments(pais).build();
+    return TransactionResponse.builder()
+        .dateFrom(dateRequest.getFrom())
+        .dateTo(dateRequest.getTo())
+        .payments(pais)
+        .build();
   }
 
   public TransactionResponse getAttemptByIUVAndCCP(
       String organizationFiscalCode, String iuv, String ccp, LocalDate dateFrom, LocalDate dateTo) {
-
-    log.infof(
-        "getAttemptByIUVAndCCP %s,%s,%s,%s,%s", organizationFiscalCode, iuv, ccp, dateFrom, dateTo);
 
     DateRequest dateRequest = verifyDate(dateFrom, dateTo);
     ConfigDataV1 config = configObject.getClonedCache();
@@ -359,7 +351,11 @@ public class WorkerService {
       pais.add(pai);
     }
 
-    return TransactionResponse.builder().dateFrom(dateFrom).dateTo(dateTo).payments(pais).build();
+    return TransactionResponse.builder()
+        .dateFrom(dateRequest.getFrom())
+        .dateTo(dateRequest.getTo())
+        .payments(pais)
+        .build();
   }
 
   /**

@@ -13,6 +13,5 @@ import lombok.experimental.SuperBuilder;
 @SuperBuilder
 public class PaymentInfo extends BasePaymentInfo {
 
-  private String
-      paymentToken; // for new payment model is payment token and for old payment model is ccp
+  private String paymentToken; // for new payment model is payment token and for old payment model is ccp
 }

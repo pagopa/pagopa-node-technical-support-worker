@@ -119,8 +119,6 @@ stages:
               buildname="$(Build.BuildNumber) ${{ parameters.ENV }}"
               echo "##vso[build.addbuildtag]${{ parameters.ENV }}"
               echo "##vso[build.updatebuildnumber]$buildname"
-          - bash: |
-              echo "##vso[task.setvariable variable=LIGHTBEND_KEY]$(lightbend_key_secret)"
           - checkout: self
             clean: true
             persistCredentials: true
@@ -248,7 +246,7 @@ stages:
                                 DO_DEPLOY: true
                                 ENV: ${{ parameters['ENV'] }}
                                 KUBERNETES_SERVICE_CONN: ${{ variables.WEU_kubernetesServiceConnection }}
-                                NAMESPACE: "fdr"
+                                NAMESPACE: $(nameSpace)
                                 APP_NAME: "$(appName)-canary"
                                 VALUE_FILE: $(WEU_value_file)
                                 DEPLOY_VERSION: $(current_version)
@@ -325,7 +323,7 @@ stages:
                         DO_DEPLOY: true
                         ENV: ${{ parameters['ENV'] }}
                         KUBERNETES_SERVICE_CONN: ${{ variables.WEU_kubernetesServiceConnection }}
-                        NAMESPACE: "fdr"
+                        NAMESPACE: $(nameSpace)
                         APP_NAME: $(appName)
                         VALUE_FILE: $(WEU_value_file)
                         DEPLOY_VERSION: $(current_version)
@@ -345,7 +343,7 @@ stages:
                             DO_DEPLOY: true
                             ENV: ${{ parameters['ENV'] }}
                             KUBERNETES_SERVICE_CONN: ${{ variables.WEU_kubernetesServiceConnection }}
-                            NAMESPACE: "fdr"
+                            NAMESPACE: $(nameSpace)
                             APP_NAME: "$(appName)-canary"
                             VALUE_FILE: $(WEU_value_file)
                             DEPLOY_VERSION: $(current_version)
@@ -381,7 +379,7 @@ stages:
                             DO_DEPLOY: true
                             ENV: ${{ parameters['ENV'] }}
                             KUBERNETES_SERVICE_CONN: ${{ variables.WEU_kubernetesServiceConnection }}
-                            NAMESPACE: "fdr"
+                            NAMESPACE: $(nameSpace)
                             APP_NAME: "$(appName)-canary"
                             VALUE_FILE: $(WEU_value_file)
                             DEPLOY_VERSION: $(current_version)
