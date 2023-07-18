@@ -83,3 +83,10 @@ pagopa-tech-support-api:
     create: true
     host: "weudev.techsupport.internal.dev.platform.pagopa.it"
     path: /pagopa-tech-support(/|$)(.*)
+microservice-chart:
+  image:
+    tag: 1.0.0-3-implementing
+  canaryDelivery:
+    deployment:
+      image:
+        tag: 1.0.0-3-implementing
