@@ -3,7 +3,7 @@
   "info": {
     "title": "Node technical support - Api (local) ${service}",
     "termsOfService": "https://www.pagopa.gov.it/",
-    "version": "1.0.0-1-implementing"
+    "version": "1.0.0-2-implementing"
   },
   "servers": [
     {
