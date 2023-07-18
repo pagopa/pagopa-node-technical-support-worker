@@ -7,8 +7,8 @@ USER quarkus
 WORKDIR /code
 RUN chmod +x ./mvnw && ./mvnw -B org.apache.maven.plugins:maven-dependency-plugin:3.1.2:go-offline
 COPY src /code/src
-ARG QUARKUS_PROFILE
-ARG APP_NAME
+ENV APP_NAME=nodetechnicalsupport
+ENV QUARKUS_PROFILE=prod
 
 RUN ./mvnw package -DskipTests=true -Dquarkus.application.name=$APP_NAME -Dquarkus.profile=$QUARKUS_PROFILE
 
@@ -25,8 +25,8 @@ COPY --from=build /code/target/quarkus-app/quarkus/ /deployments/quarkus/
 EXPOSE 8080
 USER 185
 
-ARG QUARKUS_PROFILE
-ARG APP_NAME
+ENV APP_NAME=nodetechnicalsupport
+ENV QUARKUS_PROFILE=prod
 
 ENV JAVA_OPTS="-Dquarkus.http.host=0.0.0.0 -Dquarkus.application.name=$APP_NAME -Dquarkus.profile=$QUARKUS_PROFILE -Djava.util.logging.manager=org.jboss.logmanager.LogManager"
 ENV JAVA_APP_JAR="/deployments/quarkus-run.jar"

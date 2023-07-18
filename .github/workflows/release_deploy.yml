@@ -114,7 +114,6 @@ jobs:
           branch: ${{ github.ref_name}}
           github_token: ${{ secrets.GITHUB_TOKEN }}
           tag: ${{ needs.release.outputs.version }}
-          build_args: "APP_NAME=nodetechnicalsupport QUARKUS_PROFILE=prod"
 
   deploy_aks:
     name: Deploy on AKS
