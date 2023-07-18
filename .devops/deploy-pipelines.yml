@@ -93,7 +93,6 @@ variables:
     WEU_kubernetesServiceConnection: '$(DEV_KUBERNETES_SERVICE_CONN)'
     WEU_poolImage: '$(DEPLOY-POOL-DEV)'
 
-
   ${{ if eq(parameters['ENV'], 'uat') }}:
     WEU_dockerRegistryServiceConnection: $(UAT_CONTAINER_REGISTRY_SERVICE_CONN)
     WEU_dockerRegistryFqdn: $(UAT_CONTAINER_NAMESPACE)
