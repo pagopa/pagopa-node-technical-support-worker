@@ -85,7 +85,7 @@ variables:
   WEU_value_file: "helm/weu-${{ parameters['ENV'] }}/values-${{ parameters['ENV'] }}.yaml"
   NEU_value_file: "helm/neu-${{ parameters['ENV'] }}/values-${{ parameters['ENV'] }}.yaml"
 
-  appName: 'pagopatechsupport'
+  appName: 'node-technicalsupport'
 
   ${{ if eq(parameters['ENV'], 'dev') }}:
     WEU_dockerRegistryServiceConnection: $(DEV_CONTAINER_REGISTRY_SERVICE_CONN)
