@@ -14,8 +14,8 @@ on:
 
 
 env:
-  NAMESPACE: <namespace> # TODO set namespace
-  APP_NAME: <project> # TODO set project name
+  NAMESPACE: nodo
+  APP_NAME: node-technicalsupport
 
 
 permissions:
