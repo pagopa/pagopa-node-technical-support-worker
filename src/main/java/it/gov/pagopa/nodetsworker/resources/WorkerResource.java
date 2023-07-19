@@ -120,16 +120,16 @@ public class WorkerResource implements Serializable {
                     schema = @Schema(implementation = ProblemJson.class)))
       })
   @GET
-  @Path("/{organizationFiscalCode}/iuv/{iuv}/paymentToken/{paymentToken}")
+  @Path("/{organizationFiscalCode}/noticeNumber/{noticeNumber}/paymentToken/{paymentToken}")
   public Response useCaseSP04_byIUV_PaymentToken(
       @PathParam("organizationFiscalCode") @NotNull String organizationFiscalCode,
-      @PathParam("iuv") @NotNull String iuv,
+      @PathParam("noticeNumber") @NotNull String noticeNumber,
       @PathParam("paymentToken") @NotNull String paymentToken,
       @QueryParam("dateFrom") LocalDate dateFrom,
       @QueryParam("dateTo") LocalDate dateTo) {
     return Response.ok(
             workerService.getAttemptByNoticeNumberAndPaymentToken(
-                organizationFiscalCode, iuv, paymentToken, dateFrom, dateTo))
+                organizationFiscalCode, noticeNumber, paymentToken, dateFrom, dateTo))
         .build();
   }
 

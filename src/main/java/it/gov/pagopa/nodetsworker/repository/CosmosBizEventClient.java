@@ -101,7 +101,7 @@ public class CosmosBizEventClient {
     return query(q);
   }
 
-  public CosmosPagedIterable<Count> countEventsByCiAndNN(
+  public CosmosPagedIterable<PositiveBizEvent> getEventsByCiAndNN(
       String organizationFiscalCode, String noticeNumber, LocalDate dateFrom, LocalDate dateTo) {
     List<SqlParameter> paramList =
         Arrays.asList(
@@ -112,16 +112,16 @@ public class CosmosBizEventClient {
 
     SqlQuerySpec q =
         new SqlQuerySpec(
-                "SELECT count(1) as count FROM c where"
+                "SELECT * FROM c where"
                     + " c.creditor.idPA = @organizationFiscalCode"
                     + " and c.debtorPosition.noticeNumber = @noticeNumber"
                     + " and c.timestamp > @from"
                     + " and c.timestamp < @to")
             .setParameters(paramList);
-    return queryCount(q);
+    return query(q);
   }
 
-  public CosmosPagedIterable<Count> countEventsByCiAndIUV(
+  public CosmosPagedIterable<PositiveBizEvent> getEventsByCiAndIUV(
       String organizationFiscalCode, String iuv, LocalDate dateFrom, LocalDate dateTo) {
     List<SqlParameter> paramList =
         Arrays.asList(
@@ -132,12 +132,12 @@ public class CosmosBizEventClient {
 
     SqlQuerySpec q =
         new SqlQuerySpec(
-                "SELECT count(1) as count FROM c where"
+                "SELECT * FROM c where"
                     + " c.creditor.idPA = @organizationFiscalCode"
                     + " and c.debtorPosition.iuv = @iuv"
                     + " and c.timestamp > @from"
                     + " and c.timestamp < @to")
             .setParameters(paramList);
-    return queryCount(q);
+    return query(q);
   }
 }

@@ -15,14 +15,11 @@ import lombok.experimental.SuperBuilder;
 public class PaymentAttemptInfo extends BasePaymentAttemptInfo {
 
   private String paymentToken;
-  private Boolean pmReceipt;
+  private String ccp;
+  private String pmReceipt;
   private String paymentMethod;
-  private String paymentChannel;
-  private Long stationVersion;
+  private String touchPoint;
   private BigDecimal fee;
   private BigDecimal feeOrganization;
-  private String bundleId;
-  private String bundleOrganizationId;
-  private String applicationDate;
-  private String transferDate;
+
 }

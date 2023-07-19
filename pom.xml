@@ -117,11 +117,6 @@
       <artifactId>quarkus-scheduler</artifactId>
     </dependency>
     <dependency>
-      <groupId>io.quarkiverse.mockserver</groupId>
-      <artifactId>quarkus-mockserver-test</artifactId>
-      <version>1.0.0</version>
-    </dependency>
-    <dependency>
       <groupId>com.azure</groupId>
       <artifactId>azure-data-tables</artifactId>
       <version>12.3.12</version>

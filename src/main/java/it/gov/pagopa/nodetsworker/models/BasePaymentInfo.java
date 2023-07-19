@@ -24,5 +24,8 @@ public class BasePaymentInfo {
   private String insertedTimestamp;
   private String updatedTimestamp;
   private Boolean isOldPaymentModel;
-  private String nodeId;
+  private String serviceIdentifier;
+
+  private String positiveBizEvtId;
+  private String negativeBizEvtId;
 }

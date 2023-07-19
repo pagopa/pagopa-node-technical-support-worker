@@ -1,18 +1,11 @@
 package it.gov.pagopa.nodetsworker.resources;
 
-import static io.restassured.RestAssured.given;
-import static it.gov.pagopa.nodetsworker.util.AppConstantTestHelper.*;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.greaterThan;
-
 import com.azure.cosmos.CosmosClient;
 import com.azure.cosmos.CosmosClientBuilder;
 import com.azure.cosmos.models.CosmosItemRequestOptions;
 import com.azure.data.tables.TableClient;
 import com.azure.data.tables.TableServiceClient;
 import com.azure.data.tables.TableServiceClientBuilder;
-import io.quarkiverse.mockserver.test.MockServerTestResource;
 import io.quarkus.test.common.QuarkusTestResource;
 import io.quarkus.test.junit.QuarkusTest;
 import io.restassured.RestAssured;
@@ -27,16 +20,21 @@ import it.gov.pagopa.nodetsworker.util.AppConstantTestHelper;
 import it.gov.pagopa.nodetsworker.util.AzuriteResource;
 import it.gov.pagopa.nodetsworker.util.CosmosResource;
 import it.gov.pagopa.nodetsworker.util.Util;
-import java.time.Instant;
-import java.time.LocalDate;
-import java.util.Random;
 import lombok.SneakyThrows;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
+import java.time.Instant;
+import java.time.LocalDate;
+
+import static io.restassured.RestAssured.given;
+import static it.gov.pagopa.nodetsworker.util.AppConstantTestHelper.*;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.greaterThan;
+
 @QuarkusTest
-@QuarkusTestResource(MockServerTestResource.class)
 @QuarkusTestResource(AzuriteResource.class)
 @QuarkusTestResource(CosmosResource.class)
 class Sp03Test {

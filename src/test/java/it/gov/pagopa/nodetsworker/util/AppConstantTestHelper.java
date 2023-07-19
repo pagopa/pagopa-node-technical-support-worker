@@ -13,7 +13,7 @@ public class AppConstantTestHelper {
   public static final String SP03_NN = "/organizations/%s/noticeNumber/%s";
   public static final String SP03_IUV = "/organizations/%s/iuv/%s";
 
-  public static final String SP04_NN = "/organizations/%s/iuv/%s/paymentToken/%s";
+  public static final String SP04_NN = "/organizations/%s/noticeNumber/%s/paymentToken/%s";
   public static final String SP04_IUV = "/organizations/%s/iuv/%s/ccp/%s";
 
   public static final String PA_CODE = "12345678900";
@@ -47,7 +47,7 @@ public class AppConstantTestHelper {
         PositiveBizEvent.builder()
             .id(UUID.randomUUID().toString())
             .timestamp(Util.toMillis(LocalDateTime.now()))
-            .psp(Psp.builder().psp("pspTest").idChannel("canaleTest").build())
+            .psp(Psp.builder().idBrokerPsp("intTest").psp("pspTest").idChannel("canaleTest").build())
             .creditor(Creditor.builder().idPA(pa).build())
             .debtorPosition(
                 DebtorPosition.builder().modelType("1").iuv(iuv).noticeNumber(noticeNumber).build())
@@ -66,7 +66,9 @@ public class AppConstantTestHelper {
         NegativeBizEvent.builder()
             .id(UUID.randomUUID().toString())
             .timestamp(Util.toMillis(LocalDateTime.now()))
-            .creditor(Creditor.builder().idPA(pa).build())
+                .psp(Psp.builder().idBrokerPsp("intTest").psp("pspTest").idChannel("canaleTest").build())
+
+                .creditor(Creditor.builder().idPA(pa).build())
             .debtorPosition(
                 DebtorPosition.builder().iuv(iuv).noticeNumber(noticeNumber).modelType("1").build())
             .paymentInfo(
