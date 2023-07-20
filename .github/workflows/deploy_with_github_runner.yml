@@ -3,6 +3,10 @@ name: Deploy on AKS
 on:
   workflow_call:
     inputs:
+      tag:
+        required: true
+        description: Image version to deploy
+        type: string
       environment:
         required: true
         description: The name of the environment where to deploy
