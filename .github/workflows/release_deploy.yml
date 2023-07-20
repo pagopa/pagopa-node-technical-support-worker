@@ -126,6 +126,7 @@ jobs:
     with:
       environment: ${{ matrix.environment }}
       target: ${{ needs.setup.outputs.environment }}
+      tag: ${{ needs.release.outputs.version }}
     secrets: inherit
 
   notify:
