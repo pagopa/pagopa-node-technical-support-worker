@@ -79,5 +79,5 @@ pagopa-tech-support-api:
     create: true
   ingress:
     create: true
-    host: "weudev.techsupport.internal.dev.platform.pagopa.it"
-    path: /pagopa-tech-support(/|$)(.*)
+    host: "weudev.nodo.internal.dev.platform.pagopa.it"
+    path: /pagopa-nodo-technical-support-service(/|$)(.*)
