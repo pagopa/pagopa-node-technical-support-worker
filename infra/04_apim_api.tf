@@ -1,52 +1,57 @@
+##############
+## Product ##
+##############
+data "azurerm_api_management_product" "technical_support_api_product" {
+  product_id          = "technical_support_api"
+  api_management_name = local.apim.name
+  resource_group_name = local.apim.rg
+}
+
+###############
+##    API    ##
+###############
 locals {
-  display_name = "API Config Selfcare Integration"
-  description  = "Management APIs to configure pagoPA for Selfcare"
-  host         = "api.${var.apim_dns_zone_prefix}.${var.external_domain}"
-  hostname     = var.env == "prod" ? "weuprod.apiconfig.internal.platform.pagopa.it" : "weu${var.env}.apiconfig.internal.${var.env}.platform.pagopa.it"
+  apim_technical_support_api = {
+    display_name          = "Nodo Technical Support"
+    description           = "API Assistenza del Nodo dei Pagamenti"
+    path                  = "technical-support/nodo"
+    subscription_required = true
+    service_url           = null
+  }
 }
 
-resource "azurerm_api_management_group" "api_apiconfig_selfcare_integration_group" {
-  name                = local.apim.product_id
+resource "azurerm_api_management_api_version_set" "api_nodo_technical_support_api" {
+  name                = format("%s-technical-support-api", local.project)
   resource_group_name = local.apim.rg
   api_management_name = local.apim.name
-  display_name        = local.display_name
-  description         = local.description
-}
-
-resource "azurerm_api_management_api_version_set" "apiconfig_selfcare_integration_api" {
-  name                = format("%s-apiconfig-selfcare-integration-api", var.env_short)
-  resource_group_name = local.apim.rg
-  api_management_name = local.apim.name
-  display_name        = local.display_name
+  display_name        = local.apim_technical_support_api.display_name
   versioning_scheme   = "Segment"
 }
 
-module "apim_apiconfig_selfcare_integration_api_v1" {
-  source = "git::https://github.com/pagopa/terraform-azurerm-v3.git//api_management_api?ref=v6.7.0"
 
-  name                  = format("%s-apiconfig-selfcare-integration-api", var.env_short)
+module "api_nodo_technical_support_api_v1" {
+  source = "git::https://github.com/pagopa/terraform-azurerm-v3.git//api_management_api?ref=v6.4.1"
+
+  name                  = format("%s-technical-support-api", local.project)
   api_management_name   = local.apim.name
   resource_group_name   = local.apim.rg
-  product_ids           = [local.apim.product_id]
-  subscription_required = true
+  product_ids           = [data.azurerm_api_management_product.technical_support_api_product.product_id]
+  version_set_id        = azurerm_api_management_api_version_set.api_nodo_technical_support_api.id
+  api_version           = "v1"
 
-  version_set_id = azurerm_api_management_api_version_set.apiconfig_selfcare_integration_api.id
-  api_version    = "v1"
-
-  description  = local.description
-  display_name = local.display_name
-  path         = "apiconfig-selfcare-integration"
+  description  = local.apim_technical_support_api.description
+  display_name = local.apim_technical_support_api.display_name
+  path         = local.apim_technical_support_api.path
   protocols    = ["https"]
-
-  service_url = null
+  service_url  = local.apim_technical_support_api.service_url
 
   content_format = "openapi"
-  content_value  = templatefile("../openapi/openapi.json", {
-    host = local.host
+  content_value = templatefile("./api/technical-support-service/v1/_openapi.json.tpl", {
+    host    = local.apim.hostname
+    service = data.azurerm_api_management_product.technical_support_api_product.product_id
   })
 
-  xml_content = templatefile("./policy/_base_policy.xml", {
-    hostname = local.hostname
+  xml_content = templatefile("./api/technical-support-service/v1/_base_policy.xml", {
+    hostname = local.nodo.hostname
   })
 }
-
