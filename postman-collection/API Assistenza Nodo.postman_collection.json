@@ -198,12 +198,12 @@
 			"response": []
 		},
 		{
-			"name": "SP04 - getByIUVPaymentToken - paymentPosition",
+			"name": "SP04 - getByNoticeNumberPaymentToken - paymentPosition",
 			"request": {
 				"method": "GET",
 				"header": [],
 				"url": {
-					"raw": "localhost:8090/organizations/:organizationFiscalCode/iuv/:iuv/paymentToken/:paymentToken",
+					"raw": "localhost:8090/organizations/:organizationFiscalCode/noticeNumber/:noticeNumber/paymentToken/:paymentToken",
 					"host": [
 						"localhost"
 					],
@@ -211,8 +211,8 @@
 					"path": [
 						"organizations",
 						":organizationFiscalCode",
-						"iuv",
-						":iuv",
+						"noticeNumber",
+						":noticeNumber",
 						"paymentToken",
 						":paymentToken"
 					],
@@ -222,8 +222,8 @@
 							"value": "66666666666"
 						},
 						{
-							"key": "iuv",
-							"value": "115711204446826"
+							"key": "noticeNumber",
+							"value": "302111116174998800"
 						},
 						{
 							"key": "paymentToken",
@@ -235,12 +235,12 @@
 			"response": []
 		},
 		{
-			"name": "SP04 - getByIUVPaymentTokenDate - paymentPosition",
+			"name": "SP04 - getByNoticeNumberPaymentTokenDate - paymentPosition",
 			"request": {
 				"method": "GET",
 				"header": [],
 				"url": {
-					"raw": "localhost:8090/organizations/:organizationFiscalCode/iuv/:iuv/paymentToken/:paymentToken?dateFrom=2023-01-01&dateTo=2023-01-30",
+					"raw": "localhost:8090/organizations/:organizationFiscalCode/noticeNumber/:noticeNumber/paymentToken/:paymentToken?dateFrom=2023-01-01&dateTo=2023-01-30",
 					"host": [
 						"localhost"
 					],
@@ -248,8 +248,8 @@
 					"path": [
 						"organizations",
 						":organizationFiscalCode",
-						"iuv",
-						":iuv",
+						"noticeNumber",
+						":noticeNumber",
 						"paymentToken",
 						":paymentToken"
 					],
@@ -269,8 +269,8 @@
 							"value": "66666666666"
 						},
 						{
-							"key": "iuv",
-							"value": "111116174998800"
+							"key": "noticeNumber",
+							"value": "302111116174998800"
 						},
 						{
 							"key": "paymentToken",
@@ -282,7 +282,7 @@
 			"response": []
 		},
 		{
-			"name": "SP04 - getByIUVPaymentTokenDate - paymentPosition Copy",
+			"name": "SP04 - getByIUVCCP - paymentPosition Copy",
 			"request": {
 				"method": "GET",
 				"header": [],
