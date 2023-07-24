@@ -1,7 +1,7 @@
 microservice-chart:
   namespace: "nodo"
   image:
-    repository: ghcr.io/pagopa/pagopanodetechnicalsupportworker
+    repository: ghcr.io/pagopa/pagopa-node-technical-support-worker
     tag: '1.0.2-1-NOD-357-deploy'
   readinessProbe:
     httpGet:
@@ -79,9 +79,5 @@ microservice-chart:
     create: true
   ingress:
     create: true
-    host: "weudev.techsupport.internal.dev.platform.pagopa.it"
-    path: /pagopa-tech-support(/|$)(.*)
-  canaryDelivery:
-    deployment:
-      image:
-        tag: 1.0.2-1-NOD-357-deploy
+    host: "weudev.nodo.internal.dev.platform.pagopa.it"
+    path: /pagopa-nodo-technical-support-service(/|$)(.*)
