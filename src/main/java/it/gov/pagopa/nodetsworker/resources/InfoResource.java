@@ -32,7 +32,7 @@ public class InfoResource {
   @ConfigProperty(name = "app.environment", defaultValue = "local")
   String environment;
 
-  @Operation(summary = "Get info of FDR")
+  @Operation(summary = "Get info of Node tech support API")
   @APIResponses(
       value = {
         @APIResponse(ref = "#/components/responses/InternalServerError"),

@@ -11,7 +11,7 @@ import org.eclipse.microprofile.openapi.annotations.media.Schema;
 @Jacksonized
 @JsonPropertyOrder({"name", "version", "environment", "description", "errorCodes"})
 public class InfoResponse {
-  @Schema(example = "pagopa-fdr")
+  @Schema(example = "pagopa-node-tech-support")
   private String name;
 
   @Schema(example = "1.2.3")
@@ -20,7 +20,7 @@ public class InfoResponse {
   @Schema(example = "dev")
   private String environment;
 
-  @Schema(example = "FDR - Flussi di rendicontazione")
+  @Schema(example = "Node tech support API")
   private String description;
 
   private List<ErrorCode> errorCodes;
@@ -30,7 +30,7 @@ public class InfoResponse {
   @AllArgsConstructor
   @NoArgsConstructor
   public static class ErrorCode {
-    @Schema(example = "FDR-0500")
+    @Schema(example = "0500")
     private String code;
 
     @Schema(example = "An unexpected error has occurred. Please contact support.")

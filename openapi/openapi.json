@@ -16,7 +16,7 @@
     "/info" : {
       "get" : {
         "tags" : [ "Info" ],
-        "summary" : "Get info of FDR",
+        "summary" : "Get info of Node tech support API",
         "responses" : {
           "default" : {
             "$ref" : "#/components/responses/InternalServerError"
@@ -359,7 +359,7 @@
         "properties" : {
           "code" : {
             "type" : "string",
-            "example" : "FDR-0500"
+            "example" : "0500"
           },
           "description" : {
             "type" : "string",
@@ -377,7 +377,7 @@
         "properties" : {
           "name" : {
             "type" : "string",
-            "example" : "pagopa-fdr"
+            "example" : "pagopa-node-tech-support"
           },
           "version" : {
             "type" : "string",
@@ -389,7 +389,7 @@
           },
           "description" : {
             "type" : "string",
-            "example" : "FDR - Flussi di rendicontazione"
+            "example" : "Node tech support API"
           },
           "errorCodes" : {
             "type" : "array",

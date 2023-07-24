@@ -2,7 +2,7 @@ package it.gov.pagopa.nodetsworker.util;
 
 public class AppConstant {
 
-  public static final String SERVICE_CODE_APP = "FDR";
+  public static final String SERVICE_CODE_APP = "NODE_TECH_SUPPORT";
 
   public static final String PSP_ID = "pspId";
   public static final String EC_ID = "ecId";
