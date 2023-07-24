@@ -2,6 +2,12 @@
 
 [![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=TODO-set-your-id&metric=alert_status)](https://sonarcloud.io/dashboard?id=TODO-set-your-id)
 
+
+---
+## API Documentation 📖
+See the [OpenAPI 3 here.](https://raw.githubusercontent.com/pagopa/pagopa-quarkus-template/openapi/openapi.json)
+
+---
 ## Technology Stack
 - Maven
 - Java 17
