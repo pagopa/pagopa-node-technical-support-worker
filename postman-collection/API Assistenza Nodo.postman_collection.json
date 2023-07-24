@@ -1,0 +1,367 @@
+{
+	"info": {
+		"_postman_id": "6569ba25-49bf-4f53-88f8-c98a9b85fc3b",
+		"name": "API Assistenza Nodo - Worker",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "7859468"
+	},
+	"item": [
+		{
+			"name": "info",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{nodo-ts-host}}/info",
+					"host": [
+						"{{nodo-ts-host}}"
+					],
+					"path": [
+						"info"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "SP03 - getByNoticeNumber - paymentPosition",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{nodo-ts-host}}/organizations/:organizationFiscalCode/noticeNumber/:noticeNumber",
+					"host": [
+						"{{nodo-ts-host}}"
+					],
+					"path": [
+						"organizations",
+						":organizationFiscalCode",
+						"noticeNumber",
+						":noticeNumber"
+					],
+					"variable": [
+						{
+							"key": "organizationFiscalCode",
+							"value": "66666666666"
+						},
+						{
+							"key": "noticeNumber",
+							"value": "312115711204446826"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "SP03 - getByNoticeNumberDate - paymentPosition",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "localhost:8090/organizations/:organizationFiscalCode/noticeNumber/:noticeNumber?dateFrom=2023-01-01&dateTo=2023-01-30",
+					"host": [
+						"localhost"
+					],
+					"port": "8090",
+					"path": [
+						"organizations",
+						":organizationFiscalCode",
+						"noticeNumber",
+						":noticeNumber"
+					],
+					"query": [
+						{
+							"key": "dateFrom",
+							"value": "2023-01-01"
+						},
+						{
+							"key": "dateTo",
+							"value": "2023-01-30"
+						}
+					],
+					"variable": [
+						{
+							"key": "organizationFiscalCode",
+							"value": "66666666666"
+						},
+						{
+							"key": "noticeNumber",
+							"value": "302111116174998800"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "SP03 - getByIUV - paymentPosition",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "localhost:8090/organizations/:organizationFiscalCode/iuv/:iuv",
+					"host": [
+						"localhost"
+					],
+					"port": "8090",
+					"path": [
+						"organizations",
+						":organizationFiscalCode",
+						"iuv",
+						":iuv"
+					],
+					"variable": [
+						{
+							"key": "organizationFiscalCode",
+							"value": "66666666666"
+						},
+						{
+							"key": "iuv",
+							"value": "115711204446826"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "SP03 - getByNoticeNumber - rpt",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "localhost:8090/organizations/:organizationFiscalCode/noticeNumber/:noticeNumber",
+					"host": [
+						"localhost"
+					],
+					"port": "8090",
+					"path": [
+						"organizations",
+						":organizationFiscalCode",
+						"noticeNumber",
+						":noticeNumber"
+					],
+					"variable": [
+						{
+							"key": "organizationFiscalCode",
+							"value": "66666666666"
+						},
+						{
+							"key": "noticeNumber",
+							"value": "312115135169523900"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "SP03 - getByNoticeNumberDate - rpt",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "localhost:8090/organizations/:organizationFiscalCode/noticeNumber/:noticeNumber?dateFrom=2023-01-01&dateTo=2023-01-30",
+					"host": [
+						"localhost"
+					],
+					"port": "8090",
+					"path": [
+						"organizations",
+						":organizationFiscalCode",
+						"noticeNumber",
+						":noticeNumber"
+					],
+					"query": [
+						{
+							"key": "dateFrom",
+							"value": "2023-01-01"
+						},
+						{
+							"key": "dateTo",
+							"value": "2023-01-30"
+						}
+					],
+					"variable": [
+						{
+							"key": "organizationFiscalCode",
+							"value": "66666666666"
+						},
+						{
+							"key": "noticeNumber",
+							"value": "312115135169523900"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "SP04 - getByIUVPaymentToken - paymentPosition",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "localhost:8090/organizations/:organizationFiscalCode/iuv/:iuv/paymentToken/:paymentToken",
+					"host": [
+						"localhost"
+					],
+					"port": "8090",
+					"path": [
+						"organizations",
+						":organizationFiscalCode",
+						"iuv",
+						":iuv",
+						"paymentToken",
+						":paymentToken"
+					],
+					"variable": [
+						{
+							"key": "organizationFiscalCode",
+							"value": "66666666666"
+						},
+						{
+							"key": "iuv",
+							"value": "115711204446826"
+						},
+						{
+							"key": "paymentToken",
+							"value": "6cd885666b9c4574a72f972725d64dfc"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "SP04 - getByIUVPaymentTokenDate - paymentPosition",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "localhost:8090/organizations/:organizationFiscalCode/iuv/:iuv/paymentToken/:paymentToken?dateFrom=2023-01-01&dateTo=2023-01-30",
+					"host": [
+						"localhost"
+					],
+					"port": "8090",
+					"path": [
+						"organizations",
+						":organizationFiscalCode",
+						"iuv",
+						":iuv",
+						"paymentToken",
+						":paymentToken"
+					],
+					"query": [
+						{
+							"key": "dateFrom",
+							"value": "2023-01-01"
+						},
+						{
+							"key": "dateTo",
+							"value": "2023-01-30"
+						}
+					],
+					"variable": [
+						{
+							"key": "organizationFiscalCode",
+							"value": "66666666666"
+						},
+						{
+							"key": "iuv",
+							"value": "111116174998800"
+						},
+						{
+							"key": "paymentToken",
+							"value": "66666666666302111116174998800-65106"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "SP04 - getByIUVPaymentTokenDate - paymentPosition Copy",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "localhost:8090/organizations/:organizationFiscalCode/iuv/:iuv/ccp/:ccp?dateFrom=2023-01-01&dateTo=2023-01-30",
+					"host": [
+						"localhost"
+					],
+					"port": "8090",
+					"path": [
+						"organizations",
+						":organizationFiscalCode",
+						"iuv",
+						":iuv",
+						"ccp",
+						":ccp"
+					],
+					"query": [
+						{
+							"key": "dateFrom",
+							"value": "2023-01-01"
+						},
+						{
+							"key": "dateTo",
+							"value": "2023-01-30"
+						}
+					],
+					"variable": [
+						{
+							"key": "organizationFiscalCode",
+							"value": "66666666666"
+						},
+						{
+							"key": "iuv",
+							"value": "149500423437273"
+						},
+						{
+							"key": "ccp",
+							"value": "CCD01"
+						}
+					]
+				}
+			},
+			"response": []
+		}
+	],
+	"auth": {
+		"type": "apikey",
+		"apikey": [
+			{
+				"key": "value",
+				"value": "{{subscription-key}}",
+				"type": "string"
+			},
+			{
+				"key": "key",
+				"value": "Ocp-Apim-Subscription-Key",
+				"type": "string"
+			}
+		]
+	},
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		}
+	]
+}
