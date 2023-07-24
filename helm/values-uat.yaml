@@ -1,4 +1,4 @@
-pagopa-tech-support-api:
+microservice-chart:
   namespace: "nodo"
   image:
     repository: ghcr.io/pagopa/pagopanodetechnicalsupportworker
@@ -40,7 +40,7 @@ pagopa-tech-support-api:
     create: true
   resources:
     requests:
-      memory: "400m"
+      memory: "2Gi"
       cpu: "200m"
     limits:
       memory: "3Gi"

@@ -1,4 +1,4 @@
-pagopa-tech-support-api:
+microservice-chart:
   namespace: "nodo"
   image:
     repository: ghcr.io/pagopa/pagopanodetechnicalsupportworker
@@ -81,10 +81,3 @@ pagopa-tech-support-api:
     create: true
     host: "weudev.techsupport.internal.dev.platform.pagopa.it"
     path: /pagopa-tech-support(/|$)(.*)
-microservice-chart:
-  image:
-    tag: 1.0.2
-  canaryDelivery:
-    deployment:
-      image:
-        tag: 1.0.2
