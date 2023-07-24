@@ -50,7 +50,6 @@ Generate openapi.json file in **./openapi/openapi.json**
 
 Run in development mode with command
 `quarkus dev`
-Start the springboot application with this command:
 
 ### Quarkus Profiles
 
