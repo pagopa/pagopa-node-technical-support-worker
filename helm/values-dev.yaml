@@ -2,7 +2,7 @@ microservice-chart:
   namespace: "nodo"
   image:
     repository: ghcr.io/pagopa/pagopa-node-technical-support-worker
-    tag: '1.0.2-3-NOD-400'
+    tag: '1.0.2-4-NOD-400'
   readinessProbe:
     httpGet:
       path: /q/health/ready
@@ -85,4 +85,4 @@ microservice-chart:
   canaryDelivery:
     deployment:
       image:
-        tag: 1.0.2-3-NOD-400
+        tag: 1.0.2-4-NOD-400
