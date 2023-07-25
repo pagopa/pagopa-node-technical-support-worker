@@ -460,7 +460,7 @@ public class WorkerService {
     if(ChronoUnit.DAYS.between(dateFrom, dateTo)>dateRangeLimit){
       throw new AppException(
               AppErrorCodeMessageEnum.INTERVAL_TOO_LARGE,
-              "Date interval too large,max "+dateRangeLimit+" days");
+              dateRangeLimit);
     }
     return DateRequest.builder().from(dateFrom).to(dateTo).build();
   }
