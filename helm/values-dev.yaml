@@ -23,16 +23,17 @@ microservice-chart:
     OTEL_ENDPOINT: "http://otel-collector.elastic-system.svc.cluster.local:4317"
     COSMOS_BIZ_ENDPOINT: "https://pagopa-d-weu-bizevents-ds-cosmos-account.documents.azure.com:443/"
     COSMOS_NEG_BIZ_ENDPOINT: "https://pagopa-d-weu-bizevents-neg-ds-cosmos-account.documents.azure.com:443/"
+    RE_COSMOS_DAY_LIMIT: 10
   envFieldRef:
     APP_NAME: "metadata.labels['app.kubernetes.io/instance']"
     APP_VERSION: "metadata.labels['app.kubernetes.io/version']"
   secretProvider:
     create: true
     envSecrets:
-      EVENT_HUB_RE_CONNECTION_STRING: "azure-event-hub-re-connection-string"
       COSMOS_BIZ_KEY: "cosmos-biz-account-key"
       COSMOS_NEG_BIZ_KEY: "cosmos-neg-biz-account-key"
       RE_TABLE_STORAGE_CONN_STRING: "re-datastore-connection-string"
+      RE_COSMOS_CONNECTION_STRING: "cosmos-re-connection-string"
     keyvault:
       name: "pagopa-d-nodo-kv"
       tenantId: "7788edaf-0346-4068-9d79-c868aed15b3d"
