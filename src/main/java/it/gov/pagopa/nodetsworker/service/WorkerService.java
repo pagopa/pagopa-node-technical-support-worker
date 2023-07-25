@@ -51,6 +51,9 @@ public class WorkerService {
   @ConfigProperty(name = "re-cosmos.day-limit")
   Integer reCosmosDayLimit;
 
+  @ConfigProperty(name = "date-range-limit")
+  Integer dateRangeLimit;
+
   private PaymentInfo eventToPaymentInfo(EventEntity firstEvent,EventEntity lastEvent) {
     return PaymentInfo.builder()
         .pspId(lastEvent.getPsp())
@@ -452,12 +455,12 @@ public class WorkerService {
     }
     if (dateFrom == null && dateTo == null) {
       dateTo = LocalDate.now();
-      dateFrom = dateTo.minusDays(10);
+      dateFrom = dateTo.minusDays(dateRangeLimit);
     }
-    if(ChronoUnit.DAYS.between(dateFrom, dateTo)>7){
+    if(ChronoUnit.DAYS.between(dateFrom, dateTo)>dateRangeLimit){
       throw new AppException(
               AppErrorCodeMessageEnum.INTERVAL_TOO_LARGE,
-              "Date interval too large,max 7 days");
+              "Date interval too large,max "+dateRangeLimit+" days");
     }
     return DateRequest.builder().from(dateFrom).to(dateTo).build();
   }
