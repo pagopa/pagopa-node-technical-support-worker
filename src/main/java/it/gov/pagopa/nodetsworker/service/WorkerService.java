@@ -36,10 +36,6 @@ public class WorkerService {
 
   @Inject Logger log;
 
-//  @Inject EventMapper eventsMapper;
-
-//  @Inject
-//  CosmosReEventClient reCosmosClient;
   @Inject
   CosmosBizEventClient positiveBizClient;
   @Inject

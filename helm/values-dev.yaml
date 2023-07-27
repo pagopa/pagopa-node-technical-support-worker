@@ -30,6 +30,7 @@ microservice-chart:
   secretProvider:
     create: true
     envSecrets:
+      OTEL_AUTH_BEARER: "otel-auth-bearer"
       COSMOS_BIZ_KEY: "cosmos-biz-account-key"
       COSMOS_NEG_BIZ_KEY: "cosmos-neg-biz-account-key"
       RE_TABLE_STORAGE_CONN_STRING: "re-datastore-connection-string"

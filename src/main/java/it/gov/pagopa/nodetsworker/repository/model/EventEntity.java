@@ -11,7 +11,7 @@ import java.time.format.DateTimeFormatter;
 
 @Data
 @EqualsAndHashCode(callSuper = true)
-@MongoEntity(collection = "events", clientName = "events")
+@MongoEntity(collection = "events")
 public class EventEntity extends PanacheMongoEntity{
 
   private String insertedTimestamp;
