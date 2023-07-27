@@ -42,7 +42,7 @@ microservice-chart:
     create: true
   resources:
     requests:
-      memory: "400Mb"
+      memory: "400M"
       cpu: "200m"
     limits:
       memory: "3Gi"
