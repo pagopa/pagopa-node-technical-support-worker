@@ -301,18 +301,11 @@
         }
       }
     },
-    "/test/partitionkey/{partitionKey}/rowkey/{rowKey}" : {
+    "/test/partitionkey/{partitionKey}" : {
       "get" : {
         "tags" : [ "Test Resource" ],
         "parameters" : [ {
           "name" : "partitionKey",
-          "in" : "path",
-          "required" : true,
-          "schema" : {
-            "type" : "string"
-          }
-        }, {
-          "name" : "rowKey",
           "in" : "path",
           "required" : true,
           "schema" : {
