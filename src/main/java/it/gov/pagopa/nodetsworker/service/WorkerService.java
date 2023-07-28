@@ -467,24 +467,19 @@ public class WorkerService {
 
   private Pair<DateRequest, DateRequest> getHistoryDates(DateRequest dateRequest) {
 
-
     LocalDate dateLimit = LocalDate.now().minusDays(reCosmosDayLimit);
-    LocalDate historyDateFrom = null;
-    LocalDate historyDateTo = null;
-    LocalDate actualDateFrom = null;
-    LocalDate actualDateTo = null;
 
     if(dateRequest.getFrom().isBefore(dateLimit) && dateRequest.getTo().isBefore(dateLimit)){
       return Pair.of(
               DateRequest.builder().from(dateRequest.getFrom()).to(dateRequest.getTo()).build(),
               null
       );
-    }else if(dateRequest.getFrom().isBefore(dateLimit) && dateRequest.getTo().isAfter(dateLimit)){
+    } else if(dateRequest.getFrom().isBefore(dateLimit) && dateRequest.getTo().isAfter(dateLimit)) {
       return Pair.of(
               DateRequest.builder().from(dateRequest.getFrom()).to(dateLimit).build(),
               DateRequest.builder().from(dateLimit).to(dateRequest.getTo()).build()
       );
-    }else{
+    } else {
       return Pair.of(
               null,
               DateRequest.builder().from(dateRequest.getFrom()).to(dateRequest.getTo()).build()
@@ -506,7 +501,6 @@ public class WorkerService {
     finish = Instant.now();
     long cosmosTimeElapsed = Duration.between(start, finish).toMillis();
     log.infof("Done querying partitionKey %s on cosmos. Count %s", pk, cosmosItems);
-
 
     Map<String, Map> response = new HashMap<>();
     Map<String, Long> table = new HashMap<>();

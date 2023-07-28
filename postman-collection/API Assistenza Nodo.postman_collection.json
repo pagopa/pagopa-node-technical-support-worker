@@ -7,6 +7,36 @@
 	},
 	"item": [
 		{
+			"name": "test",
+			"item": [
+				{
+					"name": "countByPartitionKey",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{nodo-ts-host}}/test/partitionkey/:partition-key",
+							"host": [
+								"{{nodo-ts-host}}"
+							],
+							"path": [
+								"test",
+								"partitionkey",
+								":partition-key"
+							],
+							"variable": [
+								{
+									"key": "partition-key",
+									"value": "2023-07-26T12"
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
 			"name": "info",
 			"request": {
 				"method": "GET",
@@ -42,11 +72,11 @@
 					"variable": [
 						{
 							"key": "organizationFiscalCode",
-							"value": "66666666666"
+							"value": "{{organization-fiscal-code}}"
 						},
 						{
 							"key": "noticeNumber",
-							"value": "312115711204446826"
+							"value": "{{notice-number}}"
 						}
 					]
 				}
@@ -59,11 +89,10 @@
 				"method": "GET",
 				"header": [],
 				"url": {
-					"raw": "localhost:8090/organizations/:organizationFiscalCode/noticeNumber/:noticeNumber?dateFrom=2023-01-01&dateTo=2023-01-30",
+					"raw": "{{nodo-ts-host}}/organizations/:organizationFiscalCode/noticeNumber/:noticeNumber?dateFrom=2023-07-21&dateTo=2023-07-28",
 					"host": [
-						"localhost"
+						"{{nodo-ts-host}}"
 					],
-					"port": "8090",
 					"path": [
 						"organizations",
 						":organizationFiscalCode",
@@ -73,21 +102,21 @@
 					"query": [
 						{
 							"key": "dateFrom",
-							"value": "2023-01-01"
+							"value": "2023-07-21"
 						},
 						{
 							"key": "dateTo",
-							"value": "2023-01-30"
+							"value": "2023-07-28"
 						}
 					],
 					"variable": [
 						{
 							"key": "organizationFiscalCode",
-							"value": "66666666666"
+							"value": "{{organization-fiscal-code}}"
 						},
 						{
 							"key": "noticeNumber",
-							"value": "302111116174998800"
+							"value": "{{notice-number}}"
 						}
 					]
 				}
@@ -114,11 +143,11 @@
 					"variable": [
 						{
 							"key": "organizationFiscalCode",
-							"value": "66666666666"
+							"value": "{{organization-fiscal-code}}"
 						},
 						{
 							"key": "iuv",
-							"value": "115711204446826"
+							"value": "{{iuv}}"
 						}
 					]
 				}
@@ -145,11 +174,11 @@
 					"variable": [
 						{
 							"key": "organizationFiscalCode",
-							"value": "66666666666"
+							"value": "{{organization-fiscal-code}}"
 						},
 						{
 							"key": "noticeNumber",
-							"value": "312115135169523900"
+							"value": "{{notice-number}}"
 						}
 					]
 				}
@@ -186,11 +215,11 @@
 					"variable": [
 						{
 							"key": "organizationFiscalCode",
-							"value": "66666666666"
+							"value": "{{organization-fiscal-code}}"
 						},
 						{
 							"key": "noticeNumber",
-							"value": "312115135169523900"
+							"value": "{{notice-number}}"
 						}
 					]
 				}
@@ -219,15 +248,15 @@
 					"variable": [
 						{
 							"key": "organizationFiscalCode",
-							"value": "66666666666"
+							"value": "{{organization-fiscal-code}}"
 						},
 						{
 							"key": "noticeNumber",
-							"value": "302111116174998800"
+							"value": "{{notice-number}}"
 						},
 						{
 							"key": "paymentToken",
-							"value": "6cd885666b9c4574a72f972725d64dfc"
+							"value": "{{payment-token}}"
 						}
 					]
 				}
@@ -266,15 +295,15 @@
 					"variable": [
 						{
 							"key": "organizationFiscalCode",
-							"value": "66666666666"
+							"value": "{{organization-fiscal-code}}"
 						},
 						{
 							"key": "noticeNumber",
-							"value": "302111116174998800"
+							"value": "{{notice-number}}"
 						},
 						{
 							"key": "paymentToken",
-							"value": "66666666666302111116174998800-65106"
+							"value": "{{payment-token}}"
 						}
 					]
 				}
@@ -313,15 +342,15 @@
 					"variable": [
 						{
 							"key": "organizationFiscalCode",
-							"value": "66666666666"
+							"value": "{{organization-fiscal-code}}"
 						},
 						{
 							"key": "iuv",
-							"value": "149500423437273"
+							"value": "{{iuv}}"
 						},
 						{
 							"key": "ccp",
-							"value": "CCD01"
+							"value": "{{ccp}}"
 						}
 					]
 				}
