@@ -1,0 +1,90 @@
+microservice-chart:
+  namespace: "nodo"
+  image:
+    repository: ghcr.io/pagopa/pagopa-node-technical-support-worker
+    tag: '1.0.2-9-NOD-400'
+  readinessProbe:
+    httpGet:
+      path: /q/health/ready
+      port: 8080
+    initialDelaySeconds: 8
+    failureThreshold: 10
+    periodSeconds: 2
+  livenessProbe:
+    httpGet:
+      path: /q/health/live
+      port: 8080
+    initialDelaySeconds: 8
+    failureThreshold: 10
+    periodSeconds: 2
+  envConfig:
+    APP_ENVIRONMENT: "prod"
+    TZ: "Europe/Rome"
+    OTEL_ENDPOINT: "http://otel-collector.elastic-system.svc.cluster.local:4317"
+    COSMOS_BIZ_ENDPOINT: "https://pagopa-p-weu-bizevents-ds-cosmos-account.documents.azure.com:443/"
+    COSMOS_NEG_BIZ_ENDPOINT: "https://pagopa-p-weu-bizevents-neg-ds-cosmos-account.documents.azure.com:443/"
+    RE_COSMOS_DAY_LIMIT: "120"
+    LOG_LEVEL: "INFO"
+  envFieldRef:
+    APP_NAME: "metadata.labels['app.kubernetes.io/instance']"
+    APP_VERSION: "metadata.labels['app.kubernetes.io/version']"
+  secretProvider:
+    create: true
+    envSecrets:
+      OTEL_AUTH_BEARER: "otel-auth-bearer"
+      COSMOS_BIZ_KEY: "cosmos-biz-account-key"
+      COSMOS_NEG_BIZ_KEY: "cosmos-neg-biz-account-key"
+      RE_TABLE_STORAGE_CONN_STRING: "re-datastore-connection-string"
+      RE_COSMOS_CONNECTION_STRING: "cosmos-re-connection-string"
+    keyvault:
+      name: "pagopa-p-nodo-kv"
+      tenantId: "7788edaf-0346-4068-9d79-c868aed15b3d"
+  tmpVolumeMount:
+    create: true
+  resources:
+    requests:
+      memory: "400M"
+      cpu: "200m"
+    limits:
+      memory: "3Gi"
+      cpu: "400m"
+  autoscaling:
+    enable: true
+    minReplica: 1
+    maxReplica: 2
+    pollingInterval: 10 # seconds
+    cooldownPeriod: 50 # seconds
+    triggers:
+      - type: cpu
+        metadata:
+          type: Utilization
+          value: "75"
+      - type: memory
+        metadata:
+          type: Utilization
+          value: "75"
+  affinity:
+    nodeAffinity:
+      requiredDuringSchedulingIgnoredDuringExecution:
+        nodeSelectorTerms:
+          - matchExpressions:
+              - key: node_type
+                operator: In
+                values:
+                  - user
+  serviceMonitor:
+    create: true
+    endpoints:
+      - interval: 5s
+        targetPort: 8080
+        path: /q/metrics
+  service:
+    create: true
+  ingress:
+    create: true
+    host: "weuprod.nodo.internal.platform.pagopa.it"
+    path: /pagopa-nodo-technical-support-service(/|$)(.*)
+  canaryDelivery:
+    deployment:
+      image:
+        tag: 1.0.2-9-NOD-400

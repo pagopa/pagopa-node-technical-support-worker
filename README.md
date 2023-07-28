@@ -1,11 +1,11 @@
 # Node tech support API
 
-[![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=TODO-set-your-id&metric=alert_status)](https://sonarcloud.io/dashboard?id=TODO-set-your-id)
+[![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=pagopa_pagopa-node-technical-support-worker&metric=alert_status)](https://sonarcloud.io/dashboard?id=pagopa_pagopa-node-technical-support-worker)
 
 
 ---
 ## API Documentation 📖
-See the [OpenAPI 3 here.](https://raw.githubusercontent.com/pagopa/pagopa-quarkus-template/openapi/openapi.json)
+See the [OpenAPI 3 here.](https://raw.githubusercontent.com/pagopa/pagopa-node-technical-support-worker/openapi/openapi.json)
 
 ---
 ## Technology Stack
@@ -42,6 +42,7 @@ COSMOS_BIZ_KEY
 COSMOS_NEG_BIZ_ENDPOINT
 COSMOS_NEG_BIZ_KEY
 RE_TABLE_STORAGE_CONN_STRING
+RE_COSMOS_CONNECTION_STRING
 ```
 Run application with
 
