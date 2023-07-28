@@ -3,7 +3,7 @@ locals {
 
   display_name          = "Nodo Technical Support"
   description           = "API Assistenza del Nodo dei Pagamenti"
-  path                  = "technical-support/nodo/api"
+  path                  = "technical-support/ndp/api"
 
   host         = "api.${var.apim_dns_zone_prefix}.${var.external_domain}"
   hostname     = var.hostname
