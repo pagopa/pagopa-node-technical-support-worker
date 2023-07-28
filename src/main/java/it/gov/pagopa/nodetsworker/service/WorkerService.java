@@ -1,6 +1,7 @@
 package it.gov.pagopa.nodetsworker.service;
 
 import com.azure.cosmos.implementation.apachecommons.lang.tuple.Pair;
+import io.quarkus.mongodb.panache.PanacheQuery;
 import it.gov.pagopa.nodetsworker.exceptions.AppErrorCodeMessageEnum;
 import it.gov.pagopa.nodetsworker.exceptions.AppException;
 import it.gov.pagopa.nodetsworker.models.BasePaymentInfo;
@@ -20,9 +21,12 @@ import jakarta.inject.Inject;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.jboss.logging.Logger;
 
+import java.time.Duration;
+import java.time.Instant;
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -488,16 +492,34 @@ public class WorkerService {
     }
   }
 
-  public TransactionResponse<BasePaymentInfo> test(String pk, String rk){
-    log.infof("Querying partitionKey %s rowKey %s",pk,rk);
-    List<EventEntity> reByPartitionAndRow = reTableService.findReByPartitionAndRow(pk, rk);
-    log.infof("Done querying partitionKey %s rowKey %s",pk,rk);
-    List<BasePaymentInfo> a = new ArrayList<>();
-    if(reByPartitionAndRow.size()>0){
-      a.add(eventToPaymentInfo(reByPartitionAndRow.get(0), reByPartitionAndRow.get(0)));
-    }
-    return TransactionResponse.builder()
-            .payments(a)
-            .build();
+  public Map countByPartitionKey(String pk) {
+    log.infof("Querying partitionKey on table storage: %s", pk);
+    Instant start = Instant.now();
+    long tableItems = reTableService.findReByPartition(pk);
+    Instant finish = Instant.now();
+    long tableTimeElapsed = Duration.between(start, finish).toMillis();
+    log.infof("Done querying partitionKey %s on table storage. Count %s", pk, tableItems);
+
+    log.infof("Querying partitionKey on cosmos: %s", pk);
+    start = Instant.now();
+    Long cosmosItems = EventEntity.findReByPartitionKey(pk);
+    finish = Instant.now();
+    long cosmosTimeElapsed = Duration.between(start, finish).toMillis();
+    log.infof("Done querying partitionKey %s on cosmos. Count %s", pk, cosmosItems);
+
+
+    Map<String, Map> response = new HashMap<>();
+    Map<String, Long> table = new HashMap<>();
+    table.put("items", tableItems);
+    table.put("millis", tableTimeElapsed);
+
+    Map<String, Long> cosmos = new HashMap<>();
+    cosmos.put("items", cosmosItems);
+    cosmos.put("millis", cosmosTimeElapsed);
+
+    response.put("table", table);
+    response.put("cosmos", cosmos);
+
+    return response;
   }
 }

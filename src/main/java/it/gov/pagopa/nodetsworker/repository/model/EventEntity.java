@@ -1,18 +1,26 @@
 package it.gov.pagopa.nodetsworker.repository.model;
 
+import com.mongodb.client.AggregateIterable;
+import com.mongodb.client.model.Accumulators;
+import com.mongodb.client.model.Aggregates;
+import com.mongodb.client.model.Filters;
 import io.quarkus.mongodb.panache.PanacheMongoEntity;
+import io.quarkus.mongodb.panache.PanacheMongoEntityBase;
 import io.quarkus.mongodb.panache.PanacheQuery;
 import io.quarkus.mongodb.panache.common.MongoEntity;
 import io.quarkus.panache.common.Parameters;
 import lombok.*;
+import org.bson.Document;
+import org.bson.conversions.Bson;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.util.List;
 
 @Data
 @EqualsAndHashCode(callSuper = true)
 @MongoEntity(collection = "events")
-public class EventEntity extends PanacheMongoEntity{
+public class EventEntity extends PanacheMongoEntity {
 
   private String insertedTimestamp;
   private String componente;
@@ -109,5 +117,15 @@ public class EventEntity extends PanacheMongoEntity{
                     .and("ccp", ccp)
     )
             .project(EventEntity.class);
+  }
+
+  public static long findReByPartitionKey(String pk) {
+
+    Bson matchStage = Aggregates.match(Filters.eq("PartitionKey", pk));
+    Bson groupStage = Aggregates.group("$PartitionKey", Accumulators.sum("count", 1));
+
+    AggregateIterable<Document> aggregation = mongoCollection().withDocumentClass(Document.class).aggregate(List.of(matchStage, groupStage));
+
+    return aggregation.first() != null ? Long.parseLong(aggregation.first().get("count").toString()) : 0;
   }
 }

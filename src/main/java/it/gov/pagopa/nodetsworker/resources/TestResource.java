@@ -19,12 +19,11 @@ public class TestResource implements Serializable {
   @Inject WorkerService workerService;
 
   @GET
-  @Path("/partitionkey/{partitionKey}/rowkey/{rowKey}")
-  public Response useCaseSP04_byIUV_CCP(
-      @PathParam("partitionKey") @NotNull String partitionKey,
-      @PathParam("rowKey") @NotNull String rowKey) {
+  @Path("/partitionkey/{partitionKey}")
+  public Response countByPartitionKey(
+      @PathParam("partitionKey") @NotNull String partitionKey) {
     return Response.ok(
-            workerService.test(partitionKey,rowKey))
+            workerService.countByPartitionKey(partitionKey))
         .build();
   }
 }

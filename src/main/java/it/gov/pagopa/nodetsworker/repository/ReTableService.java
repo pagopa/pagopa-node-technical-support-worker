@@ -138,6 +138,7 @@ public class ReTableService {
                         + " and ccp eq '%s' and esito eq 'CAMBIO_STATO'",
                     Util.format(datefrom), Util.format(dateTo), creditorInstitution, iuv, ccp))
             .setSelect(propertiesToSelect);
+
     return getTableClient().listEntities(options, null, null).stream()
         .map(
             e -> {
@@ -146,19 +147,15 @@ public class ReTableService {
         .collect(Collectors.toList());
   }
 
-  public List<EventEntity> findReByPartitionAndRow(
-          String partitionKey, String rowId
+  public long findReByPartition(
+          String partitionKey
   ) {
     ListEntitiesOptions options =
             new ListEntitiesOptions()
-                    .setFilter(String.format("PartitionKey eq '%s' and RowKey eq '%s'", partitionKey,rowId))
+                    .setFilter(String.format("PartitionKey eq '%s'", partitionKey))
                     .setSelect(propertiesToSelect);
-    return getTableClient().listEntities(options, null, null).stream()
-            .map(
-                    e -> {
-                      return tableEntityToEventEntity(e);
-                    })
-            .collect(Collectors.toList());
+
+    return getTableClient().listEntities(options, null, null).stream().count();
   }
 
   private String getString(Object o) {
