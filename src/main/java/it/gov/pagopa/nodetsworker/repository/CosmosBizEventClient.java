@@ -36,6 +36,8 @@ public class CosmosBizEventClient {
 
   @Inject Logger log;
 
+  private String dateFilter = " and c.paymentInfo.paymentDateTime > @from and c.paymentInfo.paymentDateTime < @to";
+
   private CosmosClient getClient() {
     if (client == null) {
       client = new CosmosClientBuilder().endpoint(endpoint).key(key).buildClient();
@@ -66,16 +68,16 @@ public class CosmosBizEventClient {
             new SqlParameter("@organizationFiscalCode", organizationFiscalCode),
             new SqlParameter("@noticeNumber", noticeNumber),
             new SqlParameter("@paymentToken", paymentToken),
-            new SqlParameter("@from", Util.toMillis(dateFrom.atStartOfDay())),
-            new SqlParameter("@to", Util.toMillis(LocalDateTime.of(dateTo, LocalTime.MAX))));
+            new SqlParameter("@from", Util.format(dateFrom)),
+            new SqlParameter("@to", Util.format(dateTo.plusDays(1)))
+        );
     SqlQuerySpec q =
         new SqlQuerySpec(
                 "SELECT * FROM c where"
                     + " c.creditor.idPA = @organizationFiscalCode"
                     + " and c.debtorPosition.noticeNumber = @noticeNumber"
                     + " and c.paymentInfo.paymentToken = @paymentToken"
-                    + " and c.timestamp > @from"
-                    + " and c.timestamp < @to")
+                    + dateFilter)
             .setParameters(paramList);
     return query(q);
   }
@@ -87,16 +89,16 @@ public class CosmosBizEventClient {
             new SqlParameter("@organizationFiscalCode", organizationFiscalCode),
             new SqlParameter("@iuv", iuv),
             new SqlParameter("@ccp", ccp),
-            new SqlParameter("@from", Util.toMillis(dateFrom.atStartOfDay())),
-            new SqlParameter("@to", Util.toMillis(LocalDateTime.of(dateTo, LocalTime.MAX))));
+            new SqlParameter("@from", Util.format(dateFrom)),
+            new SqlParameter("@to", Util.format(dateTo.plusDays(1)))
+        );
     SqlQuerySpec q =
         new SqlQuerySpec(
                 "SELECT * FROM c where"
                     + " c.creditor.idPA = @organizationFiscalCode"
                     + " and c.debtorPosition.iuv = @iuv"
                     + " and c.paymentInfo.paymentToken = @ccp"
-                    + " and c.timestamp > @from"
-                    + " and c.timestamp < @to")
+                    + dateFilter)
             .setParameters(paramList);
     return query(q);
   }
@@ -107,16 +109,16 @@ public class CosmosBizEventClient {
         Arrays.asList(
             new SqlParameter("@organizationFiscalCode", organizationFiscalCode),
             new SqlParameter("@noticeNumber", noticeNumber),
-            new SqlParameter("@from", Util.toMillis(dateFrom.atStartOfDay())),
-            new SqlParameter("@to", Util.toMillis(LocalDateTime.of(dateTo, LocalTime.MAX))));
+            new SqlParameter("@from", Util.format(dateFrom)),
+            new SqlParameter("@to", Util.format(dateTo.plusDays(1)))
+        );
 
     SqlQuerySpec q =
         new SqlQuerySpec(
                 "SELECT * FROM c where"
                     + " c.creditor.idPA = @organizationFiscalCode"
                     + " and c.debtorPosition.noticeNumber = @noticeNumber"
-                    + " and c.timestamp > @from"
-                    + " and c.timestamp < @to")
+                    + dateFilter)
             .setParameters(paramList);
     return query(q);
   }
@@ -127,16 +129,16 @@ public class CosmosBizEventClient {
         Arrays.asList(
             new SqlParameter("@organizationFiscalCode", organizationFiscalCode),
             new SqlParameter("@iuv", iuv),
-            new SqlParameter("@from", Util.toMillis(dateFrom.atStartOfDay())),
-            new SqlParameter("@to", Util.toMillis(LocalDateTime.of(dateTo, LocalTime.MAX))));
+            new SqlParameter("@from", Util.format(dateFrom)),
+            new SqlParameter("@to", Util.format(dateTo.plusDays(1)))
+        );
 
     SqlQuerySpec q =
         new SqlQuerySpec(
                 "SELECT * FROM c where"
                     + " c.creditor.idPA = @organizationFiscalCode"
                     + " and c.debtorPosition.iuv = @iuv"
-                    + " and c.timestamp > @from"
-                    + " and c.timestamp < @to")
+                    + dateFilter)
             .setParameters(paramList);
     return query(q);
   }
