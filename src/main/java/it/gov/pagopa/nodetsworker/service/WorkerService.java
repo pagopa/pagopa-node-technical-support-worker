@@ -168,6 +168,7 @@ public class WorkerService {
                   log.infof("Done querying positive biz events");
                   if (pos.isPresent()) {
                     pi.setOutcome(outcomeOK);
+                    pi.setPositiveBizEvtId(pos.get().getId());
                     pi.setBrokerPspId(pos.get().getPsp().getIdBrokerPsp());
                   } else {
                     log.infof("Querying negative biz events");
