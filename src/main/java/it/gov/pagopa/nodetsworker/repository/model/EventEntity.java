@@ -5,11 +5,11 @@ import com.mongodb.client.model.Accumulators;
 import com.mongodb.client.model.Aggregates;
 import com.mongodb.client.model.Filters;
 import io.quarkus.mongodb.panache.PanacheMongoEntity;
-import io.quarkus.mongodb.panache.PanacheMongoEntityBase;
 import io.quarkus.mongodb.panache.PanacheQuery;
 import io.quarkus.mongodb.panache.common.MongoEntity;
 import io.quarkus.panache.common.Parameters;
-import lombok.*;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
 import org.bson.Document;
 import org.bson.conversions.Bson;
 
@@ -23,38 +23,38 @@ import java.util.List;
 public class EventEntity extends PanacheMongoEntity {
 
   private String insertedTimestamp;
-  private String componente;
-  private String categoriaEvento;
-  private String sottoTipoEvento;
-  private String idDominio;
   private String iuv;
   private String ccp;
   private String psp;
-  private String tipoVersamento;
-  private String tipoEvento;
-  private String fruitore;
-  private String erogatore;
   private String stazione;
   private String canale;
-  private String parametriSpecificiInterfaccia;
-  private String esito;
-  private String sessionId;
   private String status;
-  private String payload;
-  private String info;
-  private String businessProcess;
-  private String fruitoreDescr;
-  private String erogatoreDescr;
-  private String pspDescr;
   private String noticeNumber;
   private String creditorReferenceId;
   private String paymentToken;
-  private String sessionIdOriginal;
-  private String dataOraEvento;
   private String uniqueId;
-  private String version;
-  private Long timestamp;
   private String serviceIdentifier;
+  private String idDominio;
+//  private String version;
+//  private Long timestamp;
+//  private String sessionIdOriginal;
+//  private String dataOraEvento;
+//  private String payload;
+//  private String info;
+//  private String businessProcess;
+//  private String fruitoreDescr;
+//  private String erogatoreDescr;
+//  private String pspDescr;
+//  private String parametriSpecificiInterfaccia;
+//  private String esito;
+//  private String sessionId;
+//  private String tipoVersamento;
+//  private String tipoEvento;
+//  private String fruitore;
+//  private String erogatore;
+//  private String componente;
+//  private String categoriaEvento;
+//  private String sottoTipoEvento;
 
   private static String dateFilter = "PartitionKey >= :from and PartitionKey <= :to";
   private static Parameters dateParams(LocalDate dateFrom, LocalDate dateTo){
@@ -125,7 +125,11 @@ public class EventEntity extends PanacheMongoEntity {
     Bson groupStage = Aggregates.group("$PartitionKey", Accumulators.sum("count", 1));
 
     AggregateIterable<Document> aggregation = mongoCollection().withDocumentClass(Document.class).aggregate(List.of(matchStage, groupStage));
+    Document first = aggregation.first();
+    return first != null ? Long.parseLong(first.get("count").toString()) : 0;
+  }
 
-    return aggregation.first() != null ? Long.parseLong(aggregation.first().get("count").toString()) : 0;
+  public static long findReByPartitionKeyPanache(String pk) {
+    return EventEntity.count("PartitionKey = :pk",Parameters.with("pk",pk));
   }
 }

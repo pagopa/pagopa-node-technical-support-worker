@@ -495,12 +495,23 @@ public class WorkerService {
     long tableTimeElapsed = Duration.between(start, finish).toMillis();
     log.infof("Done querying partitionKey %s on table storage. Count %s", pk, tableItems);
 
+
+
+
     log.infof("Querying partitionKey on cosmos: %s", pk);
     start = Instant.now();
     Long cosmosItems = EventEntity.findReByPartitionKey(pk);
     finish = Instant.now();
     long cosmosTimeElapsed = Duration.between(start, finish).toMillis();
     log.infof("Done querying partitionKey %s on cosmos. Count %s", pk, cosmosItems);
+
+    log.infof("Querying partitionKey on cosmos with panache: %s", pk);
+    start = Instant.now();
+    Long panacheItems = EventEntity.findReByPartitionKeyPanache(pk);
+    finish = Instant.now();
+    Long panacheTimeElapsed = Duration.between(start, finish).toMillis();
+    log.infof("Done querying partitionKey %s on cosmos with panache. Count %s", pk, panacheItems);
+
 
     Map<String, Map> response = new HashMap<>();
     Map<String, Long> table = new HashMap<>();
@@ -511,8 +522,13 @@ public class WorkerService {
     cosmos.put("items", cosmosItems);
     cosmos.put("millis", cosmosTimeElapsed);
 
+    Map<String, Long> panache = new HashMap<>();
+    panache.put("items", panacheItems);
+    panache.put("millis", panacheTimeElapsed);
+
     response.put("table", table);
     response.put("cosmos", cosmos);
+    response.put("panache", panache);
 
     return response;
   }
