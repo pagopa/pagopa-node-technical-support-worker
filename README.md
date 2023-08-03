@@ -5,7 +5,7 @@
 
 ---
 ## API Documentation 📖
-See the [OpenAPI 3 here.](https://raw.githubusercontent.com/pagopa/pagopa-node-technical-support-worker/openapi/openapi.json)
+See the [OpenAPI 3 here.](https://editor.swagger.io/?url=https://raw.githubusercontent.com/pagopa/pagopa-node-technical-support-worker/main/openapi/openapi.json)
 
 ---
 ## Technology Stack
