@@ -1,11 +1,11 @@
 # Node tech support API
 
-[![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=TODO-set-your-id&metric=alert_status)](https://sonarcloud.io/dashboard?id=TODO-set-your-id)
+[![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=pagopa_pagopa-node-technical-support-worker&metric=alert_status)](https://sonarcloud.io/dashboard?id=pagopa_pagopa-node-technical-support-worker)
 
 
 ---
 ## API Documentation 📖
-See the [OpenAPI 3 here.](https://raw.githubusercontent.com/pagopa/pagopa-quarkus-template/openapi/openapi.json)
+See the [OpenAPI 3 here.](https://editor.swagger.io/?url=https://raw.githubusercontent.com/pagopa/pagopa-node-technical-support-worker/main/openapi/openapi.json)
 
 ---
 ## Technology Stack
