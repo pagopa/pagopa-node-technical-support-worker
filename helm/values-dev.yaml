@@ -1,8 +1,8 @@
-pagopa-tech-support-api:
+microservice-chart:
   namespace: "nodo"
   image:
-    repository: ghcr.io/pagopa/pagopanodetechnicalsupportworker
-    tag: '1.0.0-SNAPSHOT'
+    repository: ghcr.io/pagopa/pagopa-node-technical-support-worker
+    tag: '1.0.2-16-NOD-400'
   readinessProbe:
     httpGet:
       path: /q/health/ready
@@ -23,16 +23,19 @@ pagopa-tech-support-api:
     OTEL_ENDPOINT: "http://otel-collector.elastic-system.svc.cluster.local:4317"
     COSMOS_BIZ_ENDPOINT: "https://pagopa-d-weu-bizevents-ds-cosmos-account.documents.azure.com:443/"
     COSMOS_NEG_BIZ_ENDPOINT: "https://pagopa-d-weu-bizevents-neg-ds-cosmos-account.documents.azure.com:443/"
+    RE_COSMOS_DAY_LIMIT: "10"
+    LOG_LEVEL: "INFO"
   envFieldRef:
     APP_NAME: "metadata.labels['app.kubernetes.io/instance']"
     APP_VERSION: "metadata.labels['app.kubernetes.io/version']"
   secretProvider:
     create: true
     envSecrets:
-      EVENT_HUB_RE_CONNECTION_STRING: "azure-event-hub-re-connection-string"
+      OTEL_AUTH_BEARER: "otel-auth-bearer"
       COSMOS_BIZ_KEY: "cosmos-biz-account-key"
       COSMOS_NEG_BIZ_KEY: "cosmos-neg-biz-account-key"
       RE_TABLE_STORAGE_CONN_STRING: "re-datastore-connection-string"
+      RE_COSMOS_CONNECTION_STRING: "cosmos-re-connection-string"
     keyvault:
       name: "pagopa-d-nodo-kv"
       tenantId: "7788edaf-0346-4068-9d79-c868aed15b3d"
@@ -40,7 +43,7 @@ pagopa-tech-support-api:
     create: true
   resources:
     requests:
-      memory: "2Gi"
+      memory: "400M"
       cpu: "200m"
     limits:
       memory: "3Gi"
@@ -79,12 +82,9 @@ pagopa-tech-support-api:
     create: true
   ingress:
     create: true
-    host: "weudev.techsupport.internal.dev.platform.pagopa.it"
-    path: /pagopa-tech-support(/|$)(.*)
-microservice-chart:
-  image:
-    tag: 1.0.2
+    host: "weudev.nodo.internal.dev.platform.pagopa.it"
+    path: /pagopa-nodo-technical-support-service(/|$)(.*)
   canaryDelivery:
     deployment:
       image:
-        tag: 1.0.2
+        tag: 1.0.2-16-NOD-400

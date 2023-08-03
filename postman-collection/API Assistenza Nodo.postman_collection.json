@@ -1,0 +1,396 @@
+{
+	"info": {
+		"_postman_id": "6569ba25-49bf-4f53-88f8-c98a9b85fc3b",
+		"name": "API Assistenza Nodo - Worker",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "7859468"
+	},
+	"item": [
+		{
+			"name": "test",
+			"item": [
+				{
+					"name": "countByPartitionKey",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{nodo-ts-host}}/test/partitionkey/:partition-key",
+							"host": [
+								"{{nodo-ts-host}}"
+							],
+							"path": [
+								"test",
+								"partitionkey",
+								":partition-key"
+							],
+							"variable": [
+								{
+									"key": "partition-key",
+									"value": "2023-07-26T12"
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "info",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{nodo-ts-host}}/info",
+					"host": [
+						"{{nodo-ts-host}}"
+					],
+					"path": [
+						"info"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "SP03 - getByNoticeNumber - paymentPosition",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{nodo-ts-host}}/organizations/:organizationFiscalCode/noticeNumber/:noticeNumber",
+					"host": [
+						"{{nodo-ts-host}}"
+					],
+					"path": [
+						"organizations",
+						":organizationFiscalCode",
+						"noticeNumber",
+						":noticeNumber"
+					],
+					"variable": [
+						{
+							"key": "organizationFiscalCode",
+							"value": "{{organization-fiscal-code}}"
+						},
+						{
+							"key": "noticeNumber",
+							"value": "{{notice-number}}"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "SP03 - getByNoticeNumberDate - paymentPosition",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{nodo-ts-host}}/organizations/:organizationFiscalCode/noticeNumber/:noticeNumber?dateFrom=2023-07-21&dateTo=2023-07-28",
+					"host": [
+						"{{nodo-ts-host}}"
+					],
+					"path": [
+						"organizations",
+						":organizationFiscalCode",
+						"noticeNumber",
+						":noticeNumber"
+					],
+					"query": [
+						{
+							"key": "dateFrom",
+							"value": "2023-07-21"
+						},
+						{
+							"key": "dateTo",
+							"value": "2023-07-28"
+						}
+					],
+					"variable": [
+						{
+							"key": "organizationFiscalCode",
+							"value": "{{organization-fiscal-code}}"
+						},
+						{
+							"key": "noticeNumber",
+							"value": "{{notice-number}}"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "SP03 - getByIUV - paymentPosition",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "localhost:8090/organizations/:organizationFiscalCode/iuv/:iuv",
+					"host": [
+						"localhost"
+					],
+					"port": "8090",
+					"path": [
+						"organizations",
+						":organizationFiscalCode",
+						"iuv",
+						":iuv"
+					],
+					"variable": [
+						{
+							"key": "organizationFiscalCode",
+							"value": "{{organization-fiscal-code}}"
+						},
+						{
+							"key": "iuv",
+							"value": "{{iuv}}"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "SP03 - getByNoticeNumber - rpt",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "localhost:8090/organizations/:organizationFiscalCode/noticeNumber/:noticeNumber",
+					"host": [
+						"localhost"
+					],
+					"port": "8090",
+					"path": [
+						"organizations",
+						":organizationFiscalCode",
+						"noticeNumber",
+						":noticeNumber"
+					],
+					"variable": [
+						{
+							"key": "organizationFiscalCode",
+							"value": "{{organization-fiscal-code}}"
+						},
+						{
+							"key": "noticeNumber",
+							"value": "{{notice-number}}"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "SP03 - getByNoticeNumberDate - rpt",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "localhost:8090/organizations/:organizationFiscalCode/noticeNumber/:noticeNumber?dateFrom=2023-01-01&dateTo=2023-01-30",
+					"host": [
+						"localhost"
+					],
+					"port": "8090",
+					"path": [
+						"organizations",
+						":organizationFiscalCode",
+						"noticeNumber",
+						":noticeNumber"
+					],
+					"query": [
+						{
+							"key": "dateFrom",
+							"value": "2023-01-01"
+						},
+						{
+							"key": "dateTo",
+							"value": "2023-01-30"
+						}
+					],
+					"variable": [
+						{
+							"key": "organizationFiscalCode",
+							"value": "{{organization-fiscal-code}}"
+						},
+						{
+							"key": "noticeNumber",
+							"value": "{{notice-number}}"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "SP04 - getByNoticeNumberPaymentToken - paymentPosition",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "localhost:8090/organizations/:organizationFiscalCode/noticeNumber/:noticeNumber/paymentToken/:paymentToken",
+					"host": [
+						"localhost"
+					],
+					"port": "8090",
+					"path": [
+						"organizations",
+						":organizationFiscalCode",
+						"noticeNumber",
+						":noticeNumber",
+						"paymentToken",
+						":paymentToken"
+					],
+					"variable": [
+						{
+							"key": "organizationFiscalCode",
+							"value": "{{organization-fiscal-code}}"
+						},
+						{
+							"key": "noticeNumber",
+							"value": "{{notice-number}}"
+						},
+						{
+							"key": "paymentToken",
+							"value": "{{payment-token}}"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "SP04 - getByNoticeNumberPaymentTokenDate - paymentPosition",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "localhost:8090/organizations/:organizationFiscalCode/noticeNumber/:noticeNumber/paymentToken/:paymentToken?dateFrom=2023-01-01&dateTo=2023-01-30",
+					"host": [
+						"localhost"
+					],
+					"port": "8090",
+					"path": [
+						"organizations",
+						":organizationFiscalCode",
+						"noticeNumber",
+						":noticeNumber",
+						"paymentToken",
+						":paymentToken"
+					],
+					"query": [
+						{
+							"key": "dateFrom",
+							"value": "2023-01-01"
+						},
+						{
+							"key": "dateTo",
+							"value": "2023-01-30"
+						}
+					],
+					"variable": [
+						{
+							"key": "organizationFiscalCode",
+							"value": "{{organization-fiscal-code}}"
+						},
+						{
+							"key": "noticeNumber",
+							"value": "{{notice-number}}"
+						},
+						{
+							"key": "paymentToken",
+							"value": "{{payment-token}}"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "SP04 - getByIUVCCP - paymentPosition Copy",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "localhost:8090/organizations/:organizationFiscalCode/iuv/:iuv/ccp/:ccp?dateFrom=2023-01-01&dateTo=2023-01-30",
+					"host": [
+						"localhost"
+					],
+					"port": "8090",
+					"path": [
+						"organizations",
+						":organizationFiscalCode",
+						"iuv",
+						":iuv",
+						"ccp",
+						":ccp"
+					],
+					"query": [
+						{
+							"key": "dateFrom",
+							"value": "2023-01-01"
+						},
+						{
+							"key": "dateTo",
+							"value": "2023-01-30"
+						}
+					],
+					"variable": [
+						{
+							"key": "organizationFiscalCode",
+							"value": "{{organization-fiscal-code}}"
+						},
+						{
+							"key": "iuv",
+							"value": "{{iuv}}"
+						},
+						{
+							"key": "ccp",
+							"value": "{{ccp}}"
+						}
+					]
+				}
+			},
+			"response": []
+		}
+	],
+	"auth": {
+		"type": "apikey",
+		"apikey": [
+			{
+				"key": "value",
+				"value": "{{subscription-key}}",
+				"type": "string"
+			},
+			{
+				"key": "key",
+				"value": "Ocp-Apim-Subscription-Key",
+				"type": "string"
+			}
+		]
+	},
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		}
+	]
+}

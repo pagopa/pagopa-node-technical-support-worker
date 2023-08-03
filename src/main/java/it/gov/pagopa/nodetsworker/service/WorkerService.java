@@ -1,5 +1,7 @@
 package it.gov.pagopa.nodetsworker.service;
 
+import com.azure.cosmos.implementation.apachecommons.lang.tuple.Pair;
+import io.quarkus.mongodb.panache.PanacheQuery;
 import it.gov.pagopa.nodetsworker.exceptions.AppErrorCodeMessageEnum;
 import it.gov.pagopa.nodetsworker.exceptions.AppException;
 import it.gov.pagopa.nodetsworker.models.BasePaymentInfo;
@@ -16,10 +18,15 @@ import it.gov.pagopa.nodetsworker.resources.response.TransactionResponse;
 import it.gov.pagopa.nodetsworker.util.StatusUtil;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
+import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.jboss.logging.Logger;
 
+import java.time.Duration;
+import java.time.Instant;
 import java.time.LocalDate;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -33,12 +40,19 @@ public class WorkerService {
 
   @Inject Logger log;
 
-//  @Inject EventMapper eventsMapper;
+  @Inject
+  CosmosBizEventClient positiveBizClient;
+  @Inject
+  CosmosNegBizEventClient negativeBizClient;
 
-  @Inject CosmosBizEventClient positiveBizClient;
-  @Inject CosmosNegBizEventClient negativeBizClient;
+  @Inject
+  ReTableService reTableService;
 
-  @Inject ReTableService reTableService;
+  @ConfigProperty(name = "re-cosmos.day-limit")
+  Integer reCosmosDayLimit;
+
+  @ConfigProperty(name = "date-range-limit")
+  Integer dateRangeLimit;
 
   private PaymentInfo eventToPaymentInfo(EventEntity firstEvent,EventEntity lastEvent) {
     return PaymentInfo.builder()
@@ -75,7 +89,6 @@ public class WorkerService {
 
   private void enrichPaymentAttemptInfo(PaymentAttemptInfo pai, PositiveBizEvent pbe) {
     pai.setPaymentToken(pbe.getPaymentInfo().getPaymentToken());
-    pai.setIsOldPaymentModel(pbe.getDebtorPosition().getModelType().equals("1"));
     pai.setBrokerPspId(pbe.getPsp().getIdBrokerPsp());
     pai.setAmount(pbe.getPaymentInfo().getAmount());
     pai.setFee(pbe.getPaymentInfo().getFee());
@@ -89,7 +102,6 @@ public class WorkerService {
   }
 
   private void enrichPaymentAttemptInfo( PaymentAttemptInfo pai, NegativeBizEvent nbe) {
-    pai.setIsOldPaymentModel(nbe.getDebtorPosition().getModelType().equals("1"));
     pai.setBrokerPspId(nbe.getPsp().getIdBrokerPsp());
     pai.setPaymentToken(nbe.getPaymentInfo().getPaymentToken());
     pai.setAmount(nbe.getPaymentInfo().getAmount());
@@ -105,9 +117,29 @@ public class WorkerService {
       String organizationFiscalCode, String noticeNumber, LocalDate dateFrom, LocalDate dateTo) {
 
     DateRequest dateRequest = verifyDate(dateFrom, dateTo);
-    List<EventEntity> reStorageEvents =
-        reTableService.findReByCiAndNN(
-            dateRequest.getFrom(), dateRequest.getTo(), organizationFiscalCode, noticeNumber);
+
+    Pair<DateRequest, DateRequest> reDates = getHistoryDates(dateRequest);
+    List<EventEntity> reStorageEvents = new ArrayList<>();
+    if(reDates.getLeft()!=null){
+      log.infof("Querying re table storage");
+      reStorageEvents.addAll(
+              reTableService.findReByCiAndNN(
+                      reDates.getLeft().getFrom(), reDates.getLeft().getTo(), organizationFiscalCode, noticeNumber)
+      );
+      log.infof("Done querying re table storage");
+    }
+    if(reDates.getRight()!=null){
+      log.infof("Querying re cosmos");
+      reStorageEvents.addAll(
+        EventEntity.findReByCiAndNN(
+                organizationFiscalCode,
+                noticeNumber,
+                reDates.getRight().getFrom(),
+                reDates.getRight().getTo()
+        ).stream().toList()
+      );
+      log.infof("Done querying re cosmos");
+    }
 
     Map<String, List<EventEntity>> reGroups =
         reStorageEvents.stream().collect(Collectors.groupingBy(EventEntity::getPaymentToken));
@@ -122,7 +154,7 @@ public class WorkerService {
                   EventEntity firstEvent = events.get(0);
                   EventEntity lastEvent = events.get(events.size() - 1);
                   PaymentInfo pi = eventToPaymentInfo(firstEvent, lastEvent);
-
+                  log.infof("Querying positive biz events");
                   Optional<PositiveBizEvent> pos =
                       positiveBizClient
                           .getEventsByCiAndNN(
@@ -132,10 +164,14 @@ public class WorkerService {
                               dateRequest.getTo())
                           .stream()
                           .findFirst();
+
+                  log.infof("Done querying positive biz events");
                   if (pos.isPresent()) {
                     pi.setOutcome(outcomeOK);
+                    pi.setPositiveBizEvtId(pos.get().getId());
                     pi.setBrokerPspId(pos.get().getPsp().getIdBrokerPsp());
                   } else {
+                    log.infof("Querying negative biz events");
                     Optional<NegativeBizEvent> neg =
                         negativeBizClient
                             .findEventsByCiAndNNAndToken(
@@ -146,6 +182,8 @@ public class WorkerService {
                                 dateRequest.getTo())
                             .stream()
                             .findFirst();
+
+                    log.infof("Done querying negative biz events");
                     if (neg.isPresent()) {
                       pi.setNegativeBizEvtId(neg.get().getId());
                       pi.setBrokerPspId(neg.get().getPsp().getIdBrokerPsp());
@@ -170,9 +208,28 @@ public class WorkerService {
       String organizationFiscalCode, String iuv, LocalDate dateFrom, LocalDate dateTo) {
 
     DateRequest dateRequest = verifyDate(dateFrom, dateTo);
-    List<EventEntity> reStorageEvents =
-        reTableService.findReByCiAndIUV(
-            dateRequest.getFrom(), dateRequest.getTo(), organizationFiscalCode, iuv);
+    Pair<DateRequest, DateRequest> reDates = getHistoryDates(dateRequest);
+    List<EventEntity> reStorageEvents = new ArrayList<>();
+    if(reDates.getLeft()!=null){
+      log.infof("Querying re table storage");
+      reStorageEvents.addAll(
+              reTableService.findReByCiAndIUV(
+                      reDates.getLeft().getFrom(), reDates.getLeft().getTo(), organizationFiscalCode, iuv)
+      );
+      log.infof("Done querying re table storage");
+    }
+    if(reDates.getRight()!=null){
+      log.infof("Querying re cosmos");
+      reStorageEvents.addAll(
+              EventEntity.findReByCiAndIUV(
+                      organizationFiscalCode,
+                      iuv,
+                      reDates.getRight().getFrom(),
+                      reDates.getRight().getTo()
+              ).stream().toList()
+      );
+      log.infof("Done querying re cosmos");
+    }
 
     Map<String, List<EventEntity>> reGroups =
         reStorageEvents.stream().collect(Collectors.groupingBy(EventEntity::getCcp));
@@ -240,17 +297,35 @@ public class WorkerService {
       LocalDate dateTo) {
 
     DateRequest dateRequest = verifyDate(dateFrom, dateTo);
-    List<EventEntity> events =
-        reTableService.findReByCiAndNNAndToken(
-            dateRequest.getFrom(),
-            dateRequest.getTo(),
-            organizationFiscalCode,
-            noticeNumber,
-            paymentToken);
+
+    Pair<DateRequest, DateRequest> reDates = getHistoryDates(dateRequest);
+    List<EventEntity> reStorageEvents = new ArrayList<>();
+    if(reDates.getLeft()!=null){
+      log.infof("Querying re table storage");
+      reStorageEvents.addAll(
+              reTableService.findReByCiAndNNAndToken(
+                      reDates.getLeft().getFrom(), reDates.getLeft().getTo(), organizationFiscalCode, noticeNumber,paymentToken)
+      );
+      log.infof("Done querying re table storage");
+    }
+    if(reDates.getRight()!=null){
+      log.infof("Querying re cosmos");
+      reStorageEvents.addAll(
+              EventEntity.findReByCiAndNNAndToken(
+                      organizationFiscalCode,
+                      noticeNumber,
+                      paymentToken,
+                      reDates.getRight().getFrom(),
+                      reDates.getRight().getTo()
+              ).stream().toList()
+      );
+      log.infof("Done querying re cosmos");
+    }
+
     List<BasePaymentInfo> pais = new ArrayList<>();
-    if (events.size() > 0) {
-      EventEntity firstEvent = events.get(0);
-      EventEntity lastEvent = events.get(events.size() - 1);
+    if (reStorageEvents.size() > 0) {
+      EventEntity firstEvent = reStorageEvents.get(0);
+      EventEntity lastEvent = reStorageEvents.get(reStorageEvents.size() - 1);
       PaymentAttemptInfo pai = eventToPaymentAttemptInfo(firstEvent, lastEvent);
 
       Optional<PositiveBizEvent> pos =
@@ -298,13 +373,33 @@ public class WorkerService {
       String organizationFiscalCode, String iuv, String ccp, LocalDate dateFrom, LocalDate dateTo) {
 
     DateRequest dateRequest = verifyDate(dateFrom, dateTo);
-    List<EventEntity> events =
-        reTableService.findReByCiAndIUVAndCCP(
-            dateRequest.getFrom(), dateRequest.getTo(), organizationFiscalCode, iuv, ccp);
+    Pair<DateRequest, DateRequest> reDates = getHistoryDates(dateRequest);
+    List<EventEntity> reStorageEvents = new ArrayList<>();
+    if(reDates.getLeft()!=null){
+      log.infof("Querying re table storage");
+      reStorageEvents.addAll(
+              reTableService.findReByCiAndIUVAndCCP(
+                      reDates.getLeft().getFrom(), reDates.getLeft().getTo(), organizationFiscalCode, iuv,ccp)
+      );
+      log.infof("Done querying re table storage");
+    }
+    if(reDates.getRight()!=null){
+      log.infof("Querying re cosmos");
+      reStorageEvents.addAll(
+        EventEntity.findReByCiAndIUVAndCCP(
+                organizationFiscalCode,
+                iuv,
+                ccp,
+                reDates.getRight().getFrom(),
+                reDates.getRight().getTo()
+        ).stream().toList()
+      );
+      log.infof("Done querying re cosmos");
+    }
     List<BasePaymentInfo> pais = new ArrayList<>();
-    if (events.size() > 0) {
-      EventEntity firstEvent = events.get(0);
-      EventEntity lastEvent = events.get(events.size() - 1);
+    if (reStorageEvents.size() > 0) {
+      EventEntity firstEvent = reStorageEvents.get(0);
+      EventEntity lastEvent = reStorageEvents.get(reStorageEvents.size() - 1);
       PaymentAttemptInfo pai = eventToPaymentAttemptInfo(firstEvent, lastEvent);
       String outcome = null;
 
@@ -361,8 +456,81 @@ public class WorkerService {
     }
     if (dateFrom == null && dateTo == null) {
       dateTo = LocalDate.now();
-      dateFrom = dateTo.minusDays(10);
+      dateFrom = dateTo.minusDays(dateRangeLimit);
+    }
+    if(ChronoUnit.DAYS.between(dateFrom, dateTo)>dateRangeLimit){
+      throw new AppException(
+              AppErrorCodeMessageEnum.INTERVAL_TOO_LARGE,
+              dateRangeLimit);
     }
     return DateRequest.builder().from(dateFrom).to(dateTo).build();
+  }
+
+  private Pair<DateRequest, DateRequest> getHistoryDates(DateRequest dateRequest) {
+
+    LocalDate dateLimit = LocalDate.now().minusDays(reCosmosDayLimit);
+
+    if(dateRequest.getFrom().isBefore(dateLimit) && dateRequest.getTo().isBefore(dateLimit)){
+      return Pair.of(
+              DateRequest.builder().from(dateRequest.getFrom()).to(dateRequest.getTo()).build(),
+              null
+      );
+    } else if(dateRequest.getFrom().isBefore(dateLimit) && dateRequest.getTo().isAfter(dateLimit)) {
+      return Pair.of(
+              DateRequest.builder().from(dateRequest.getFrom()).to(dateLimit).build(),
+              DateRequest.builder().from(dateLimit).to(dateRequest.getTo()).build()
+      );
+    } else {
+      return Pair.of(
+              null,
+              DateRequest.builder().from(dateRequest.getFrom()).to(dateRequest.getTo()).build()
+      );
+    }
+  }
+
+  public Map countByPartitionKey(String pk) {
+    log.infof("Querying partitionKey on table storage: %s", pk);
+    Instant start = Instant.now();
+    long tableItems = reTableService.findReByPartition(pk);
+    Instant finish = Instant.now();
+    long tableTimeElapsed = Duration.between(start, finish).toMillis();
+    log.infof("Done querying partitionKey %s on table storage. Count %s", pk, tableItems);
+
+
+
+
+    log.infof("Querying partitionKey on cosmos: %s", pk);
+    start = Instant.now();
+    Long cosmosItems = EventEntity.findReByPartitionKey(pk);
+    finish = Instant.now();
+    long cosmosTimeElapsed = Duration.between(start, finish).toMillis();
+    log.infof("Done querying partitionKey %s on cosmos. Count %s", pk, cosmosItems);
+
+    log.infof("Querying partitionKey on cosmos with panache: %s", pk);
+    start = Instant.now();
+    Long panacheItems = EventEntity.findReByPartitionKeyPanache(pk);
+    finish = Instant.now();
+    Long panacheTimeElapsed = Duration.between(start, finish).toMillis();
+    log.infof("Done querying partitionKey %s on cosmos with panache. Count %s", pk, panacheItems);
+
+
+    Map<String, Map> response = new HashMap<>();
+    Map<String, Long> table = new HashMap<>();
+    table.put("items", tableItems);
+    table.put("millis", tableTimeElapsed);
+
+    Map<String, Long> cosmos = new HashMap<>();
+    cosmos.put("items", cosmosItems);
+    cosmos.put("millis", cosmosTimeElapsed);
+
+    Map<String, Long> panache = new HashMap<>();
+    panache.put("items", panacheItems);
+    panache.put("millis", panacheTimeElapsed);
+
+    response.put("table", table);
+    response.put("cosmos", cosmos);
+    response.put("panache", panache);
+
+    return response;
   }
 }

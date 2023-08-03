@@ -1,13 +1,13 @@
 {
   "openapi": "3.0.3",
   "info": {
-    "title": "Node technical support - Api (local) ${service}",
+    "title": "Node technical support - API (DEV)",
     "termsOfService": "https://www.pagopa.gov.it/",
-    "version": "1.0.2"
+    "version": "1.0.2-16-NOD-400"
   },
   "servers": [
     {
-      "url": "${host}/tenchinal-support/api/v1 - APIM"
+      "url": "${host}/technical-support/nodo/api/v1"
     }
   ],
   "tags": [
@@ -22,11 +22,8 @@
         "tags": [
           "Info"
         ],
-        "summary": "Get info of FDR",
+        "summary": "Get info of Node tech support API",
         "responses": {
-          "default": {
-            "$ref": "#/components/responses/InternalServerError"
-          },
           "200": {
             "description": "Success",
             "content": {
@@ -339,6 +336,28 @@
           }
         }
       }
+    },
+    "/test/partitionkey/{partitionKey}": {
+      "get": {
+        "tags": [
+          "Test Resource"
+        ],
+        "parameters": [
+          {
+            "name": "partitionKey",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
     }
   },
   "components": {
@@ -376,9 +395,6 @@
           "updatedTimestamp": {
             "type": "string"
           },
-          "isOldPaymentModel": {
-            "type": "boolean"
-          },
           "serviceIdentifier": {
             "type": "string"
           },
@@ -395,7 +411,7 @@
         "properties": {
           "code": {
             "type": "string",
-            "example": "FDR-0500"
+            "example": "0500"
           },
           "description": {
             "type": "string",
@@ -413,7 +429,7 @@
         "properties": {
           "name": {
             "type": "string",
-            "example": "pagopa-fdr"
+            "example": "pagopa-node-tech-support"
           },
           "version": {
             "type": "string",
@@ -425,7 +441,7 @@
           },
           "description": {
             "type": "string",
-            "example": "FDR - Flussi di rendicontazione"
+            "example": "Node tech support API"
           },
           "errorCodes": {
             "type": "array",

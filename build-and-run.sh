@@ -26,7 +26,7 @@ run () {
   conf=$1
   version=$(./mvnw help:evaluate -Dexpression=project.version -q -DforceStdout)
   echo "Run version [$version] [$conf]"
-  docker run -i --rm --network=docker-infra_infra -p 8080:8080 $REPO:$version-$conf
+  docker run -i --rm -p 8080:8080 $REPO:$version-$conf
 }
 
 generate_openapi () {
@@ -54,9 +54,6 @@ if echo "build run generate_openapi test_curl" | grep -w $action > /dev/null; th
   if [ $action = "build" ]; then
     build docker
   elif [ $action = "run" ]; then
-    echo "###########"
-    echo "# REQUIRED: run-local-infra.sh"
-    echo "###########"
     run docker
   elif [ $action = "generate_openapi" ]; then
     build openapi

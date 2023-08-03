@@ -23,7 +23,6 @@ public class BasePaymentInfo {
   private String status;
   private String insertedTimestamp;
   private String updatedTimestamp;
-  private Boolean isOldPaymentModel;
   private String serviceIdentifier;
 
   private String positiveBizEvtId;
