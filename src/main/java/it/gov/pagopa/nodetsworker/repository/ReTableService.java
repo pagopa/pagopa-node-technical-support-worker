@@ -47,7 +47,13 @@ public class ReTableService {
           "idDominio",
           "iuv",
           "ccp",
-          "insertedTimestamp");
+          "insertedTimestamp",
+          "tipoEvento",
+          "sottoTipoEvento",
+          "esito",
+          "businessProcess");
+
+  private String dateFilter = "PartitionKey ge '%s' and PartitionKey le '%s'";
 
   private EventEntity tableEntityToEventEntity(TableEntity e) {
     EventEntity ee = new EventEntity();
@@ -67,38 +73,37 @@ public class ReTableService {
 
   public List<EventEntity> findReByCiAndNN(
       LocalDate datefrom, LocalDate dateTo, String creditorInstitution, String noticeNumber) {
-
-    String filter =
-        String.format(
-            "PartitionKey ge '%s' and PartitionKey le '%s' and idDominio eq '%s' and noticeNumber"
-                + " eq '%s' and esito eq 'CAMBIO_STATO'",
-            Util.format(datefrom), Util.format(dateTo), creditorInstitution, noticeNumber);
-    ListEntitiesOptions options =
-        new ListEntitiesOptions().setFilter(filter).setSelect(propertiesToSelect);
-    return getTableClient().listEntities(options, null, null).stream()
-        .map(
-            e -> {
-              return tableEntityToEventEntity(e);
-            })
-        .collect(Collectors.toList());
+      return runQuery(
+              String.format(dateFilter+" and idDominio eq '%s' and noticeNumber eq '%s'",
+                      Util.format(datefrom),
+                      Util.format(dateTo),
+                      creditorInstitution,
+                      noticeNumber)
+      );
   }
 
   public List<EventEntity> findReByCiAndIUV(
       LocalDate datefrom, LocalDate dateTo, String creditorInstitution, String iuv) {
-    ListEntitiesOptions options =
-        new ListEntitiesOptions()
-            .setFilter(
-                String.format(
-                    "PartitionKey ge '%s' and PartitionKey le '%s' and idDominio eq '%s' and iuv eq"
-                        + " '%s' and esito eq 'CAMBIO_STATO'",
-                    Util.format(datefrom), Util.format(dateTo), creditorInstitution, iuv))
-            .setSelect(propertiesToSelect);
-    return getTableClient().listEntities(options, null, null).stream()
-        .map(
-            e -> {
-              return tableEntityToEventEntity(e);
-            })
-        .collect(Collectors.toList());
+      return runQuery(
+              String.format(dateFilter+" and idDominio eq '%s' and iuv eq '%s'",
+                      Util.format(datefrom),
+                      Util.format(dateTo),
+                      creditorInstitution,
+                      iuv)
+      );
+  }
+
+
+  private List<EventEntity> runQuery(String filter){
+      ListEntitiesOptions options = new ListEntitiesOptions()
+              .setFilter(filter)
+              .setSelect(propertiesToSelect);
+      return getTableClient().listEntities(options, null, null).stream()
+              .map(
+                      e -> {
+                          return tableEntityToEventEntity(e);
+                      })
+              .collect(Collectors.toList());
   }
 
   public List<EventEntity> findReByCiAndNNAndToken(
@@ -107,44 +112,26 @@ public class ReTableService {
       String creditorInstitution,
       String noticeNumber,
       String paymentToken) {
-    ListEntitiesOptions options =
-        new ListEntitiesOptions()
-            .setFilter(
-                String.format(
-                    "PartitionKey ge '%s' and PartitionKey le '%s' and idDominio eq '%s' and"
-                        + " noticeNumber eq '%s' and paymentToken eq '%s' and esito eq"
-                        + " 'CAMBIO_STATO'",
-                    Util.format(datefrom),
-                    Util.format(dateTo),
-                    creditorInstitution,
-                    noticeNumber,
-                    paymentToken))
-            .setSelect(propertiesToSelect);
-    return getTableClient().listEntities(options, null, null).stream()
-        .map(
-            e -> {
-              return tableEntityToEventEntity(e);
-            })
-        .collect(Collectors.toList());
+    return runQuery(
+            String.format(dateFilter+" and idDominio eq '%s' and noticeNumber eq '%s' and paymentToken eq '%s'",
+            Util.format(datefrom),
+            Util.format(dateTo),
+            creditorInstitution,
+            noticeNumber,
+            paymentToken)
+    );
   }
 
   public List<EventEntity> findReByCiAndIUVAndCCP(
       LocalDate datefrom, LocalDate dateTo, String creditorInstitution, String iuv, String ccp) {
-    ListEntitiesOptions options =
-        new ListEntitiesOptions()
-            .setFilter(
-                String.format(
-                    "PartitionKey ge '%s' and PartitionKey le '%s' and idDominio eq '%s' and iuv eq '%s'"
-                        + " and ccp eq '%s' and esito eq 'CAMBIO_STATO'",
-                    Util.format(datefrom), Util.format(dateTo), creditorInstitution, iuv, ccp))
-            .setSelect(propertiesToSelect);
-
-    return getTableClient().listEntities(options, null, null).stream()
-        .map(
-            e -> {
-              return tableEntityToEventEntity(e);
-            })
-        .collect(Collectors.toList());
+      return runQuery(
+              String.format(dateFilter+" and idDominio eq '%s' and noticeNumber eq '%s' and ccp eq '%s'",
+                      Util.format(datefrom),
+                      Util.format(dateTo),
+                      creditorInstitution,
+                      iuv,
+                      ccp)
+      );
   }
 
   public long findReByPartition(

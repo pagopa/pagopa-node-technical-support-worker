@@ -13,6 +13,9 @@ import lombok.experimental.SuperBuilder;
 @SuperBuilder
 public class BasePaymentInfo {
 
+  private String primitive;
+  private String paymentStatus;
+
   private String organizationFiscalCode;
   private String noticeNumber;
   private String iuv;

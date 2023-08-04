@@ -35,39 +35,36 @@ public class EventEntity extends PanacheMongoEntity {
   private String uniqueId;
   private String serviceIdentifier;
   private String idDominio;
-//  private String version;
-//  private Long timestamp;
-//  private String sessionIdOriginal;
-//  private String dataOraEvento;
-//  private String payload;
-//  private String info;
-//  private String businessProcess;
-//  private String fruitoreDescr;
-//  private String erogatoreDescr;
-//  private String pspDescr;
-//  private String parametriSpecificiInterfaccia;
-//  private String esito;
-//  private String sessionId;
-//  private String tipoVersamento;
-//  private String tipoEvento;
-//  private String fruitore;
-//  private String erogatore;
-//  private String componente;
-//  private String categoriaEvento;
-//  private String sottoTipoEvento;
+  private String esito;
+  private String sottoTipoEvento;
+  private String tipoEvento;
+  //  private String version;
+  //  private Long timestamp;
+  //  private String sessionIdOriginal;
+  //  private String dataOraEvento;
+  //  private String payload;
+  //  private String info;
+  //  private String businessProcess;
+  //  private String fruitoreDescr;
+  //  private String erogatoreDescr;
+  //  private String pspDescr;
+  //  private String parametriSpecificiInterfaccia;
+  //  private String sessionId;
+  //  private String tipoVersamento;
+  //  private String fruitore;
+  //  private String erogatore;
+  //  private String componente;
+  //  private String categoriaEvento;
 
-  private static String dateFilter = "PartitionKey >= :from and PartitionKey <= :to";
+  private static String dateFilter = " 'PartitionKey': { '$gte': :from , '$lt': :to } ";
   private static Parameters dateParams(LocalDate dateFrom, LocalDate dateTo){
     return Parameters.with("from", DateTimeFormatter.ISO_DATE.format(dateFrom)+"T00")
-            .and("to", DateTimeFormatter.ISO_DATE.format(dateTo)+"T23");
+            .and("to", DateTimeFormatter.ISO_DATE.format(dateTo.plusDays(1))+"T00");
   }
 
   public static PanacheQuery<EventEntity> findReByCiAndNN(
           String creditorInstitution, String nav, LocalDate dateFrom, LocalDate dateTo) {
-    return find(
-            dateFilter +
-                    " and idDominio = :idDominio and noticeNumber = :noticeNumber and esito = 'CAMBIO_STATO'"
-                    + " and status like 'payment_'",
+    return find("{"+dateFilter+", 'idDominio': :idDominio, 'noticeNumber': :noticeNumber }",
             dateParams(dateFrom,dateTo)
                     .and("idDominio", creditorInstitution)
                     .and("noticeNumber", nav)
@@ -81,10 +78,7 @@ public class EventEntity extends PanacheMongoEntity {
           String paymentToken,
           LocalDate dateFrom,
           LocalDate dateTo) {
-    return find(
-            dateFilter +
-                    " and idDominio = :idDominio and noticeNumber = :noticeNumber and paymentToken = :paymentToken and esito = 'CAMBIO_STATO'"
-                    + " and status like 'payment_'",
+    return find("{"+dateFilter+", 'idDominio': :idDominio, 'noticeNumber': :noticeNumber, 'paymentToken': :paymentToken }",
             dateParams(dateFrom,dateTo)
                     .and("idDominio", creditorInstitution)
                     .and("noticeNumber", nav)
@@ -95,10 +89,7 @@ public class EventEntity extends PanacheMongoEntity {
 
   public static PanacheQuery<EventEntity> findReByCiAndIUV(
           String creditorInstitution, String iuv, LocalDate dateFrom, LocalDate dateTo) {
-    return find(
-            dateFilter +
-                    " and idDominio = :idDominio and iuv = :iuv and esito = 'CAMBIO_STATO'"
-                    + " and status like 'payment_'",
+    return find("{"+dateFilter+", 'idDominio': :idDominio, 'iuv': :iuv }",
             dateParams(dateFrom,dateTo)
                     .and("idDominio", creditorInstitution)
                     .and("iuv", iuv))
@@ -107,10 +98,7 @@ public class EventEntity extends PanacheMongoEntity {
 
   public static PanacheQuery<EventEntity> findReByCiAndIUVAndCCP(
           String creditorInstitution, String iuv, String ccp, LocalDate dateFrom, LocalDate dateTo) {
-    return find(
-            dateFilter +
-                    " and idDominio = :idDominio and iuv = :iuv and ccp = :ccp and esito = 'CAMBIO_STATO'"
-                    + " and status like 'payment_'",
+    return find("{"+dateFilter+", 'idDominio': :idDominio, 'iuv': :iuv, 'ccp': :ccp }",
             dateParams(dateFrom,dateTo)
                     .and("idDominio", creditorInstitution)
                     .and("iuv", iuv)

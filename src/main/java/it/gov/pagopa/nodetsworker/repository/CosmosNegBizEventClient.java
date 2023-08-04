@@ -97,13 +97,4 @@ public class CosmosNegBizEventClient {
             .setParameters(paramList);
     return query(q);
   }
-
-  public CosmosPagedIterable<NegativeBizEvent> findEventsByCiAndIUVAndToken(
-      String organizationFiscalCode,
-      String iuv,
-      String paymentToken,
-      LocalDate dateFrom,
-      LocalDate dateTo) {
-    return findEventsByCiAndIUVAndCCP(organizationFiscalCode, iuv, paymentToken, dateFrom, dateTo);
-  }
 }
