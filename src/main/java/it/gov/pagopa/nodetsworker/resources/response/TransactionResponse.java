@@ -17,6 +17,8 @@ public class TransactionResponse<T extends BasePaymentInfo> {
   private LocalDate dateFrom;
   private LocalDate dateTo;
 
+  private int count;
+
   @JsonProperty("data")
   @JsonSubTypes({
     @JsonSubTypes.Type(value = BasePaymentInfo.class, name = "car"),
