@@ -9,7 +9,8 @@ import it.gov.pagopa.nodetsworker.models.PaymentAttemptInfo;
 import it.gov.pagopa.nodetsworker.models.PaymentInfo;
 import it.gov.pagopa.nodetsworker.repository.CosmosBizEventClient;
 import it.gov.pagopa.nodetsworker.repository.CosmosNegBizEventClient;
-import it.gov.pagopa.nodetsworker.repository.ReTableService;
+import it.gov.pagopa.nodetsworker.repository.CosmosReEventClient;
+import it.gov.pagopa.nodetsworker.repository.ReTableStorageClient;
 import it.gov.pagopa.nodetsworker.repository.model.EventEntity;
 import it.gov.pagopa.nodetsworker.repository.model.NegativeBizEvent;
 import it.gov.pagopa.nodetsworker.repository.model.PositiveBizEvent;
@@ -38,12 +39,14 @@ public class WorkerService {
     Logger log;
 
     @Inject
+    CosmosReEventClient reClient;
+    @Inject
     CosmosBizEventClient positiveBizClient;
     @Inject
     CosmosNegBizEventClient negativeBizClient;
 
     @Inject
-    ReTableService reTableService;
+    ReTableStorageClient reTableStorageClient;
 
     @ConfigProperty(name = "re-cosmos.day-limit")
     Integer reCosmosDayLimit;
@@ -123,7 +126,7 @@ public class WorkerService {
         if (reDates.getLeft() != null) {
             log.infof("Querying re table storage");
             reStorageEvents.addAll(
-                    reTableService.findReByCiAndNN(
+                    reTableStorageClient.findReByCiAndNN(
                             reDates.getLeft().getFrom(), reDates.getLeft().getTo(), organizationFiscalCode, noticeNumber)
             );
             log.infof("Done querying re table storage");
@@ -131,9 +134,10 @@ public class WorkerService {
         if (reDates.getRight() != null) {
             log.infof("Querying re cosmos");
             reStorageEvents.addAll(
-                    EventEntity.findReByCiAndNN(
+                    reClient.findReByCiAndNNAndToken(
                             organizationFiscalCode,
                             noticeNumber,
+                            Optional.empty(),
                             reDates.getRight().getFrom(),
                             reDates.getRight().getTo()
                     ).stream().toList()
@@ -224,7 +228,7 @@ public class WorkerService {
         if (reDates.getLeft() != null) {
             log.infof("Querying re table storage");
             reStorageEvents.addAll(
-                    reTableService.findReByCiAndIUV(
+                    reTableStorageClient.findReByCiAndIUV(
                             reDates.getLeft().getFrom(), reDates.getLeft().getTo(), organizationFiscalCode, iuv)
             );
             log.infof("Done querying re table storage");
@@ -232,9 +236,10 @@ public class WorkerService {
         if (reDates.getRight() != null) {
             log.infof("Querying re cosmos");
             reStorageEvents.addAll(
-                    EventEntity.findReByCiAndIUV(
+                    reClient.findReByCiAndIUVAndCCP(
                             organizationFiscalCode,
                             iuv,
+                            Optional.empty(),
                             reDates.getRight().getFrom(),
                             reDates.getRight().getTo()
                     ).stream().toList()
@@ -321,7 +326,7 @@ public class WorkerService {
         if (reDates.getLeft() != null) {
             log.infof("Querying re table storage");
             reStorageEvents.addAll(
-                    reTableService.findReByCiAndNNAndToken(
+                    reTableStorageClient.findReByCiAndNNAndToken(
                             reDates.getLeft().getFrom(), reDates.getLeft().getTo(), organizationFiscalCode, noticeNumber, paymentToken)
             );
             log.infof("Done querying re table storage");
@@ -329,10 +334,10 @@ public class WorkerService {
         if (reDates.getRight() != null) {
             log.infof("Querying re cosmos");
             reStorageEvents.addAll(
-                    EventEntity.findReByCiAndNNAndToken(
+                    reClient.findReByCiAndNNAndToken(
                             organizationFiscalCode,
                             noticeNumber,
-                            paymentToken,
+                            Optional.of(paymentToken),
                             reDates.getRight().getFrom(),
                             reDates.getRight().getTo()
                     ).stream().toList()
@@ -403,7 +408,7 @@ public class WorkerService {
         if (reDates.getLeft() != null) {
             log.infof("Querying re table storage");
             reStorageEvents.addAll(
-                    reTableService.findReByCiAndIUVAndCCP(
+                    reTableStorageClient.findReByCiAndIUVAndCCP(
                             reDates.getLeft().getFrom(), reDates.getLeft().getTo(), organizationFiscalCode, iuv, ccp)
             );
             log.infof("Done querying re table storage");
@@ -411,10 +416,10 @@ public class WorkerService {
         if (reDates.getRight() != null) {
             log.infof("Querying re cosmos");
             reStorageEvents.addAll(
-                    EventEntity.findReByCiAndIUVAndCCP(
+                    reClient.findReByCiAndIUVAndCCP(
                             organizationFiscalCode,
                             iuv,
-                            ccp,
+                            Optional.of(ccp),
                             reDates.getRight().getFrom(),
                             reDates.getRight().getTo()
                     ).stream().toList()
@@ -527,7 +532,7 @@ public class WorkerService {
     public Map countByPartitionKey(String pk) {
         log.infof("Querying partitionKey on table storage: %s", pk);
         Instant start = Instant.now();
-        long tableItems = reTableService.findReByPartition(pk);
+        long tableItems = reTableStorageClient.findReByPartitionKey(pk);
         Instant finish = Instant.now();
         long tableTimeElapsed = Duration.between(start, finish).toMillis();
         log.infof("Done querying partitionKey %s on table storage. Count %s", pk, tableItems);
@@ -535,17 +540,10 @@ public class WorkerService {
 
         log.infof("Querying partitionKey on cosmos: %s", pk);
         start = Instant.now();
-        Long cosmosItems = EventEntity.findReByPartitionKey(pk);
+        Long cosmosItems = reClient.findReByPartitionKey(pk).stream().findFirst().get().getCount();
         finish = Instant.now();
         long cosmosTimeElapsed = Duration.between(start, finish).toMillis();
         log.infof("Done querying partitionKey %s on cosmos. Count %s", pk, cosmosItems);
-
-        log.infof("Querying partitionKey on cosmos with panache: %s", pk);
-        start = Instant.now();
-        Long panacheItems = EventEntity.findReByPartitionKeyPanache(pk);
-        finish = Instant.now();
-        Long panacheTimeElapsed = Duration.between(start, finish).toMillis();
-        log.infof("Done querying partitionKey %s on cosmos with panache. Count %s", pk, panacheItems);
 
 
         Map<String, Map> response = new HashMap<>();
@@ -557,13 +555,8 @@ public class WorkerService {
         cosmos.put("items", cosmosItems);
         cosmos.put("millis", cosmosTimeElapsed);
 
-        Map<String, Long> panache = new HashMap<>();
-        panache.put("items", panacheItems);
-        panache.put("millis", panacheTimeElapsed);
-
         response.put("table", table);
         response.put("cosmos", cosmos);
-        response.put("panache", panache);
 
         return response;
     }
