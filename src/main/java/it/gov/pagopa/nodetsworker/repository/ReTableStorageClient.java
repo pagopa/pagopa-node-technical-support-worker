@@ -17,7 +17,7 @@ import org.eclipse.microprofile.config.inject.ConfigProperty;
 // @Startup
 @ApplicationScoped
 // @UnlessBuildProfile("test")
-public class ReTableService {
+public class ReTableStorageClient {
 
   @ConfigProperty(name = "re-table-storage.connection-string")
   String connString;
@@ -134,7 +134,7 @@ public class ReTableService {
       );
   }
 
-  public long findReByPartition(
+  public long findReByPartitionKey(
           String partitionKey
   ) {
     ListEntitiesOptions options =

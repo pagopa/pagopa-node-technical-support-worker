@@ -103,10 +103,10 @@
       <version>${org.mapstruct.version}</version>
       <scope>provided</scope>
     </dependency>
-    <dependency>
-      <groupId>io.quarkus</groupId>
-      <artifactId>quarkus-mongodb-panache</artifactId>
-    </dependency>
+<!--    <dependency>-->
+<!--      <groupId>io.quarkus</groupId>-->
+<!--      <artifactId>quarkus-mongodb-panache</artifactId>-->
+<!--    </dependency>-->
     <dependency>
       <groupId>com.azure</groupId>
       <artifactId>azure-cosmos</artifactId>
