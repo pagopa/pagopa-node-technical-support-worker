@@ -23,6 +23,7 @@ microservice-chart:
     OTEL_ENDPOINT: "http://otel-collector.elastic-system.svc.cluster.local:4317"
     COSMOS_BIZ_ENDPOINT: "https://pagopa-d-weu-bizevents-ds-cosmos-account.documents.azure.com:443/"
     COSMOS_NEG_BIZ_ENDPOINT: "https://pagopa-d-weu-bizevents-neg-ds-cosmos-account.documents.azure.com:443/"
+    COSMOS_RE_ENDPOINT: "https://pagopa-d-weu-nodo-re-cosmos-nosql-account.documents.azure.com:443/"
     RE_COSMOS_DAY_LIMIT: "10"
     LOG_LEVEL: "INFO"
   envFieldRef:
@@ -34,6 +35,7 @@ microservice-chart:
       OTEL_AUTH_BEARER: "otel-auth-bearer"
       COSMOS_BIZ_KEY: "cosmos-biz-account-key"
       COSMOS_NEG_BIZ_KEY: "cosmos-neg-biz-account-key"
+      COSMOS_RE_KEY: "cosmos-re-account-key"
       RE_TABLE_STORAGE_CONN_STRING: "re-datastore-connection-string"
       RE_COSMOS_CONNECTION_STRING: "cosmos-re-connection-string"
     keyvault:
