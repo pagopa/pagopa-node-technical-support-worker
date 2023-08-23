@@ -54,7 +54,7 @@ public class WorkerService {
     @ConfigProperty(name = "date-range-limit")
     Integer dateRangeLimit;
 
-    private List<String> tipiEventoAttempts = Arrays.asList("activatePaymentNotice","nodoInviaRPT","nodoInviaCarrelloRPT");
+    private List<String> tipiEventoAttempts = Arrays.asList("activatePaymentNotice","activatePaymentNoticeV2","nodoInviaRPT","nodoInviaCarrelloRPT");
 
     private PaymentInfo eventToPaymentInfo(EventEntity activation) {
         return PaymentInfo.builder()
