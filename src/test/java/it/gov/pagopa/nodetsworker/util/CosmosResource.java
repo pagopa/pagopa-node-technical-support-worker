@@ -30,7 +30,8 @@ public class CosmosResource implements QuarkusTestResourceLifecycleManager {
 
     cosmos =
         new CosmosDBEmulatorContainer(
-                DockerImageName.parse("mcr.microsoft.com/cosmosdb/linux/azure-cosmos-emulator"))
+                DockerImageName.parse("ghcr.io/pagopa/cosmosdb-emulator:latest"))
+//                DockerImageName.parse("mcr.microsoft.com/cosmosdb/linux/azure-cosmos-emulator"))
             .withEnv(
                 "AZURE_COSMOS_EMULATOR_IP_ADDRESS_OVERRIDE",
                 InetAddress.getLocalHost().getHostAddress())
