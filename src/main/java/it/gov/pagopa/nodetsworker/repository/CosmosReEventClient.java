@@ -66,14 +66,25 @@ public class CosmosReEventClient {
       Optional<String> paymentToken,
       LocalDate dateFrom,
       LocalDate dateTo) {
-    List<SqlParameter> paramList =
-        Arrays.asList(
-            new SqlParameter("@organizationFiscalCode", organizationFiscalCode),
-            new SqlParameter("@noticeNumber", noticeNumber),
-            new SqlParameter("@from", Util.format(dateFrom)),
-            new SqlParameter("@to", Util.format(dateTo.plusDays(1)))
-        );
-    paymentToken.ifPresent(pt->paramList.add(new SqlParameter("@paymentToken", paymentToken)));
+    List<SqlParameter> paramList;
+    if(paymentToken.isPresent()){
+      paramList =
+              Arrays.asList(
+                      new SqlParameter("@organizationFiscalCode", organizationFiscalCode),
+                      new SqlParameter("@noticeNumber", noticeNumber),
+                      new SqlParameter("@from", Util.format(dateFrom)),
+                      new SqlParameter("@to", Util.format(dateTo.plusDays(1))),
+                      new SqlParameter("@paymentToken", paymentToken.get())
+              );
+    }else{
+      paramList =
+              Arrays.asList(
+                      new SqlParameter("@organizationFiscalCode", organizationFiscalCode),
+                      new SqlParameter("@noticeNumber", noticeNumber),
+                      new SqlParameter("@from", Util.format(dateFrom)),
+                      new SqlParameter("@to", Util.format(dateTo.plusDays(1)))
+              );
+    }
     SqlQuerySpec q =
         new SqlQuerySpec(
                 "SELECT * FROM c where"
@@ -88,14 +99,25 @@ public class CosmosReEventClient {
   public CosmosPagedIterable<EventEntity> findReByCiAndIUVAndCCP(
       String organizationFiscalCode, String iuv,
       Optional<String> ccp, LocalDate dateFrom, LocalDate dateTo) {
-    List<SqlParameter> paramList =
-        Arrays.asList(
-            new SqlParameter("@organizationFiscalCode", organizationFiscalCode),
-            new SqlParameter("@iuv", iuv),
-            new SqlParameter("@from", Util.format(dateFrom)),
-            new SqlParameter("@to", Util.format(dateTo.plusDays(1)))
-        );
-    ccp.ifPresent(cp->paramList.add(new SqlParameter("@ccp", cp)));
+    List<SqlParameter> paramList;
+
+    if(ccp.isPresent()){
+      paramList =Arrays.asList(
+              new SqlParameter("@organizationFiscalCode", organizationFiscalCode),
+              new SqlParameter("@iuv", iuv),
+              new SqlParameter("@from", Util.format(dateFrom)),
+              new SqlParameter("@to", Util.format(dateTo.plusDays(1)))
+      );
+    }else{
+      paramList =Arrays.asList(
+              new SqlParameter("@organizationFiscalCode", organizationFiscalCode),
+              new SqlParameter("@iuv", iuv),
+              new SqlParameter("@from", Util.format(dateFrom)),
+              new SqlParameter("@to", Util.format(dateTo.plusDays(1))),
+              new SqlParameter("@ccp", ccp.get())
+
+      );
+    }
     SqlQuerySpec q =
         new SqlQuerySpec(
                 "SELECT * FROM c where"
