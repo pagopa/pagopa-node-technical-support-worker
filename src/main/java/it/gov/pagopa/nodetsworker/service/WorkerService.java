@@ -495,7 +495,7 @@ public class WorkerService {
             dateTo = LocalDate.now();
             dateFrom = dateTo.minusDays(dateRangeLimit);
         }
-        if (ChronoUnit.DAYS.between(dateFrom, dateTo) > dateRangeLimit - 1) {
+        if (ChronoUnit.DAYS.between(dateFrom, dateTo) > dateRangeLimit) {
             throw new AppException(
                     AppErrorCodeMessageEnum.INTERVAL_TOO_LARGE,
                     dateRangeLimit);
