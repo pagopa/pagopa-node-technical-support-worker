@@ -38,7 +38,7 @@ public class CosmosReEventClient {
 
   @Inject Logger log;
 
-  private String dateFilter = " and c.paymentInfo.paymentDateTime > @from and c.paymentInfo.paymentDateTime < @to";
+  private String dateFilter = " and c.insertedTimestamp > @from and c.insertedTimestamp < @to";
 
   private CosmosClient getClient() {
     if (client == null) {
@@ -77,9 +77,9 @@ public class CosmosReEventClient {
     SqlQuerySpec q =
         new SqlQuerySpec(
                 "SELECT * FROM c where"
-                    + " c.creditor.idPA = @organizationFiscalCode"
-                    + " and c.debtorPosition.noticeNumber = @noticeNumber"
-                    + paymentToken.map(pt->" and c.paymentInfo.paymentToken = @paymentToken").orElse("")
+                    + " c.idDominio = @organizationFiscalCode"
+                    + " and c.noticeNumber = @noticeNumber"
+                    + paymentToken.map(pt->" and c.paymentToken = @paymentToken").orElse("")
                     + dateFilter)
             .setParameters(paramList);
     return query(q);
@@ -99,9 +99,9 @@ public class CosmosReEventClient {
     SqlQuerySpec q =
         new SqlQuerySpec(
                 "SELECT * FROM c where"
-                    + " c.creditor.idPA = @organizationFiscalCode"
-                    + " and c.debtorPosition.iuv = @iuv"
-                    + ccp.map(pt->" and c.paymentInfo.ccp = @ccp").orElse("")
+                    + " c.idDominio = @organizationFiscalCode"
+                    + " and c.iuv = @iuv"
+                    + ccp.map(pt->" and c.ccp = @ccp").orElse("")
                     + dateFilter)
             .setParameters(paramList);
     return query(q);
