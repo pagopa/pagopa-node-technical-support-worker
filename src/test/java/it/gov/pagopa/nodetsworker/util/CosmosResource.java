@@ -8,15 +8,12 @@ import java.io.FileOutputStream;
 import java.net.InetAddress;
 import java.nio.file.Path;
 import java.security.KeyStore;
-import java.time.Duration;
-import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import lombok.SneakyThrows;
 import org.testcontainers.containers.CosmosDBEmulatorContainer;
-import org.testcontainers.containers.wait.strategy.Wait;
 import org.testcontainers.utility.DockerImageName;
 
 public class CosmosResource implements QuarkusTestResourceLifecycleManager {
@@ -46,7 +43,6 @@ public class CosmosResource implements QuarkusTestResourceLifecycleManager {
             .withEnv("AZURE_COSMOS_EMULATOR_ENABLE_DATA_PERSISTENCE", "false")
             .withExposedPorts(exposedPorts);
 
-//    cosmos.setWaitStrategy(Wait.defaultWaitStrategy().withStartupTimeout(Duration.of(120, ChronoUnit.SECONDS)));
     cosmos.start();
 
     CosmosResource.startTcpProxy(exposedPorts);
