@@ -38,4 +38,5 @@ jobs:
           project_key: ${{env.PROJECT_KEY}}
           coverage_exclusions: "**/config/*,**/*Mock*,**/models/**,**/entities/*"
           cpd_exclusions: "**/models/**,**/entities/*"
-          jdk_version: "17.0.7-graal"
+          java_distribution: "graalvm"
+          java_version: "17.0.7"
