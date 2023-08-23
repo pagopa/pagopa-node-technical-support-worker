@@ -35,7 +35,7 @@ microservice-chart:
       OTEL_AUTH_BEARER: "otel-auth-bearer"
       COSMOS_BIZ_KEY: "cosmos-biz-account-key"
       COSMOS_NEG_BIZ_KEY: "cosmos-neg-biz-account-key"
-      COSMOS_RE_KEY: "cosmos-re-account-key"
+      COSMOS_RE_KEY: "cosmos-re-accout-key"
       RE_TABLE_STORAGE_CONN_STRING: "re-datastore-connection-string"
       RE_COSMOS_CONNECTION_STRING: "cosmos-re-connection-string"
     keyvault:
