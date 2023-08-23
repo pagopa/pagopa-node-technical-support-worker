@@ -27,11 +27,13 @@ public class CosmosResource implements QuarkusTestResourceLifecycleManager {
   @SneakyThrows
   @Override
   public Map<String, String> start() {
+//                DockerImageName.parse("mcr.microsoft.com/cosmosdb/linux/azure-cosmos-emulator"))
+
+    DockerImageName pagoPAImage = DockerImageName.parse("ghcr.io/pagopa/cosmosdb-emulator:latest")
+            .asCompatibleSubstituteFor("mcr.microsoft.com/cosmosdb/linux/azure-cosmos-emulator");
 
     cosmos =
-        new CosmosDBEmulatorContainer(
-                DockerImageName.parse("ghcr.io/pagopa/cosmosdb-emulator:latest"))
-//                DockerImageName.parse("mcr.microsoft.com/cosmosdb/linux/azure-cosmos-emulator"))
+        new CosmosDBEmulatorContainer(pagoPAImage)
             .withEnv(
                 "AZURE_COSMOS_EMULATOR_IP_ADDRESS_OVERRIDE",
                 InetAddress.getLocalHost().getHostAddress())
