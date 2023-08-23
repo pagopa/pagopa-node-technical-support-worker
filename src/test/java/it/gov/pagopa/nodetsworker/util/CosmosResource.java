@@ -35,6 +35,8 @@ public class CosmosResource implements QuarkusTestResourceLifecycleManager {
     DockerImageName pagoPAImage = DockerImageName.parse("ghcr.io/pagopa/cosmosdb-emulator:latest")
             .asCompatibleSubstituteFor("mcr.microsoft.com/cosmosdb/linux/azure-cosmos-emulator");
 
+//    DockerImageName pagoPAImage = DockerImageName.parse("mcr.microsoft.com/cosmosdb/linux/azure-cosmos-emulator"));
+
     cosmos =
         new CosmosDBEmulatorContainer(pagoPAImage)
             .withEnv(
@@ -44,7 +46,7 @@ public class CosmosResource implements QuarkusTestResourceLifecycleManager {
             .withEnv("AZURE_COSMOS_EMULATOR_ENABLE_DATA_PERSISTENCE", "false")
             .withExposedPorts(exposedPorts);
 
-    cosmos.setWaitStrategy(Wait.defaultWaitStrategy().withStartupTimeout(Duration.of(120, ChronoUnit.SECONDS)));
+//    cosmos.setWaitStrategy(Wait.defaultWaitStrategy().withStartupTimeout(Duration.of(120, ChronoUnit.SECONDS)));
     cosmos.start();
 
     CosmosResource.startTcpProxy(exposedPorts);
