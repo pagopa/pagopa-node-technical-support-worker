@@ -3,7 +3,7 @@
   "info": {
     "title": "Node technical support - API (DEV)",
     "termsOfService": "https://www.pagopa.gov.it/",
-    "version": "1.0.4"
+    "version": "1.0.3-1-using_re_cosmos_nosql"
   },
   "servers": [
     {
