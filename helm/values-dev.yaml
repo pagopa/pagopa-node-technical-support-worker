@@ -2,7 +2,7 @@ microservice-chart:
   namespace: "nodo"
   image:
     repository: ghcr.io/pagopa/pagopa-node-technical-support-worker
-    tag: '1.0.3-2-using_re_cosmos_nosql'
+    tag: '1.0.3-3-using_re_cosmos_nosql'
   readinessProbe:
     httpGet:
       path: /q/health/ready
@@ -89,4 +89,4 @@ microservice-chart:
   canaryDelivery:
     deployment:
       image:
-        tag: 1.0.3-2-using_re_cosmos_nosql
+        tag: 1.0.3-3-using_re_cosmos_nosql
