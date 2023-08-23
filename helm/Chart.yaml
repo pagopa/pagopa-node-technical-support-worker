@@ -2,8 +2,8 @@ apiVersion: v2
 name: pagopa-tech-support-api
 description: Technical support api
 type: application
-version: "0.25.0"
-appVersion: "1.0.3-3-using_re_cosmos_nosql"
+version: "0.26.0"
+appVersion: "1.0.3-4-using_re_cosmos_nosql"
 dependencies:
   - name: microservice-chart
     version: 3.0.0
