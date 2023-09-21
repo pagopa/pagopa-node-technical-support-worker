@@ -65,7 +65,7 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       semver: ${{ steps.semver_setup.outputs.semver }}
-      environment: ${{ steps.get_env.outputs.environment }}
+      environment: ${{ steps.semver_setup.outputs.environment }}
     steps:
       - name: Semver setup
         id: semver_setup
