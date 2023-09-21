@@ -24,6 +24,8 @@ permissions:
   contents: read
 
 env:
+  APP_NAME: node-technicalsupport
+  QUARKUS_PROFILE: prod
   DOCKERFILE: src/main/docker/Dockerfile.multistage
 
 jobs:
