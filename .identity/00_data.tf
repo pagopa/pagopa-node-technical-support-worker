@@ -50,3 +50,8 @@ data "azurerm_key_vault_secret" "key_vault_integration_test_subkey" {
   name         = "integration-test-subkey"
   key_vault_id = data.azurerm_key_vault.key_vault.id
 }
+
+data "azurerm_key_vault_secret" "key_vault_slack_webhook_url" {
+  name         = "slack-webhook-url"
+  key_vault_id = data.azurerm_key_vault.domain_key_vault.id
+}
