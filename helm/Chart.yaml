@@ -2,7 +2,7 @@ apiVersion: v2
 name: pagopa-tech-support-api
 description: Technical support api
 type: application
-version: "0.28.0"
+version: "0.29.0"
 appVersion: "1.0.4"
 dependencies:
   - name: microservice-chart
