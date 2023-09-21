@@ -13,8 +13,6 @@ public class StatusUtil {
       case "payment_NOTIFIED":
       case "RT_ACCETTATA_PA":
         return "completed";
-      case "payment_CANCELLED":
-      case "payment_CANCELLED_NORPT":
       case "payment_PAYING":
       case "payment_PAYING_RPT":
       case "RPT_RISOLTA_OK":
@@ -40,8 +38,10 @@ public class StatusUtil {
       case "RPT_RIFIUTATA_NODO":
       case "payment_FAILED":
       case "payment_FAILED_NORPT":
+      case "payment_CANCELLED":
+      case "payment_CANCELLED_NORPT":
         return "failed";
     }
-    return null;
+    return reStatus;
   }
 }

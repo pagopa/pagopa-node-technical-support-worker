@@ -36,7 +36,7 @@ public class CosmosBizEventClient {
 
   @Inject Logger log;
 
-  private String dateFilter = " and c.paymentInfo.paymentDateTime > @from and c.paymentInfo.paymentDateTime < @to";
+  private String dateFilter = " and c.paymentInfo.paymentDateTime >= @from and c.paymentInfo.paymentDateTime < @to";
 
   private CosmosClient getClient() {
     if (client == null) {
@@ -77,7 +77,8 @@ public class CosmosBizEventClient {
                     + " c.creditor.idPA = @organizationFiscalCode"
                     + " and c.debtorPosition.noticeNumber = @noticeNumber"
                     + " and c.paymentInfo.paymentToken = @paymentToken"
-                    + dateFilter)
+                    + dateFilter
+        )
             .setParameters(paramList);
     return query(q);
   }
