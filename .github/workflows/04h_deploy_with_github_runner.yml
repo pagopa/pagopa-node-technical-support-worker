@@ -111,7 +111,6 @@ jobs:
           tenant-id: ${{ secrets.TENANT_ID }}
           subscription-id: ${{ secrets.SUBSCRIPTION_ID }}
 
-
       - name: Terraform Apply
         shell: bash
         run: |
