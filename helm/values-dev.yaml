@@ -2,7 +2,7 @@ microservice-chart:
   namespace: "nodo"
   image:
     repository: ghcr.io/pagopa/pagopa-node-technical-support-worker
-    tag: '1.1.0'
+    tag: '1.0.4'
   readinessProbe:
     httpGet:
       path: /q/health/ready
@@ -37,7 +37,6 @@ microservice-chart:
       COSMOS_NEG_BIZ_KEY: "cosmos-neg-biz-account-key"
       COSMOS_RE_KEY: "cosmos-re-account-key"
       RE_TABLE_STORAGE_CONN_STRING: "re-datastore-connection-string"
-      RE_COSMOS_CONNECTION_STRING: "cosmos-re-connection-string"
     keyvault:
       name: "pagopa-d-nodo-kv"
       tenantId: "7788edaf-0346-4068-9d79-c868aed15b3d"
