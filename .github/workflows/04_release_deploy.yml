@@ -129,7 +129,7 @@ jobs:
         with:
           status: ${{ needs.deploy_aks.result }}
           token: ${{ secrets.GITHUB_TOKEN }}
-          notification_title: 'New Release on ${{ needs.setup.outputs.environment }} ${{ needs.release.outputs.version }} has {status_message}'
+          notification_title: 'New Release on ${{ needs.setup.outputs.environment }} for ${{ needs.release.outputs.version || 'last version' }} has {status_message}'
           message_format: '{emoji} <{run_url}|{workflow}> {status_message} in <{repo_url}|{repo}>'
           footer: 'Linked to <{workflow_url}| workflow file>'
           icon_success: ':white_check_mark:'
