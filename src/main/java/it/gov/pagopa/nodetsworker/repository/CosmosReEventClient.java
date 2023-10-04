@@ -106,15 +106,15 @@ public class CosmosReEventClient {
               new SqlParameter("@organizationFiscalCode", organizationFiscalCode),
               new SqlParameter("@iuv", iuv),
               new SqlParameter("@from", Util.format(dateFrom)),
-              new SqlParameter("@to", Util.format(dateTo.plusDays(1)))
+              new SqlParameter("@to", Util.format(dateTo.plusDays(1))),
+              new SqlParameter("@ccp", ccp.get())
       );
     }else{
       paramList =Arrays.asList(
               new SqlParameter("@organizationFiscalCode", organizationFiscalCode),
               new SqlParameter("@iuv", iuv),
               new SqlParameter("@from", Util.format(dateFrom)),
-              new SqlParameter("@to", Util.format(dateTo.plusDays(1))),
-              new SqlParameter("@ccp", ccp.get())
+              new SqlParameter("@to", Util.format(dateTo.plusDays(1)))
 
       );
     }
