@@ -26,7 +26,7 @@ permissions:
 env:
   APP_NAME: node-technicalsupport
   QUARKUS_PROFILE: prod
-  DOCKERFILE: src/main/docker/Dockerfile.multistage
+  DOCKERFILE: src/main/docker/Dockerfile.multistage.jvm
 
 jobs:
   Anchore-Build-Scan:
@@ -40,7 +40,7 @@ jobs:
         uses: actions/checkout@v3
 
       - name: Build the Docker image
-        run: docker build . --file ${{ env.DOCKERFILE }} --tag localbuild/testimage:latest --build-arg APP_NAME=node-technicalsupport --build-arg QUARKUS_PROFILE=prod
+        run: docker build . --file ${{ env.DOCKERFILE }} --force-rm --tag localbuild/testimage:latest --build-arg APP_NAME=node-technicalsupport --build-arg QUARKUS_PROFILE=prod
 
       - name: Run the Anchore scan action itself with GitHub Advanced Security code scanning integration enabled
         uses: anchore/scan-action@v3
