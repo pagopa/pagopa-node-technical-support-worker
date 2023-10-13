@@ -16,6 +16,8 @@ import jakarta.inject.Inject;
 import java.time.*;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
+
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.jboss.logging.Logger;
 
@@ -60,23 +62,23 @@ public class CosmosBizEventClient {
   public CosmosPagedIterable<PositiveBizEvent> findEventsByCiAndNNAndToken(
       String organizationFiscalCode,
       String noticeNumber,
-      String paymentToken,
+      Optional<String> paymentToken,
       LocalDate dateFrom,
       LocalDate dateTo) {
     List<SqlParameter> paramList =
         Arrays.asList(
             new SqlParameter("@organizationFiscalCode", organizationFiscalCode),
             new SqlParameter("@noticeNumber", noticeNumber),
-            new SqlParameter("@paymentToken", paymentToken),
             new SqlParameter("@from", Util.format(dateFrom)),
             new SqlParameter("@to", Util.format(dateTo.plusDays(1)))
         );
+    paymentToken.ifPresent(pt->paramList.add( new SqlParameter("@paymentToken", pt)));
     SqlQuerySpec q =
         new SqlQuerySpec(
                 "SELECT * FROM c where"
                     + " c.creditor.idPA = @organizationFiscalCode"
                     + " and c.debtorPosition.noticeNumber = @noticeNumber"
-                    + " and c.paymentInfo.paymentToken = @paymentToken"
+                    + (paymentToken.isPresent()?" and c.paymentInfo.paymentToken = @paymentToken":"")
                     + dateFilter
         )
             .setParameters(paramList);
@@ -84,21 +86,21 @@ public class CosmosBizEventClient {
   }
 
   public CosmosPagedIterable<PositiveBizEvent> findEventsByCiAndIUVAndCCP(
-      String organizationFiscalCode, String iuv, String ccp, LocalDate dateFrom, LocalDate dateTo) {
+      String organizationFiscalCode, String iuv, Optional<String> ccp, LocalDate dateFrom, LocalDate dateTo) {
     List<SqlParameter> paramList =
         Arrays.asList(
             new SqlParameter("@organizationFiscalCode", organizationFiscalCode),
             new SqlParameter("@iuv", iuv),
-            new SqlParameter("@ccp", ccp),
             new SqlParameter("@from", Util.format(dateFrom)),
             new SqlParameter("@to", Util.format(dateTo.plusDays(1)))
         );
+    ccp.ifPresent(cp->paramList.add( new SqlParameter("@ccp", cp)));
     SqlQuerySpec q =
         new SqlQuerySpec(
                 "SELECT * FROM c where"
                     + " c.creditor.idPA = @organizationFiscalCode"
                     + " and c.debtorPosition.iuv = @iuv"
-                    + " and c.paymentInfo.paymentToken = @ccp"
+                    + (ccp.isPresent()?" and c.paymentInfo.paymentToken = @ccp":"")
                     + dateFilter)
             .setParameters(paramList);
     return query(q);
