@@ -1,7 +1,6 @@
 package it.gov.pagopa.nodetsworker.service;
 
 import com.azure.cosmos.implementation.apachecommons.lang.tuple.Pair;
-import com.azure.cosmos.util.CosmosPagedIterable;
 import it.gov.pagopa.nodetsworker.exceptions.AppErrorCodeMessageEnum;
 import it.gov.pagopa.nodetsworker.exceptions.AppException;
 import it.gov.pagopa.nodetsworker.models.BasePaymentInfo;
@@ -10,8 +9,6 @@ import it.gov.pagopa.nodetsworker.models.PaymentAttemptInfo;
 import it.gov.pagopa.nodetsworker.models.PaymentInfo;
 import it.gov.pagopa.nodetsworker.repository.CosmosBizEventClient;
 import it.gov.pagopa.nodetsworker.repository.CosmosNegBizEventClient;
-import it.gov.pagopa.nodetsworker.repository.CosmosReEventClient;
-import it.gov.pagopa.nodetsworker.repository.ReTableStorageClient;
 import it.gov.pagopa.nodetsworker.repository.model.EventEntity;
 import it.gov.pagopa.nodetsworker.repository.model.NegativeBizEvent;
 import it.gov.pagopa.nodetsworker.repository.model.PositiveBizEvent;
@@ -27,9 +24,6 @@ import java.time.Instant;
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.function.Function;
-import java.util.stream.Collectors;
 
 @ApplicationScoped
 public class WorkerService {
@@ -39,22 +33,24 @@ public class WorkerService {
 
     @Inject
     Logger log;
-
-    @Inject
-    CosmosReEventClient reClient;
     @Inject
     CosmosBizEventClient positiveBizClient;
     @Inject
     CosmosNegBizEventClient negativeBizClient;
 
-    @Inject
-    ReTableStorageClient reTableStorageClient;
-
-    @ConfigProperty(name = "re-cosmos.day-limit")
-    Integer reCosmosDayLimit;
-
     @ConfigProperty(name = "date-range-limit")
     Integer dateRangeLimit;
+
+//    @Inject
+//    CosmosReEventClient reClient;
+
+//    @Inject
+//    ReTableStorageClient reTableStorageClient;
+
+//    @ConfigProperty(name = "re-cosmos.day-limit")
+//    Integer reCosmosDayLimit;
+
+
 
     private List<String> tipiEventoAttempts = Arrays.asList("activatePaymentNotice","activatePaymentNoticeV2","nodoInviaRPT","nodoInviaCarrelloRPT");
 
@@ -414,61 +410,61 @@ public class WorkerService {
         return DateRequest.builder().from(dateFrom).to(dateTo).build();
     }
 
-    private Pair<DateRequest, DateRequest> getHistoryDates(DateRequest dateRequest) {
-        LocalDate dateLimit = LocalDate.now().minusDays(reCosmosDayLimit);
-        LocalDate historyDateFrom = null;
-        LocalDate historyDateTo = null;
-        LocalDate actualDateFrom = null;
-        LocalDate actualDateTo = null;
+//    private Pair<DateRequest, DateRequest> getHistoryDates(DateRequest dateRequest) {
+//        LocalDate dateLimit = LocalDate.now().minusDays(reCosmosDayLimit);
+//        LocalDate historyDateFrom = null;
+//        LocalDate historyDateTo = null;
+//        LocalDate actualDateFrom = null;
+//        LocalDate actualDateTo = null;
+//
+//        if(dateRequest.getFrom().isBefore(dateLimit)){
+//            historyDateFrom = dateRequest.getFrom();
+//            historyDateTo = Arrays.asList(dateLimit,dateRequest.getTo()).stream().min(LocalDate::compareTo).get();
+//        }
+//
+//        if(dateRequest.getTo().isAfter(dateLimit)){
+//            actualDateFrom = Arrays.asList(dateLimit,dateRequest.getFrom()).stream().max(LocalDate::compareTo).get();
+//            if(historyDateTo!=null){
+//                actualDateFrom = actualDateFrom.plusDays(1);
+//            }
+//            actualDateTo = dateRequest.getTo();
+//        }
+//
+//        return Pair.of(
+//                historyDateFrom!=null? DateRequest.builder().from(historyDateFrom).to(historyDateTo).build():null,
+//                actualDateFrom!=null? DateRequest.builder().from(actualDateFrom).to(actualDateTo).build():null
+//        );
+//    }
 
-        if(dateRequest.getFrom().isBefore(dateLimit)){
-            historyDateFrom = dateRequest.getFrom();
-            historyDateTo = Arrays.asList(dateLimit,dateRequest.getTo()).stream().min(LocalDate::compareTo).get();
-        }
-
-        if(dateRequest.getTo().isAfter(dateLimit)){
-            actualDateFrom = Arrays.asList(dateLimit,dateRequest.getFrom()).stream().max(LocalDate::compareTo).get();
-            if(historyDateTo!=null){
-                actualDateFrom = actualDateFrom.plusDays(1);
-            }
-            actualDateTo = dateRequest.getTo();
-        }
-
-        return Pair.of(
-                historyDateFrom!=null? DateRequest.builder().from(historyDateFrom).to(historyDateTo).build():null,
-                actualDateFrom!=null? DateRequest.builder().from(actualDateFrom).to(actualDateTo).build():null
-        );
-    }
-
-    public Map countByPartitionKey(String pk) {
-        log.infof("Querying partitionKey on table storage: %s", pk);
-        Instant start = Instant.now();
-        long tableItems = reTableStorageClient.findReByPartitionKey(pk);
-        Instant finish = Instant.now();
-        long tableTimeElapsed = Duration.between(start, finish).toMillis();
-        log.infof("Done querying partitionKey %s on table storage. Count %s", pk, tableItems);
-
-
-        log.infof("Querying partitionKey on cosmos: %s", pk);
-        start = Instant.now();
-        Long cosmosItems = reClient.findReByPartitionKey(pk).stream().findFirst().get().getCount();
-        finish = Instant.now();
-        long cosmosTimeElapsed = Duration.between(start, finish).toMillis();
-        log.infof("Done querying partitionKey %s on cosmos. Count %s", pk, cosmosItems);
-
-
-        Map<String, Map> response = new HashMap<>();
-        Map<String, Long> table = new HashMap<>();
-        table.put("items", tableItems);
-        table.put("millis", tableTimeElapsed);
-
-        Map<String, Long> cosmos = new HashMap<>();
-        cosmos.put("items", cosmosItems);
-        cosmos.put("millis", cosmosTimeElapsed);
-
-        response.put("table", table);
-        response.put("cosmos", cosmos);
-
-        return response;
-    }
+//    public Map countByPartitionKey(String pk) {
+//        log.infof("Querying partitionKey on table storage: %s", pk);
+//        Instant start = Instant.now();
+//        long tableItems = reTableStorageClient.findReByPartitionKey(pk);
+//        Instant finish = Instant.now();
+//        long tableTimeElapsed = Duration.between(start, finish).toMillis();
+//        log.infof("Done querying partitionKey %s on table storage. Count %s", pk, tableItems);
+//
+//
+//        log.infof("Querying partitionKey on cosmos: %s", pk);
+//        start = Instant.now();
+//        Long cosmosItems = reClient.findReByPartitionKey(pk).stream().findFirst().get().getCount();
+//        finish = Instant.now();
+//        long cosmosTimeElapsed = Duration.between(start, finish).toMillis();
+//        log.infof("Done querying partitionKey %s on cosmos. Count %s", pk, cosmosItems);
+//
+//
+//        Map<String, Map> response = new HashMap<>();
+//        Map<String, Long> table = new HashMap<>();
+//        table.put("items", tableItems);
+//        table.put("millis", tableTimeElapsed);
+//
+//        Map<String, Long> cosmos = new HashMap<>();
+//        cosmos.put("items", cosmosItems);
+//        cosmos.put("millis", cosmosTimeElapsed);
+//
+//        response.put("table", table);
+//        response.put("cosmos", cosmos);
+//
+//        return response;
+//    }
 }
