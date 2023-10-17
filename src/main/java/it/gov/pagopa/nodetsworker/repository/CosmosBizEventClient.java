@@ -14,6 +14,7 @@ import it.gov.pagopa.nodetsworker.util.Util;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import java.time.*;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
@@ -65,13 +66,13 @@ public class CosmosBizEventClient {
       Optional<String> paymentToken,
       LocalDate dateFrom,
       LocalDate dateTo) {
-    List<SqlParameter> paramList =
-        Arrays.asList(
+    List<SqlParameter> paramList = new ArrayList<>();
+    paramList.addAll(Arrays.asList(
             new SqlParameter("@organizationFiscalCode", organizationFiscalCode),
             new SqlParameter("@noticeNumber", noticeNumber),
             new SqlParameter("@from", Util.format(dateFrom)),
             new SqlParameter("@to", Util.format(dateTo.plusDays(1)))
-        );
+        ));
     paymentToken.ifPresent(pt->paramList.add( new SqlParameter("@paymentToken", pt)));
     SqlQuerySpec q =
         new SqlQuerySpec(
@@ -87,13 +88,13 @@ public class CosmosBizEventClient {
 
   public CosmosPagedIterable<PositiveBizEvent> findEventsByCiAndIUVAndCCP(
       String organizationFiscalCode, String iuv, Optional<String> ccp, LocalDate dateFrom, LocalDate dateTo) {
-    List<SqlParameter> paramList =
-        Arrays.asList(
+    List<SqlParameter> paramList = new ArrayList<>();
+    paramList.addAll(Arrays.asList(
             new SqlParameter("@organizationFiscalCode", organizationFiscalCode),
             new SqlParameter("@iuv", iuv),
             new SqlParameter("@from", Util.format(dateFrom)),
             new SqlParameter("@to", Util.format(dateTo.plusDays(1)))
-        );
+        ));
     ccp.ifPresent(cp->paramList.add( new SqlParameter("@ccp", cp)));
     SqlQuerySpec q =
         new SqlQuerySpec(
@@ -106,43 +107,4 @@ public class CosmosBizEventClient {
     return query(q);
   }
 
-  public CosmosPagedIterable<PositiveBizEvent> getEventsByCiAndNN(
-      String organizationFiscalCode, String noticeNumber, LocalDate dateFrom, LocalDate dateTo) {
-    List<SqlParameter> paramList =
-        Arrays.asList(
-            new SqlParameter("@organizationFiscalCode", organizationFiscalCode),
-            new SqlParameter("@noticeNumber", noticeNumber),
-            new SqlParameter("@from", Util.format(dateFrom)),
-            new SqlParameter("@to", Util.format(dateTo.plusDays(1)))
-        );
-
-    SqlQuerySpec q =
-        new SqlQuerySpec(
-                "SELECT * FROM c where"
-                    + " c.creditor.idPA = @organizationFiscalCode"
-                    + " and c.debtorPosition.noticeNumber = @noticeNumber"
-                    + dateFilter)
-            .setParameters(paramList);
-    return query(q);
-  }
-
-  public CosmosPagedIterable<PositiveBizEvent> getEventsByCiAndIUV(
-      String organizationFiscalCode, String iuv, LocalDate dateFrom, LocalDate dateTo) {
-    List<SqlParameter> paramList =
-        Arrays.asList(
-            new SqlParameter("@organizationFiscalCode", organizationFiscalCode),
-            new SqlParameter("@iuv", iuv),
-            new SqlParameter("@from", Util.format(dateFrom)),
-            new SqlParameter("@to", Util.format(dateTo.plusDays(1)))
-        );
-
-    SqlQuerySpec q =
-        new SqlQuerySpec(
-                "SELECT * FROM c where"
-                    + " c.creditor.idPA = @organizationFiscalCode"
-                    + " and c.debtorPosition.iuv = @iuv"
-                    + dateFilter)
-            .setParameters(paramList);
-    return query(q);
-  }
 }

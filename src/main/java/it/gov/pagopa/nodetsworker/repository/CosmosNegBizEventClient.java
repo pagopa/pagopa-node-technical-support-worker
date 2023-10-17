@@ -16,6 +16,7 @@ import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.jboss.logging.Logger;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
@@ -58,13 +59,13 @@ public class CosmosNegBizEventClient {
       Optional<String> paymentToken,
       LocalDate dateFrom,
       LocalDate dateTo) {
-    List<SqlParameter> paramList =
-        Arrays.asList(
+    List<SqlParameter> paramList = new ArrayList<>();
+    paramList.addAll(Arrays.asList(
             new SqlParameter("@organizationFiscalCode", organizationFiscalCode),
             new SqlParameter("@noticeNumber", noticeNumber),
             new SqlParameter("@from", Util.format(dateFrom)),
             new SqlParameter("@to", Util.format(dateTo.plusDays(1)))
-        );
+        ));
     paymentToken.ifPresent(pt->paramList.add( new SqlParameter("@paymentToken", pt)));
     SqlQuerySpec q =
         new SqlQuerySpec(
@@ -79,13 +80,13 @@ public class CosmosNegBizEventClient {
 
   public CosmosPagedIterable<NegativeBizEvent> findEventsByCiAndIUVAndCCP(
       String organizationFiscalCode, String iuv, Optional<String> ccp, LocalDate dateFrom, LocalDate dateTo) {
-    List<SqlParameter> paramList =
-        Arrays.asList(
+    List<SqlParameter> paramList = new ArrayList<>();
+    paramList.addAll(Arrays.asList(
             new SqlParameter("@organizationFiscalCode", organizationFiscalCode),
             new SqlParameter("@iuv", iuv),
             new SqlParameter("@from", Util.format(dateFrom)),
             new SqlParameter("@to", Util.format(dateTo.plusDays(1)))
-        );
+        ));
     ccp.ifPresent(cp->paramList.add( new SqlParameter("@ccp", cp)));
     SqlQuerySpec q =
         new SqlQuerySpec(

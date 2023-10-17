@@ -10,6 +10,8 @@ import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import java.io.Serializable;
 import java.time.LocalDate;
+import java.util.Optional;
+
 import org.eclipse.microprofile.openapi.annotations.media.Content;
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
 import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
@@ -54,8 +56,8 @@ public class WorkerResource implements Serializable {
       @QueryParam("dateFrom") LocalDate dateFrom,
       @QueryParam("dateTo") LocalDate dateTo) {
     return Response.ok(
-            workerService.getInfoByNoticeNumber(
-                organizationFiscalCode, noticeNumber, dateFrom, dateTo))
+            workerService.getInfoByNoticeNumber(organizationFiscalCode, noticeNumber, Optional.empty(),dateFrom, dateTo)
+            )
         .build();
   }
 
@@ -128,8 +130,7 @@ public class WorkerResource implements Serializable {
       @QueryParam("dateFrom") LocalDate dateFrom,
       @QueryParam("dateTo") LocalDate dateTo) {
     return Response.ok(
-            workerService.getAttemptByNoticeNumberAndPaymentToken(
-                organizationFiscalCode, noticeNumber, paymentToken, dateFrom, dateTo))
+                    workerService.getAttemptByNoticeNumberAndPaymentToken(organizationFiscalCode, noticeNumber, paymentToken,dateFrom, dateTo))
         .build();
   }
 
