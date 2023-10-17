@@ -71,28 +71,8 @@ public class WorkerService {
                 .build();
     }
 
-    private PaymentInfo eventToPaymentInfo(NegativeBizEvent evt) {
-        return PaymentInfo.builder()
-                .businessProcess(evt.getBusinessProcess())
-                .serviceIdentifier(evt.getProperties().get(SERVICE_ID))
-                .pspId(evt.getPsp().getIdPsp())
-                .negativeBizEvtId(evt.getId())
-                .brokerPspId(evt.getPsp().getIdBrokerPsp())
-                .channelId(evt.getPsp().getIdChannel())
-                .insertedTimestamp(evt.getPaymentInfo().getPaymentDateTime().toString())
-                .paymentToken(evt.getPaymentInfo().getPaymentToken())
-                .ccp(evt.getPaymentInfo().getPaymentToken())
-                .noticeNumber(evt.getDebtorPosition().getNoticeNumber())
-                .iuv(evt.getDebtorPosition().getIuv())
-                .organizationFiscalCode(evt.getCreditor().getIdPA())
-                .outcome(evt.getReAwakable()!=null && evt.getReAwakable() ? outcomeKO : null)
-                .build();
-    }
-
-
     private PaymentAttemptInfo eventToPaymentAttemptInfo(PositiveBizEvent evt) {
         return PaymentAttemptInfo.builder()
-                .businessProcess(evt.getBusinessProcess())
                 .status(STATUS_COMPLETED)
                 .serviceIdentifier(evt.getProperties().get(SERVICE_ID))
                 .pspId(evt.getPsp().getIdPsp())
@@ -108,6 +88,24 @@ public class WorkerService {
                 .stationId(evt.getCreditor().getIdStation())
                 .brokerOrganizationId(evt.getCreditor().getIdBrokerPA())
                 .outcome(outcomeOK)
+                .build();
+    }
+
+    private PaymentInfo eventToPaymentInfo(NegativeBizEvent evt) {
+        return PaymentInfo.builder()
+                .businessProcess(evt.getBusinessProcess())
+                .serviceIdentifier(evt.getProperties().get(SERVICE_ID))
+                .pspId(evt.getPsp().getIdPsp())
+                .negativeBizEvtId(evt.getId())
+                .brokerPspId(evt.getPsp().getIdBrokerPsp())
+                .channelId(evt.getPsp().getIdChannel())
+                .insertedTimestamp(evt.getPaymentInfo().getPaymentDateTime().toString())
+                .paymentToken(evt.getPaymentInfo().getPaymentToken())
+                .ccp(evt.getPaymentInfo().getPaymentToken())
+                .noticeNumber(evt.getDebtorPosition().getNoticeNumber())
+                .iuv(evt.getDebtorPosition().getIuv())
+                .organizationFiscalCode(evt.getCreditor().getIdPA())
+                .outcome(evt.getReAwakable()!=null && evt.getReAwakable() ? outcomeKO : null)
                 .build();
     }
 
@@ -127,7 +125,7 @@ public class WorkerService {
                 .organizationFiscalCode(evt.getCreditor().getIdPA())
                 .stationId(evt.getCreditor().getIdStation())
                 .brokerOrganizationId(evt.getCreditor().getIdBrokerPA())
-                .outcome(outcomeOK)
+                .outcome(evt.getReAwakable()!=null && evt.getReAwakable() ? outcomeKO : null)
                 .build();
     }
 
