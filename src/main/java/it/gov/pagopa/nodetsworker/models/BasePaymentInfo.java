@@ -1,5 +1,7 @@
 package it.gov.pagopa.nodetsworker.models;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -13,8 +15,9 @@ import lombok.experimental.SuperBuilder;
 @SuperBuilder
 public class BasePaymentInfo {
 
-  private String primitive;
-  private String paymentStatus;
+  @JsonInclude(JsonInclude.Include.NON_NULL)
+  private String businessProcess;
+//  private String paymentStatus;
 
   private String organizationFiscalCode;
   private String noticeNumber;
@@ -25,9 +28,11 @@ public class BasePaymentInfo {
   private String outcome;
   private String status;
   private String insertedTimestamp;
-  private String updatedTimestamp;
+//  private String updatedTimestamp;
   private String serviceIdentifier;
 
+  @JsonInclude(JsonInclude.Include.NON_NULL)
   private String positiveBizEvtId;
+  @JsonInclude(JsonInclude.Include.NON_NULL)
   private String negativeBizEvtId;
 }

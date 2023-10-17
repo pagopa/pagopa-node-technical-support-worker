@@ -8,7 +8,6 @@ import it.gov.pagopa.nodetsworker.models.PaymentAttemptInfo;
 import it.gov.pagopa.nodetsworker.models.PaymentInfo;
 import it.gov.pagopa.nodetsworker.repository.CosmosBizEventClient;
 import it.gov.pagopa.nodetsworker.repository.CosmosNegBizEventClient;
-import it.gov.pagopa.nodetsworker.repository.model.EventEntity;
 import it.gov.pagopa.nodetsworker.repository.model.NegativeBizEvent;
 import it.gov.pagopa.nodetsworker.repository.model.PositiveBizEvent;
 import it.gov.pagopa.nodetsworker.resources.response.TransactionResponse;
@@ -20,6 +19,9 @@ import org.jboss.logging.Logger;
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
+
+import static it.gov.pagopa.nodetsworker.util.AppConstant.SERVICE_ID;
+import static it.gov.pagopa.nodetsworker.util.AppConstant.STATUS_COMPLETED;
 
 @ApplicationScoped
 public class WorkerService {
@@ -37,6 +39,7 @@ public class WorkerService {
     @ConfigProperty(name = "date-range-limit")
     Integer dateRangeLimit;
 
+
 //    @Inject
 //    CosmosReEventClient reClient;
 
@@ -52,7 +55,8 @@ public class WorkerService {
 
     private PaymentInfo eventToPaymentInfo(PositiveBizEvent evt) {
         return PaymentInfo.builder()
-                .serviceIdentifier(evt.getProperties().get("serviceIdentifier"))
+                .status(STATUS_COMPLETED)
+                .serviceIdentifier(evt.getProperties().get(SERVICE_ID))
                 .pspId(evt.getPsp().getIdPsp())
                 .positiveBizEvtId(evt.getId())
                 .brokerPspId(evt.getPsp().getIdBrokerPsp())
@@ -69,7 +73,8 @@ public class WorkerService {
 
     private PaymentInfo eventToPaymentInfo(NegativeBizEvent evt) {
         return PaymentInfo.builder()
-                .serviceIdentifier(evt.getProperties().get("serviceIdentifier"))
+                .businessProcess(evt.getBusinessProcess())
+                .serviceIdentifier(evt.getProperties().get(SERVICE_ID))
                 .pspId(evt.getPsp().getIdPsp())
                 .negativeBizEvtId(evt.getId())
                 .brokerPspId(evt.getPsp().getIdBrokerPsp())
@@ -85,25 +90,11 @@ public class WorkerService {
     }
 
 
-    private PaymentInfo eventToPaymentInfo(EventEntity activation) {
-        return PaymentInfo.builder()
-                .primitive(activation.getTipoEvento())
-                .pspId(activation.getPsp())
-                .serviceIdentifier(activation.getServiceIdentifier())
-                .channelId(activation.getCanale())
-                .insertedTimestamp(activation.getInsertedTimestamp())
-                .updatedTimestamp(activation.getInsertedTimestamp())
-                .paymentToken(activation.getPaymentToken())
-                .ccp(activation.getCcp())
-                .noticeNumber(activation.getNoticeNumber())
-                .iuv(activation.getIuv())
-                .organizationFiscalCode(activation.getIdDominio())
-                .build();
-    }
-
     private PaymentAttemptInfo eventToPaymentAttemptInfo(PositiveBizEvent evt) {
         return PaymentAttemptInfo.builder()
-                .serviceIdentifier(evt.getProperties().get("serviceIdentifier"))
+                .businessProcess(evt.getBusinessProcess())
+                .status(STATUS_COMPLETED)
+                .serviceIdentifier(evt.getProperties().get(SERVICE_ID))
                 .pspId(evt.getPsp().getIdPsp())
                 .positiveBizEvtId(evt.getId())
                 .brokerPspId(evt.getPsp().getIdBrokerPsp())
@@ -122,9 +113,10 @@ public class WorkerService {
 
     private PaymentAttemptInfo eventToPaymentAttemptInfo(NegativeBizEvent evt) {
         return PaymentAttemptInfo.builder()
-                .serviceIdentifier(evt.getProperties().get("serviceIdentifier"))
+                .businessProcess(evt.getBusinessProcess())
+                .serviceIdentifier(evt.getProperties().get(SERVICE_ID))
                 .pspId(evt.getPsp().getIdPsp())
-                .positiveBizEvtId(evt.getId())
+                .negativeBizEvtId(evt.getId())
                 .brokerPspId(evt.getPsp().getIdBrokerPsp())
                 .channelId(evt.getPsp().getIdChannel())
                 .insertedTimestamp(evt.getPaymentInfo().getPaymentDateTime().toString())

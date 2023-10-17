@@ -16,6 +16,7 @@ import lombok.NoArgsConstructor;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class PositiveBizEvent {
   private String version;
+  private String businessProcess;
   private String id;
   private String idPaymentManager;
   private String receiptId;
