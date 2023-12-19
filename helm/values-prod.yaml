@@ -23,8 +23,8 @@ microservice-chart:
     OTEL_ENDPOINT: "http://otel-collector.elastic-system.svc.cluster.local:4317"
     COSMOS_BIZ_ENDPOINT: "https://pagopa-p-weu-bizevents-ds-cosmos-account.documents.azure.com:443/"
     COSMOS_NEG_BIZ_ENDPOINT: "https://pagopa-p-weu-bizevents-neg-ds-cosmos-account.documents.azure.com:443/"
-    COSMOS_RE_ENDPOINT: "https://pagopa-p-weu-nodo-re-cosmos-nosql-account.documents.azure.com:443/"
-    RE_COSMOS_DAY_LIMIT: "120"
+    #COSMOS_RE_ENDPOINT: "https://pagopa-p-weu-nodo-re-cosmos-nosql-account.documents.azure.com:443/"
+    #RE_COSMOS_DAY_LIMIT: "120"
     LOG_LEVEL: "INFO"
   envFieldRef:
     APP_NAME: "metadata.labels['app.kubernetes.io/instance']"
@@ -35,8 +35,8 @@ microservice-chart:
       OTEL_AUTH_BEARER: "otel-auth-bearer"
       COSMOS_BIZ_KEY: "cosmos-biz-account-key"
       COSMOS_NEG_BIZ_KEY: "cosmos-neg-biz-account-key"
-      COSMOS_RE_KEY: "cosmos-re-account-key"
-      RE_TABLE_STORAGE_CONN_STRING: "re-datastore-connection-string"
+      #COSMOS_RE_KEY: "cosmos-re-account-key"
+      #RE_TABLE_STORAGE_CONN_STRING: "re-datastore-connection-string"
     keyvault:
       name: "pagopa-p-nodo-kv"
       tenantId: "7788edaf-0346-4068-9d79-c868aed15b3d"
@@ -73,6 +73,15 @@ microservice-chart:
                 operator: In
                 values:
                   - user
+    podAntiAffinity:
+      preferredDuringSchedulingIgnoredDuringExecution:
+        - weight: 100
+          podAffinityTerm:
+            labelSelector:
+              matchLabels:
+                app.kubernetes.io/instance: nodo
+            namespaces: [ "nodo" ]
+            topologyKey: topology.kubernetes.io/zone
   serviceMonitor:
     create: true
     endpoints:
