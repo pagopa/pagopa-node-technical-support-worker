@@ -12,13 +12,14 @@ import it.gov.pagopa.nodetsworker.repository.model.NegativeBizEvent;
 import it.gov.pagopa.nodetsworker.util.Util;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.LocalTime;
-import java.util.Arrays;
-import java.util.List;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.jboss.logging.Logger;
+
+import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Optional;
 
 @ApplicationScoped
 @Startup
@@ -55,44 +56,44 @@ public class CosmosNegBizEventClient {
   public CosmosPagedIterable<NegativeBizEvent> findEventsByCiAndNNAndToken(
       String organizationFiscalCode,
       String noticeNumber,
-      String paymentToken,
+      Optional<String> paymentToken,
       LocalDate dateFrom,
       LocalDate dateTo) {
-    List<SqlParameter> paramList =
-        Arrays.asList(
+    List<SqlParameter> paramList = new ArrayList<>();
+    paramList.addAll(Arrays.asList(
             new SqlParameter("@organizationFiscalCode", organizationFiscalCode),
             new SqlParameter("@noticeNumber", noticeNumber),
-            new SqlParameter("@paymentToken", paymentToken),
             new SqlParameter("@from", Util.format(dateFrom)),
             new SqlParameter("@to", Util.format(dateTo.plusDays(1)))
-        );
+        ));
+    paymentToken.ifPresent(pt->paramList.add( new SqlParameter("@paymentToken", pt)));
     SqlQuerySpec q =
         new SqlQuerySpec(
                 "SELECT * FROM c where"
                     + " c.creditor.idPA = @organizationFiscalCode"
                     + " and c.debtorPosition.noticeNumber = @noticeNumber"
-                    + " and c.paymentInfo.paymentToken = @paymentToken"
+                    + (paymentToken.isPresent()?" and c.paymentInfo.paymentToken = @paymentToken":"")
                     + dateFilter)
             .setParameters(paramList);
     return query(q);
   }
 
   public CosmosPagedIterable<NegativeBizEvent> findEventsByCiAndIUVAndCCP(
-      String organizationFiscalCode, String iuv, String ccp, LocalDate dateFrom, LocalDate dateTo) {
-    List<SqlParameter> paramList =
-        Arrays.asList(
+      String organizationFiscalCode, String iuv, Optional<String> ccp, LocalDate dateFrom, LocalDate dateTo) {
+    List<SqlParameter> paramList = new ArrayList<>();
+    paramList.addAll(Arrays.asList(
             new SqlParameter("@organizationFiscalCode", organizationFiscalCode),
             new SqlParameter("@iuv", iuv),
-            new SqlParameter("@ccp", ccp),
             new SqlParameter("@from", Util.format(dateFrom)),
             new SqlParameter("@to", Util.format(dateTo.plusDays(1)))
-        );
+        ));
+    ccp.ifPresent(cp->paramList.add( new SqlParameter("@ccp", cp)));
     SqlQuerySpec q =
         new SqlQuerySpec(
                 "SELECT * FROM c where"
                     + " c.creditor.idPA = @organizationFiscalCode"
                     + " and c.debtorPosition.iuv = @iuv"
-                    + " and c.paymentInfo.paymentToken = @ccp"
+                    + (ccp.isPresent()?" and c.paymentInfo.paymentToken = @ccp":"")
                     + dateFilter)
             .setParameters(paramList);
     return query(q);
