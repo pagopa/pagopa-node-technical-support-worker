@@ -79,7 +79,7 @@ microservice-chart:
           podAffinityTerm:
             labelSelector:
               matchLabels:
-                app.kubernetes.io/instance: nodo
+                app.kubernetes.io/instance: node-technicalsupport
             namespaces: [ "nodo" ]
             topologyKey: topology.kubernetes.io/zone
   serviceMonitor:
