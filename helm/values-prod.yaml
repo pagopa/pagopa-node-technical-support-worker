@@ -2,7 +2,7 @@ microservice-chart:
   namespace: "nodo"
   image:
     repository: ghcr.io/pagopa/pagopa-node-technical-support-worker
-    tag: '1.2.0-1-rework'
+    tag: '1.2.1'
   readinessProbe:
     httpGet:
       path: /q/health/ready
@@ -80,7 +80,7 @@ microservice-chart:
             labelSelector:
               matchLabels:
                 app.kubernetes.io/instance: node-technicalsupport
-            namespaces: [ "nodo" ]
+            namespaces: ["nodo"]
             topologyKey: topology.kubernetes.io/zone
   serviceMonitor:
     create: true
