@@ -57,8 +57,8 @@ public class CosmosResource implements QuarkusTestResourceLifecycleManager {
     System.setProperty("javax.net.ssl.trustStoreType", "PKCS12");
 
     Map<String, String> conf = new HashMap<>();
-    conf.put("mockserver.biz.endpoint", cosmos.getEmulatorEndpoint());
-    conf.put("mockserver.biz.key", cosmos.getEmulatorKey());
+    conf.put("mockserver.cosmos.endpoint", cosmos.getEmulatorEndpoint());
+    conf.put("mockserver.cosmos.key", cosmos.getEmulatorKey());
     return conf;
   }
 

@@ -42,19 +42,37 @@ public class AppConstantTestHelper {
     return entity;
   }
 
+  public static final VerifyKOEvent newVerifyKO(String pa, String noticeNumber) {
+    VerifyKOEvent p =
+            VerifyKOEvent.builder()
+                    .id(UUID.randomUUID().toString())
+                    .faultBean(
+                            Fault.builder()
+                                    .dateTime(LocalDateTime.now().toString())
+                                    .timestamp(Util.toMillis(LocalDateTime.now()))
+                                    .build()
+                    )
+                    .psp(Psp.builder().idBrokerPsp("intTest").idPsp("pspTest").idChannel("canaleTest").build())
+                    .creditor(Creditor.builder().idPA(pa).build())
+                    .debtorPosition(
+                            DebtorPosition.builder().modelType("1").noticeNumber(noticeNumber).build())
+                    .build();
+    return p;
+  }
+
   public static final PositiveBizEvent newPositiveBiz(String pa, String noticeNumber, String iuv) {
     PositiveBizEvent p =
         PositiveBizEvent.builder()
             .id(UUID.randomUUID().toString())
             .timestamp(Util.toMillis(LocalDateTime.now()))
-            .psp(Psp.builder().idBrokerPsp("intTest").psp("pspTest").idChannel("canaleTest").build())
+            .psp(Psp.builder().idBrokerPsp("intTest").idPsp("pspTest").idChannel("canaleTest").build())
             .creditor(Creditor.builder().idPA(pa).build())
             .debtorPosition(
                 DebtorPosition.builder().modelType("1").iuv(iuv).noticeNumber(noticeNumber).build())
             .paymentInfo(
                 PaymentInfo.builder()
                     .paymentToken(noticeNumber != null ? "pt_" + noticeNumber : "ccp_" + iuv)
-                    .paymentDateTime(LocalDateTime.now())
+                    .paymentDateTime(LocalDateTime.now().toString())
                     .build())
             .build();
     return p;
@@ -66,7 +84,7 @@ public class AppConstantTestHelper {
         NegativeBizEvent.builder()
             .id(UUID.randomUUID().toString())
             .timestamp(Util.toMillis(LocalDateTime.now()))
-                .psp(Psp.builder().idBrokerPsp("intTest").psp("pspTest").idChannel("canaleTest").build())
+                .psp(Psp.builder().idBrokerPsp("intTest").idPsp("pspTest").idChannel("canaleTest").build())
 
                 .creditor(Creditor.builder().idPA(pa).build())
             .debtorPosition(
@@ -74,7 +92,7 @@ public class AppConstantTestHelper {
             .paymentInfo(
                 NegativePaymentInfo.builder()
                     .paymentToken(noticeNumber != null ? "pt_" + noticeNumber : "ccp_" + iuv)
-                    .paymentDateTime(LocalDateTime.now())
+                    .paymentDateTime(LocalDateTime.now().toString())
                     .build())
             .reAwakable(reawakable)
             .build();

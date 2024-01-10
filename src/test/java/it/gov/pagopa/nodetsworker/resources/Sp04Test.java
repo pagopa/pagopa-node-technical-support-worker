@@ -4,8 +4,6 @@ import com.azure.cosmos.CosmosClient;
 import com.azure.cosmos.CosmosClientBuilder;
 import com.azure.cosmos.models.CosmosItemRequestOptions;
 import com.azure.data.tables.TableClient;
-import com.azure.data.tables.TableServiceClient;
-import com.azure.data.tables.TableServiceClientBuilder;
 import io.quarkus.test.common.QuarkusTestResource;
 import io.quarkus.test.junit.QuarkusTest;
 import io.restassured.common.mapper.TypeRef;
@@ -14,7 +12,6 @@ import it.gov.pagopa.nodetsworker.repository.CosmosBizEventClient;
 import it.gov.pagopa.nodetsworker.repository.CosmosNegBizEventClient;
 import it.gov.pagopa.nodetsworker.resources.response.TransactionResponse;
 import it.gov.pagopa.nodetsworker.util.AppConstantTestHelper;
-import it.gov.pagopa.nodetsworker.util.AzuriteResource;
 import it.gov.pagopa.nodetsworker.util.CosmosResource;
 import it.gov.pagopa.nodetsworker.util.Util;
 import lombok.SneakyThrows;
@@ -33,12 +30,12 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.greaterThan;
 
 @QuarkusTest
-@QuarkusTestResource(AzuriteResource.class)
+//@QuarkusTestResource(AzuriteResource.class)
 @QuarkusTestResource(CosmosResource.class)
 class Sp04Test {
 
-  @ConfigProperty(name = "re-table-storage.connection-string")
-  String connString;
+//  @ConfigProperty(name = "re-table-storage.connection-string")
+//  String connString;
 
   @ConfigProperty(name = "biz.endpoint")
   String bizendpoint;
@@ -48,16 +45,6 @@ class Sp04Test {
 
   private TableClient tableClient;
   private CosmosClient clientbiz;
-
-  private TableClient getTableClient() {
-    if (tableClient == null) {
-      TableServiceClient tableServiceClient =
-          new TableServiceClientBuilder().connectionString(connString).buildClient();
-      tableServiceClient.createTableIfNotExists("events");
-      tableClient = tableServiceClient.getTableClient("events");
-    }
-    return tableClient;
-  }
 
   private CosmosClient getCosmosClient() {
     if (clientbiz == null) {
@@ -81,7 +68,6 @@ class Sp04Test {
     String token = "pt_" + noticeNumber;
     String url = SP04_NN.formatted(PA_CODE, noticeNumber, token);
 
-    getTableClient().createEntity(AppConstantTestHelper.newRe(PA_CODE, noticeNumber, null));
     getCosmosClient()
         .getDatabase(CosmosBizEventClient.dbname)
         .getContainer(CosmosBizEventClient.tablename)
@@ -118,7 +104,6 @@ class Sp04Test {
     String token = "pt_" + noticeNumber;
     String url = SP04_NN.formatted(PA_CODE, noticeNumber, token);
 
-    getTableClient().createEntity(AppConstantTestHelper.newRe(PA_CODE, noticeNumber, null));
     getCosmosClient()
         .getDatabase(CosmosBizEventClient.dbname)
         .getContainer(CosmosNegBizEventClient.tablename)
@@ -155,7 +140,6 @@ class Sp04Test {
     String ccp = "ccp_" + iuv;
     String url = SP04_IUV.formatted(PA_CODE, iuv, ccp);
 
-    getTableClient().createEntity(AppConstantTestHelper.newRe(PA_CODE, null, iuv));
     getCosmosClient()
         .getDatabase(CosmosBizEventClient.dbname)
         .getContainer(CosmosBizEventClient.tablename)
@@ -192,7 +176,6 @@ class Sp04Test {
     String ccp = "ccp_" + iuv;
     String url = SP04_IUV.formatted(PA_CODE, iuv, ccp);
 
-    getTableClient().createEntity(AppConstantTestHelper.newRe(PA_CODE, null, iuv));
     getCosmosClient()
         .getDatabase(CosmosBizEventClient.dbname)
         .getContainer(CosmosNegBizEventClient.tablename)
