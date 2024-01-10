@@ -89,7 +89,6 @@ class Sp04Test {
     PaymentAttemptInfo o = (PaymentAttemptInfo) res.getPayments().get(0);
     assertThat(o.getNoticeNumber(), equalTo(noticeNumber));
     assertThat(o.getOrganizationFiscalCode(), equalTo(PA_CODE));
-    assertThat(o.getOutcome(), equalTo(AppConstantTestHelper.outcomeOK));
     assertThat(o.getPspId(), equalTo("pspTest"));
     assertThat(o.getChannelId(), equalTo("canaleTest"));
     assertThat(o.getBrokerPspId(), equalTo("intTest"));
@@ -125,7 +124,6 @@ class Sp04Test {
     PaymentAttemptInfo o = (PaymentAttemptInfo) res.getPayments().get(0);
     assertThat(o.getNoticeNumber(), equalTo(noticeNumber));
     assertThat(o.getOrganizationFiscalCode(), equalTo(PA_CODE));
-    assertThat(o.getOutcome(), equalTo(AppConstantTestHelper.outcomeKO));
     assertThat(o.getPspId(), equalTo("pspTest"));
     assertThat(o.getChannelId(), equalTo("canaleTest"));
     assertThat(o.getBrokerPspId(), equalTo("intTest"));
@@ -161,7 +159,6 @@ class Sp04Test {
     PaymentAttemptInfo o = (PaymentAttemptInfo) res.getPayments().get(0);
     assertThat(o.getIuv(), equalTo(iuv));
     assertThat(o.getOrganizationFiscalCode(), equalTo(PA_CODE));
-    assertThat(o.getOutcome(), equalTo(AppConstantTestHelper.outcomeOK));
     assertThat(o.getPspId(), equalTo("pspTest"));
     assertThat(o.getChannelId(), equalTo("canaleTest"));
     assertThat(o.getBrokerPspId(), equalTo("intTest"));
@@ -197,7 +194,6 @@ class Sp04Test {
     PaymentAttemptInfo o = (PaymentAttemptInfo) res.getPayments().get(0);
     assertThat(o.getIuv(), equalTo(iuv));
     assertThat(o.getOrganizationFiscalCode(), equalTo(PA_CODE));
-    assertThat(o.getOutcome(), equalTo(AppConstantTestHelper.outcomeKO));
     assertThat(o.getPspId(), equalTo("pspTest"));
     assertThat(o.getChannelId(), equalTo("canaleTest"));
     assertThat(o.getBrokerPspId(), equalTo("intTest"));

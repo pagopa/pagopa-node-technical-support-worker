@@ -47,6 +47,7 @@ public class WorkerService {
 
     private PaymentInfo eventToPaymentInfo(VerifyKOEvent evt) {
         return PaymentInfo.builder()
+                .businessProcess("VerifyPaymentNotice")
                 .serviceIdentifier(evt.getServiceIdentifier())
                 .pspId(evt.getPsp().getIdPsp())
                 .positiveBizEvtId(evt.getId())
