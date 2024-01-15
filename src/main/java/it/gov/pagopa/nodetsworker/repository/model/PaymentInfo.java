@@ -1,12 +1,12 @@
 package it.gov.pagopa.nodetsworker.repository.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import java.math.BigDecimal;
-import java.time.LocalDateTime;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+
+import java.math.BigDecimal;
 
 @Data
 @Builder
@@ -15,7 +15,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class PaymentInfo {
   private String description;
-  private LocalDateTime paymentDateTime;
+  private String paymentDateTime;
   private String applicationDate;
   private String transferDate;
   private String dueDate;

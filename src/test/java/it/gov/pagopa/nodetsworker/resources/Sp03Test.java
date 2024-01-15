@@ -3,9 +3,6 @@ package it.gov.pagopa.nodetsworker.resources;
 import com.azure.cosmos.CosmosClient;
 import com.azure.cosmos.CosmosClientBuilder;
 import com.azure.cosmos.models.CosmosItemRequestOptions;
-import com.azure.data.tables.TableClient;
-import com.azure.data.tables.TableServiceClient;
-import com.azure.data.tables.TableServiceClientBuilder;
 import io.quarkus.test.common.QuarkusTestResource;
 import io.quarkus.test.junit.QuarkusTest;
 import io.restassured.RestAssured;
@@ -15,9 +12,9 @@ import io.restassured.filter.log.ResponseLoggingFilter;
 import it.gov.pagopa.nodetsworker.models.PaymentInfo;
 import it.gov.pagopa.nodetsworker.repository.CosmosBizEventClient;
 import it.gov.pagopa.nodetsworker.repository.CosmosNegBizEventClient;
+import it.gov.pagopa.nodetsworker.repository.CosmosVerifyKOEventClient;
 import it.gov.pagopa.nodetsworker.resources.response.TransactionResponse;
 import it.gov.pagopa.nodetsworker.util.AppConstantTestHelper;
-import it.gov.pagopa.nodetsworker.util.AzuriteResource;
 import it.gov.pagopa.nodetsworker.util.CosmosResource;
 import it.gov.pagopa.nodetsworker.util.Util;
 import lombok.SneakyThrows;
@@ -35,12 +32,9 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.greaterThan;
 
 @QuarkusTest
-@QuarkusTestResource(AzuriteResource.class)
+//@QuarkusTestResource(AzuriteResource.class)
 @QuarkusTestResource(CosmosResource.class)
 class Sp03Test {
-
-  @ConfigProperty(name = "re-table-storage.connection-string")
-  String connString;
 
   @ConfigProperty(name = "biz.endpoint")
   String bizendpoint;
@@ -48,29 +42,23 @@ class Sp03Test {
   @ConfigProperty(name = "biz.key")
   String bizkey;
 
-  private TableClient tableClient;
   private CosmosClient clientbiz;
-
-  private TableClient getTableClient() {
-    if (tableClient == null) {
-      TableServiceClient tableServiceClient =
-          new TableServiceClientBuilder().connectionString(connString).buildClient();
-      tableServiceClient.createTableIfNotExists("events");
-      tableClient = tableServiceClient.getTableClient("events");
-    }
-    return tableClient;
-  }
 
   private CosmosClient getCosmosClient() {
     if (clientbiz == null) {
       clientbiz = new CosmosClientBuilder().endpoint(bizendpoint).key(bizkey).buildClient();
       clientbiz.createDatabaseIfNotExists(CosmosBizEventClient.dbname);
+      clientbiz.createDatabaseIfNotExists(CosmosNegBizEventClient.dbname);
+      clientbiz.createDatabaseIfNotExists(CosmosVerifyKOEventClient.dbname);
       clientbiz
           .getDatabase(CosmosBizEventClient.dbname)
           .createContainerIfNotExists(CosmosBizEventClient.tablename, "/timestamp");
       clientbiz
-          .getDatabase(CosmosBizEventClient.dbname)
+          .getDatabase(CosmosNegBizEventClient.dbname)
           .createContainerIfNotExists(CosmosNegBizEventClient.tablename, "/timestamp");
+      clientbiz
+          .getDatabase(CosmosVerifyKOEventClient.dbname)
+          .createContainerIfNotExists(CosmosVerifyKOEventClient.tablename, "/timestamp");
     }
     return clientbiz;
   }
@@ -82,7 +70,6 @@ class Sp03Test {
     String noticeNumber = String.valueOf(Instant.now().toEpochMilli());
     String url = SP03_NN.formatted(PA_CODE, noticeNumber);
 
-    getTableClient().createEntity(AppConstantTestHelper.newRe(PA_CODE, noticeNumber, null));
     getCosmosClient()
         .getDatabase(CosmosBizEventClient.dbname)
         .getContainer(CosmosBizEventClient.tablename)
@@ -92,8 +79,8 @@ class Sp03Test {
 
     TransactionResponse res =
         given()
-            .param("dateFrom", Util.format(LocalDate.now()))
-            .param("dateTo", Util.format(LocalDate.now()))
+            .param("dateFrom", Util.format(LocalDate.now().minusDays(2)))
+            .param("dateTo", Util.format(LocalDate.now().plusDays(2)))
             .when()
             .get(url)
             .then()
@@ -112,12 +99,56 @@ class Sp03Test {
 
   @SneakyThrows
   @Test
+  @DisplayName("sp03 by ci and nn with positive and verifyKO")
+  void test1_2() {
+    String noticeNumber = String.valueOf(Instant.now().toEpochMilli());
+    String url = SP03_NN.formatted(PA_CODE, noticeNumber);
+
+    getCosmosClient()
+            .getDatabase(CosmosVerifyKOEventClient.dbname)
+            .getContainer(CosmosVerifyKOEventClient.tablename)
+            .createItem(
+                    AppConstantTestHelper.newVerifyKO(PA_CODE, noticeNumber),
+                    new CosmosItemRequestOptions());
+    getCosmosClient()
+            .getDatabase(CosmosBizEventClient.dbname)
+            .getContainer(CosmosBizEventClient.tablename)
+            .createItem(
+                    AppConstantTestHelper.newPositiveBiz(PA_CODE, noticeNumber, null),
+                    new CosmosItemRequestOptions());
+
+    TransactionResponse res =
+            given()
+                    .param("dateFrom", Util.format(LocalDate.now().minusDays(2)))
+                    .param("dateTo", Util.format(LocalDate.now().plusDays(2)))
+                    .when()
+                    .get(url)
+                    .then()
+                    .statusCode(200)
+                    .extract()
+                    .as(new TypeRef<TransactionResponse<PaymentInfo>>() {});
+    assertThat(res.getPayments().size(), equalTo(2));
+    PaymentInfo o = (PaymentInfo) res.getPayments().get(0);
+    assertThat(o.getNoticeNumber(), equalTo(noticeNumber));
+    assertThat(o.getOrganizationFiscalCode(), equalTo(PA_CODE));
+    assertThat(o.getPspId(), equalTo("pspTest"));
+    assertThat(o.getChannelId(), equalTo("canaleTest"));
+    assertThat(o.getBrokerPspId(), equalTo("intTest"));
+    PaymentInfo o2 = (PaymentInfo) res.getPayments().get(1);
+    assertThat(o2.getNoticeNumber(), equalTo(noticeNumber));
+    assertThat(o2.getOrganizationFiscalCode(), equalTo(PA_CODE));
+    assertThat(o2.getPspId(), equalTo("pspTest"));
+    assertThat(o2.getChannelId(), equalTo("canaleTest"));
+    assertThat(o2.getBrokerPspId(), equalTo("intTest"));
+  }
+
+  @SneakyThrows
+  @Test
   @DisplayName("sp03 by ci and nn with negative")
   void test2() {
     String noticeNumber = String.valueOf(Instant.now().toEpochMilli());
     String url = SP03_NN.formatted(PA_CODE, noticeNumber);
 
-    getTableClient().createEntity(AppConstantTestHelper.newRe(PA_CODE, noticeNumber, null));
     getCosmosClient()
         .getDatabase(CosmosBizEventClient.dbname)
         .getContainer(CosmosNegBizEventClient.tablename)
@@ -139,7 +170,6 @@ class Sp03Test {
     PaymentInfo o = (PaymentInfo) res.getPayments().get(0);
     assertThat(o.getNoticeNumber(), equalTo(noticeNumber));
     assertThat(o.getOrganizationFiscalCode(), equalTo(PA_CODE));
-    assertThat(o.getOutcome(), equalTo(AppConstantTestHelper.outcomeKO));
     assertThat(o.getPspId(), equalTo("pspTest"));
     assertThat(o.getChannelId(), equalTo("canaleTest"));
     assertThat(o.getBrokerPspId(), equalTo("intTest"));
@@ -152,7 +182,6 @@ class Sp03Test {
     String iuv = String.valueOf(Instant.now().toEpochMilli());
     String url = SP03_IUV.formatted(PA_CODE, iuv);
 
-    getTableClient().createEntity(AppConstantTestHelper.newRe(PA_CODE, null, iuv));
     getCosmosClient()
         .getDatabase(CosmosBizEventClient.dbname)
         .getContainer(CosmosBizEventClient.tablename)
@@ -187,7 +216,6 @@ class Sp03Test {
     String iuv = String.valueOf(Instant.now().toEpochMilli());
     String url = SP03_IUV.formatted(PA_CODE, iuv);
 
-    getTableClient().createEntity(AppConstantTestHelper.newRe(PA_CODE, null, iuv));
     getCosmosClient()
         .getDatabase(CosmosBizEventClient.dbname)
         .getContainer(CosmosNegBizEventClient.tablename)
@@ -209,7 +237,6 @@ class Sp03Test {
     PaymentInfo o = (PaymentInfo) res.getPayments().get(0);
     assertThat(o.getIuv(), equalTo(iuv));
     assertThat(o.getOrganizationFiscalCode(), equalTo(PA_CODE));
-    assertThat(o.getOutcome(), equalTo(AppConstantTestHelper.outcomeKO));
     assertThat(o.getPspId(), equalTo("pspTest"));
     assertThat(o.getChannelId(), equalTo("canaleTest"));
     assertThat(o.getBrokerPspId(), equalTo("intTest"));

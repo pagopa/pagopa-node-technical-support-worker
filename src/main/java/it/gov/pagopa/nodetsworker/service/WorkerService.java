@@ -8,8 +8,10 @@ import it.gov.pagopa.nodetsworker.models.PaymentAttemptInfo;
 import it.gov.pagopa.nodetsworker.models.PaymentInfo;
 import it.gov.pagopa.nodetsworker.repository.CosmosBizEventClient;
 import it.gov.pagopa.nodetsworker.repository.CosmosNegBizEventClient;
+import it.gov.pagopa.nodetsworker.repository.CosmosVerifyKOEventClient;
 import it.gov.pagopa.nodetsworker.repository.model.NegativeBizEvent;
 import it.gov.pagopa.nodetsworker.repository.model.PositiveBizEvent;
+import it.gov.pagopa.nodetsworker.repository.model.VerifyKOEvent;
 import it.gov.pagopa.nodetsworker.resources.response.TransactionResponse;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
@@ -35,28 +37,34 @@ public class WorkerService {
     CosmosBizEventClient positiveBizClient;
     @Inject
     CosmosNegBizEventClient negativeBizClient;
+    @Inject
+    CosmosVerifyKOEventClient verifyKOEventClient;
 
     @ConfigProperty(name = "date-range-limit")
     Integer dateRangeLimit;
 
-
-//    @Inject
-//    CosmosReEventClient reClient;
-
-//    @Inject
-//    ReTableStorageClient reTableStorageClient;
-
-//    @ConfigProperty(name = "re-cosmos.day-limit")
-//    Integer reCosmosDayLimit;
-
-
-
     private List<String> tipiEventoAttempts = Arrays.asList("activatePaymentNotice","activatePaymentNoticeV2","nodoInviaRPT","nodoInviaCarrelloRPT");
+
+    private PaymentInfo eventToPaymentInfo(VerifyKOEvent evt) {
+        return PaymentInfo.builder()
+                .businessProcess("VerifyPaymentNotice")
+                .serviceIdentifier(evt.getServiceIdentifier())
+                .pspId(evt.getPsp().getIdPsp())
+                .positiveBizEvtId(evt.getId())
+                .brokerPspId(evt.getPsp().getIdBrokerPsp())
+                .channelId(evt.getPsp().getIdChannel())
+                .insertedTimestamp(evt.getFaultBean().getDateTime().toString())
+                .noticeNumber(evt.getDebtorPosition().getNoticeNumber())
+                .iuv(evt.getDebtorPosition().getIuv())
+                .organizationFiscalCode(evt.getCreditor().getIdPA())
+                .outcome(evt.getFaultBean().getFaultCode())
+                .build();
+    }
 
     private PaymentInfo eventToPaymentInfo(PositiveBizEvent evt) {
         return PaymentInfo.builder()
                 .status(STATUS_COMPLETED)
-                .serviceIdentifier(evt.getProperties().get(SERVICE_ID))
+                .serviceIdentifier(evt.getProperties()!=null?evt.getProperties().get(SERVICE_ID):"n/a")
                 .pspId(evt.getPsp().getIdPsp())
                 .positiveBizEvtId(evt.getId())
                 .brokerPspId(evt.getPsp().getIdBrokerPsp())
@@ -74,7 +82,7 @@ public class WorkerService {
     private PaymentAttemptInfo eventToPaymentAttemptInfo(PositiveBizEvent evt) {
         return PaymentAttemptInfo.builder()
                 .status(STATUS_COMPLETED)
-                .serviceIdentifier(evt.getProperties().get(SERVICE_ID))
+                .serviceIdentifier(evt.getProperties()!=null?evt.getProperties().get(SERVICE_ID):"n/a")
                 .pspId(evt.getPsp().getIdPsp())
                 .positiveBizEvtId(evt.getId())
                 .brokerPspId(evt.getPsp().getIdBrokerPsp())
@@ -94,7 +102,7 @@ public class WorkerService {
     private PaymentInfo eventToPaymentInfo(NegativeBizEvent evt) {
         return PaymentInfo.builder()
                 .businessProcess(evt.getBusinessProcess())
-                .serviceIdentifier(evt.getProperties().get(SERVICE_ID))
+                .serviceIdentifier(evt.getProperties()!=null?evt.getProperties().get(SERVICE_ID):"n/a")
                 .pspId(evt.getPsp().getIdPsp())
                 .negativeBizEvtId(evt.getId())
                 .brokerPspId(evt.getPsp().getIdBrokerPsp())
@@ -112,7 +120,7 @@ public class WorkerService {
     private PaymentAttemptInfo eventToPaymentAttemptInfo(NegativeBizEvent evt) {
         return PaymentAttemptInfo.builder()
                 .businessProcess(evt.getBusinessProcess())
-                .serviceIdentifier(evt.getProperties().get(SERVICE_ID))
+                .serviceIdentifier(evt.getProperties()!=null?evt.getProperties().get(SERVICE_ID):"n/a")
                 .pspId(evt.getPsp().getIdPsp())
                 .negativeBizEvtId(evt.getId())
                 .brokerPspId(evt.getPsp().getIdBrokerPsp())
@@ -161,6 +169,13 @@ public class WorkerService {
 
         DateRequest dateRequest = verifyDate(dateFrom, dateTo);
 
+        List<VerifyKOEvent> verifyKOEvents = verifyKOEventClient
+                .findEventsByCiAndNN(
+                        organizationFiscalCode,
+                        noticeNumber,
+                        dateRequest.getFrom(),
+                        dateRequest.getTo()).stream().toList();
+
         List<PositiveBizEvent> positiveEvents = positiveBizClient
                 .findEventsByCiAndNNAndToken(
                         organizationFiscalCode,
@@ -179,6 +194,7 @@ public class WorkerService {
 
         List<BasePaymentInfo> collect = new ArrayList<>();
 
+        collect.addAll(verifyKOEvents.stream().map(d->eventToPaymentInfo(d)).toList());
         collect.addAll(positiveEvents.stream().map(d->eventToPaymentInfo(d)).toList());
         collect.addAll(negativeEvents.stream().map(d->eventToPaymentInfo(d)).toList());
 
@@ -195,6 +211,13 @@ public class WorkerService {
 
         DateRequest dateRequest = verifyDate(dateFrom, dateTo);
 
+        List<VerifyKOEvent> verifyKOEvents = verifyKOEventClient
+                .findEventsByCiAndNN(
+                        organizationFiscalCode,
+                        noticeNumber,
+                        dateRequest.getFrom(),
+                        dateRequest.getTo()).stream().toList();
+
         List<PositiveBizEvent> positiveEvents = positiveBizClient
                 .findEventsByCiAndIUVAndCCP(
                         organizationFiscalCode,
@@ -213,6 +236,7 @@ public class WorkerService {
 
         List<BasePaymentInfo> collect = new ArrayList<>();
 
+        collect.addAll(verifyKOEvents.stream().map(d->eventToPaymentInfo(d)).toList());
         collect.addAll(positiveEvents.stream().map(d->eventToPaymentInfo(d)).toList());
         collect.addAll(negativeEvents.stream().map(d->eventToPaymentInfo(d)).toList());
 
