@@ -1,7 +1,6 @@
 package it.gov.pagopa.nodetsworker.models;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -35,4 +34,7 @@ public class BasePaymentInfo {
   private String positiveBizEvtId;
   @JsonInclude(JsonInclude.Include.NON_NULL)
   private String negativeBizEvtId;
+
+  @JsonInclude(JsonInclude.Include.NON_NULL)
+  private FaultBean faultBean;
 }

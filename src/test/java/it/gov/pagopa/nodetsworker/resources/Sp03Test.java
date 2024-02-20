@@ -134,6 +134,7 @@ class Sp03Test {
     assertThat(o.getPspId(), equalTo("pspTest"));
     assertThat(o.getChannelId(), equalTo("canaleTest"));
     assertThat(o.getBrokerPspId(), equalTo("intTest"));
+    assertThat(o.getFaultBean().getFaultCode(), equalTo("FAULT_CODE"));
     PaymentInfo o2 = (PaymentInfo) res.getPayments().get(1);
     assertThat(o2.getNoticeNumber(), equalTo(noticeNumber));
     assertThat(o2.getOrganizationFiscalCode(), equalTo(PA_CODE));
