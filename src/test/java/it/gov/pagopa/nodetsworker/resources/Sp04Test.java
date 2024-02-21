@@ -8,7 +8,7 @@ import io.quarkus.test.common.QuarkusTestResource;
 import io.quarkus.test.junit.QuarkusTest;
 import io.restassured.common.mapper.TypeRef;
 import it.gov.pagopa.nodetsworker.models.PaymentAttemptInfo;
-import it.gov.pagopa.nodetsworker.repository.CosmosBizEventClient;
+import it.gov.pagopa.nodetsworker.repository.CosmosBizEventRepository;
 import it.gov.pagopa.nodetsworker.repository.CosmosNegBizEventClient;
 import it.gov.pagopa.nodetsworker.resources.response.TransactionResponse;
 import it.gov.pagopa.nodetsworker.util.AppConstantTestHelper;
@@ -49,12 +49,12 @@ class Sp04Test {
   private CosmosClient getCosmosClient() {
     if (clientbiz == null) {
       clientbiz = new CosmosClientBuilder().endpoint(bizendpoint).key(bizkey).buildClient();
-      clientbiz.createDatabaseIfNotExists(CosmosBizEventClient.dbname);
+      clientbiz.createDatabaseIfNotExists(CosmosBizEventRepository.dbname);
       clientbiz
-          .getDatabase(CosmosBizEventClient.dbname)
-          .createContainerIfNotExists(CosmosBizEventClient.tablename, "/timestamp");
+          .getDatabase(CosmosBizEventRepository.dbname)
+          .createContainerIfNotExists(CosmosBizEventRepository.tablename, "/timestamp");
       clientbiz
-          .getDatabase(CosmosBizEventClient.dbname)
+          .getDatabase(CosmosBizEventRepository.dbname)
           .createContainerIfNotExists(CosmosNegBizEventClient.tablename, "/timestamp");
     }
     return clientbiz;
@@ -69,8 +69,8 @@ class Sp04Test {
     String url = SP04_NN.formatted(PA_CODE, noticeNumber, token);
 
     getCosmosClient()
-        .getDatabase(CosmosBizEventClient.dbname)
-        .getContainer(CosmosBizEventClient.tablename)
+        .getDatabase(CosmosBizEventRepository.dbname)
+        .getContainer(CosmosBizEventRepository.tablename)
         .createItem(
             AppConstantTestHelper.newPositiveBiz(PA_CODE, noticeNumber, null),
             new CosmosItemRequestOptions());
@@ -104,7 +104,7 @@ class Sp04Test {
     String url = SP04_NN.formatted(PA_CODE, noticeNumber, token);
 
     getCosmosClient()
-        .getDatabase(CosmosBizEventClient.dbname)
+        .getDatabase(CosmosBizEventRepository.dbname)
         .getContainer(CosmosNegBizEventClient.tablename)
         .createItem(
             AppConstantTestHelper.newNegBiz(PA_CODE, noticeNumber, null, false),
@@ -139,8 +139,8 @@ class Sp04Test {
     String url = SP04_IUV.formatted(PA_CODE, iuv, ccp);
 
     getCosmosClient()
-        .getDatabase(CosmosBizEventClient.dbname)
-        .getContainer(CosmosBizEventClient.tablename)
+        .getDatabase(CosmosBizEventRepository.dbname)
+        .getContainer(CosmosBizEventRepository.tablename)
         .createItem(
             AppConstantTestHelper.newPositiveBiz(PA_CODE, null, iuv),
             new CosmosItemRequestOptions());
@@ -174,7 +174,7 @@ class Sp04Test {
     String url = SP04_IUV.formatted(PA_CODE, iuv, ccp);
 
     getCosmosClient()
-        .getDatabase(CosmosBizEventClient.dbname)
+        .getDatabase(CosmosBizEventRepository.dbname)
         .getContainer(CosmosNegBizEventClient.tablename)
         .createItem(
             AppConstantTestHelper.newNegBiz(PA_CODE, null, iuv, false),

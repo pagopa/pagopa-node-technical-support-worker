@@ -1,7 +1,6 @@
 package it.gov.pagopa.nodetsworker.repository;
 
 import com.azure.cosmos.CosmosClient;
-import com.azure.cosmos.CosmosClientBuilder;
 import com.azure.cosmos.CosmosContainer;
 import com.azure.cosmos.models.CosmosQueryRequestOptions;
 import com.azure.cosmos.models.SqlParameter;
@@ -13,50 +12,38 @@ import it.gov.pagopa.nodetsworker.repository.model.PositiveBizEvent;
 import it.gov.pagopa.nodetsworker.util.Util;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
-import java.time.*;
+import jakarta.inject.Named;
+import org.eclipse.microprofile.config.inject.ConfigProperty;
+import org.jboss.logging.Logger;
+
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
-import org.eclipse.microprofile.config.inject.ConfigProperty;
-import org.jboss.logging.Logger;
-
 @ApplicationScoped
 @Startup
-public class CosmosBizEventClient {
-
-  @ConfigProperty(name = "biz.endpoint")
-  private String endpoint;
-
-  @ConfigProperty(name = "biz.key")
-  private String key;
+public class CosmosBizEventRepository {
 
   public static String dbname = "db";
   public static String tablename = "biz-events";
 
-  private CosmosClient client;
-
   @Inject Logger log;
+  @Named("biz")
+  @Inject CosmosClient client;
 
   private String dateFilter = " and c.paymentInfo.paymentDateTime >= @from and c.paymentInfo.paymentDateTime < @to";
 
-  private CosmosClient getClient() {
-    if (client == null) {
-      client = new CosmosClientBuilder().endpoint(endpoint).key(key).buildClient();
-    }
-    return client;
-  }
-
   private CosmosPagedIterable<PositiveBizEvent> query(SqlQuerySpec query) {
     log.info("executing query:" + query.getQueryText());
-    CosmosContainer container = getClient().getDatabase(dbname).getContainer(tablename);
+    CosmosContainer container = client.getDatabase(dbname).getContainer(tablename);
     return container.queryItems(query, new CosmosQueryRequestOptions(), PositiveBizEvent.class);
   }
 
   private CosmosPagedIterable<Count> queryCount(SqlQuerySpec query) {
     log.info("executing query:" + query.getQueryText());
-    CosmosContainer container = getClient().getDatabase(dbname).getContainer(tablename);
+    CosmosContainer container = client.getDatabase(dbname).getContainer(tablename);
     return container.queryItems(query, new CosmosQueryRequestOptions(), Count.class);
   }
 

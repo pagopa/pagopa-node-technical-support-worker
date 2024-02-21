@@ -12,6 +12,7 @@ import it.gov.pagopa.nodetsworker.repository.model.NegativeBizEvent;
 import it.gov.pagopa.nodetsworker.util.Util;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
+import jakarta.inject.Named;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.jboss.logging.Logger;
 
@@ -25,31 +26,20 @@ import java.util.Optional;
 @Startup
 public class CosmosNegBizEventClient {
 
-  @ConfigProperty(name = "bizneg.endpoint")
-  private String endpoint;
-
-  @ConfigProperty(name = "bizneg.key")
-  private String key;
-
   public static String dbname = "db";
   public static String tablename = "negative-biz-events";
 
+  @Inject
+  @Named("bizneg")
   private CosmosClient client;
 
   @Inject Logger log;
 
   private String dateFilter = " and c.paymentInfo.paymentDateTime > @from and c.paymentInfo.paymentDateTime < @to";
 
-  private CosmosClient getClient() {
-    if (client == null) {
-      client = new CosmosClientBuilder().endpoint(endpoint).key(key).buildClient();
-    }
-    return client;
-  }
-
   private CosmosPagedIterable<NegativeBizEvent> query(SqlQuerySpec query) {
     log.info("executing query:" + query.getQueryText());
-    CosmosContainer container = getClient().getDatabase(dbname).getContainer(tablename);
+    CosmosContainer container = client.getDatabase(dbname).getContainer(tablename);
     return container.queryItems(query, new CosmosQueryRequestOptions(), NegativeBizEvent.class);
   }
 
