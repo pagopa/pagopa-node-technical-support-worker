@@ -2,11 +2,8 @@ package it.gov.pagopa.nodetsworker.service;
 
 import it.gov.pagopa.nodetsworker.exceptions.AppErrorCodeMessageEnum;
 import it.gov.pagopa.nodetsworker.exceptions.AppException;
-import it.gov.pagopa.nodetsworker.models.BasePaymentInfo;
-import it.gov.pagopa.nodetsworker.models.DateRequest;
-import it.gov.pagopa.nodetsworker.models.PaymentAttemptInfo;
-import it.gov.pagopa.nodetsworker.models.PaymentInfo;
-import it.gov.pagopa.nodetsworker.repository.CosmosBizEventClient;
+import it.gov.pagopa.nodetsworker.models.*;
+import it.gov.pagopa.nodetsworker.repository.CosmosBizEventRepository;
 import it.gov.pagopa.nodetsworker.repository.CosmosNegBizEventClient;
 import it.gov.pagopa.nodetsworker.repository.CosmosVerifyKOEventClient;
 import it.gov.pagopa.nodetsworker.repository.model.NegativeBizEvent;
@@ -34,7 +31,7 @@ public class WorkerService {
     @Inject
     Logger log;
     @Inject
-    CosmosBizEventClient positiveBizClient;
+    CosmosBizEventRepository positiveBizClient;
     @Inject
     CosmosNegBizEventClient negativeBizClient;
     @Inject
@@ -46,6 +43,7 @@ public class WorkerService {
     private List<String> tipiEventoAttempts = Arrays.asList("activatePaymentNotice","activatePaymentNoticeV2","nodoInviaRPT","nodoInviaCarrelloRPT");
 
     private PaymentInfo eventToPaymentInfo(VerifyKOEvent evt) {
+
         return PaymentInfo.builder()
                 .businessProcess("VerifyPaymentNotice")
                 .serviceIdentifier(evt.getServiceIdentifier())
@@ -57,7 +55,8 @@ public class WorkerService {
                 .noticeNumber(evt.getDebtorPosition().getNoticeNumber())
                 .iuv(evt.getDebtorPosition().getIuv())
                 .organizationFiscalCode(evt.getCreditor().getIdPA())
-                .outcome(evt.getFaultBean().getFaultCode())
+                .outcome(outcomeKO)
+                .faultBean(FaultBean.builder().faultCode(evt.getFaultBean().getFaultCode()).description(evt.getFaultBean().getDescription()).timestamp(evt.getFaultBean().getDateTime()).build())
                 .build();
     }
 

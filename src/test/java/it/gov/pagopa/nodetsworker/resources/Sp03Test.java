@@ -10,7 +10,7 @@ import io.restassured.common.mapper.TypeRef;
 import io.restassured.filter.log.RequestLoggingFilter;
 import io.restassured.filter.log.ResponseLoggingFilter;
 import it.gov.pagopa.nodetsworker.models.PaymentInfo;
-import it.gov.pagopa.nodetsworker.repository.CosmosBizEventClient;
+import it.gov.pagopa.nodetsworker.repository.CosmosBizEventRepository;
 import it.gov.pagopa.nodetsworker.repository.CosmosNegBizEventClient;
 import it.gov.pagopa.nodetsworker.repository.CosmosVerifyKOEventClient;
 import it.gov.pagopa.nodetsworker.resources.response.TransactionResponse;
@@ -47,12 +47,12 @@ class Sp03Test {
   private CosmosClient getCosmosClient() {
     if (clientbiz == null) {
       clientbiz = new CosmosClientBuilder().endpoint(bizendpoint).key(bizkey).buildClient();
-      clientbiz.createDatabaseIfNotExists(CosmosBizEventClient.dbname);
+      clientbiz.createDatabaseIfNotExists(CosmosBizEventRepository.dbname);
       clientbiz.createDatabaseIfNotExists(CosmosNegBizEventClient.dbname);
       clientbiz.createDatabaseIfNotExists(CosmosVerifyKOEventClient.dbname);
       clientbiz
-          .getDatabase(CosmosBizEventClient.dbname)
-          .createContainerIfNotExists(CosmosBizEventClient.tablename, "/timestamp");
+          .getDatabase(CosmosBizEventRepository.dbname)
+          .createContainerIfNotExists(CosmosBizEventRepository.tablename, "/timestamp");
       clientbiz
           .getDatabase(CosmosNegBizEventClient.dbname)
           .createContainerIfNotExists(CosmosNegBizEventClient.tablename, "/timestamp");
@@ -71,8 +71,8 @@ class Sp03Test {
     String url = SP03_NN.formatted(PA_CODE, noticeNumber);
 
     getCosmosClient()
-        .getDatabase(CosmosBizEventClient.dbname)
-        .getContainer(CosmosBizEventClient.tablename)
+        .getDatabase(CosmosBizEventRepository.dbname)
+        .getContainer(CosmosBizEventRepository.tablename)
         .createItem(
             AppConstantTestHelper.newPositiveBiz(PA_CODE, noticeNumber, null),
             new CosmosItemRequestOptions());
@@ -111,8 +111,8 @@ class Sp03Test {
                     AppConstantTestHelper.newVerifyKO(PA_CODE, noticeNumber),
                     new CosmosItemRequestOptions());
     getCosmosClient()
-            .getDatabase(CosmosBizEventClient.dbname)
-            .getContainer(CosmosBizEventClient.tablename)
+            .getDatabase(CosmosBizEventRepository.dbname)
+            .getContainer(CosmosBizEventRepository.tablename)
             .createItem(
                     AppConstantTestHelper.newPositiveBiz(PA_CODE, noticeNumber, null),
                     new CosmosItemRequestOptions());
@@ -134,6 +134,7 @@ class Sp03Test {
     assertThat(o.getPspId(), equalTo("pspTest"));
     assertThat(o.getChannelId(), equalTo("canaleTest"));
     assertThat(o.getBrokerPspId(), equalTo("intTest"));
+    assertThat(o.getFaultBean().getFaultCode(), equalTo("FAULT_CODE"));
     PaymentInfo o2 = (PaymentInfo) res.getPayments().get(1);
     assertThat(o2.getNoticeNumber(), equalTo(noticeNumber));
     assertThat(o2.getOrganizationFiscalCode(), equalTo(PA_CODE));
@@ -150,7 +151,7 @@ class Sp03Test {
     String url = SP03_NN.formatted(PA_CODE, noticeNumber);
 
     getCosmosClient()
-        .getDatabase(CosmosBizEventClient.dbname)
+        .getDatabase(CosmosBizEventRepository.dbname)
         .getContainer(CosmosNegBizEventClient.tablename)
         .createItem(
             AppConstantTestHelper.newNegBiz(PA_CODE, noticeNumber, null, false),
@@ -183,8 +184,8 @@ class Sp03Test {
     String url = SP03_IUV.formatted(PA_CODE, iuv);
 
     getCosmosClient()
-        .getDatabase(CosmosBizEventClient.dbname)
-        .getContainer(CosmosBizEventClient.tablename)
+        .getDatabase(CosmosBizEventRepository.dbname)
+        .getContainer(CosmosBizEventRepository.tablename)
         .createItem(
             AppConstantTestHelper.newPositiveBiz(PA_CODE, null, iuv),
             new CosmosItemRequestOptions());
@@ -217,7 +218,7 @@ class Sp03Test {
     String url = SP03_IUV.formatted(PA_CODE, iuv);
 
     getCosmosClient()
-        .getDatabase(CosmosBizEventClient.dbname)
+        .getDatabase(CosmosBizEventRepository.dbname)
         .getContainer(CosmosNegBizEventClient.tablename)
         .createItem(
             AppConstantTestHelper.newNegBiz(PA_CODE, null, iuv, false),

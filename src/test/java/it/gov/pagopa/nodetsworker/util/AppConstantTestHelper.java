@@ -56,6 +56,7 @@ public class AppConstantTestHelper {
                     .creditor(Creditor.builder().idPA(pa).build())
                     .debtorPosition(
                             DebtorPosition.builder().modelType("1").noticeNumber(noticeNumber).build())
+                    .faultBean(Fault.builder().faultCode("FAULT_CODE").description("DESCRIPTION").dateTime(LocalDateTime.now().toString()).build())
                     .build();
     return p;
   }
