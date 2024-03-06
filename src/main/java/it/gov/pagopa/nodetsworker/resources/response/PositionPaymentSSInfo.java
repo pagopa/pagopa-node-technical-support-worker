@@ -9,7 +9,7 @@ import java.time.Instant;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class PositionPaymentStatusSnapshotInfo {
+public class PositionPaymentSSInfo {
 
     private String paFiscalCode;
     private String noticeId;

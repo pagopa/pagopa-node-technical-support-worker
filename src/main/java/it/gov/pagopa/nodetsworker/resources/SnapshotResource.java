@@ -1,8 +1,10 @@
 package it.gov.pagopa.nodetsworker.resources;
 
+import io.smallrye.mutiny.Uni;
 import it.gov.pagopa.nodetsworker.models.ProblemJson;
 import it.gov.pagopa.nodetsworker.resources.response.PaymentResponse;
 import it.gov.pagopa.nodetsworker.service.SnapshotService;
+import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
@@ -19,6 +21,7 @@ import java.time.LocalDate;
 
 @Path("/snapshot/organizations")
 @Produces(value = MediaType.APPLICATION_JSON)
+@ApplicationScoped
 public class SnapshotResource implements Serializable {
 
     @Inject
@@ -59,8 +62,7 @@ public class SnapshotResource implements Serializable {
             @QueryParam("page") @DefaultValue("1") @Min(value = 1) long pageNumber,
             @QueryParam("size") @DefaultValue("1000") @Min(value = 1) long pageSize) {
 
-        snapshotService.getPosPaymentStatusSnapshot(organizationFiscalCode, noticeNumber, paymentToken, dateFrom, dateTo, pageNumber, pageSize);
-
-        return Response.ok().build();
+        PaymentResponse response = snapshotService.getPosPaymentStatusSnapshot(organizationFiscalCode, noticeNumber, paymentToken, dateFrom, dateTo, pageNumber, pageSize);
+        return Response.ok(response).build();
     }
 }

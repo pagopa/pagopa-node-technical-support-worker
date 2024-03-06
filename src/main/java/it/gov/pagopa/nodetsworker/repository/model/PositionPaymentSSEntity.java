@@ -1,21 +1,24 @@
 package it.gov.pagopa.nodetsworker.repository.model;
 
-import io.quarkus.hibernate.orm.panache.PanacheEntity;
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.time.Instant;
 
-@Data
+
 @NoArgsConstructor
+@AllArgsConstructor
+@Data
+@Builder
 @Entity
 @Table(name = "POSITION_PAYMENT_STATUS_SNAPSHOT")
-public class PositionPaymentStatusSnapshot extends PanacheEntity{
+public class PositionPaymentSSEntity {
 
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @Column(name = "PA_FISCAL_CODE")
@@ -34,7 +37,7 @@ public class PositionPaymentStatusSnapshot extends PanacheEntity{
     private String status;
 
     @Column(name = "INSERTED_TIMESTAMP")
-    private Instant inserted_timestamp;
+    private Instant insertedTimestamp;
 
     @Column(name = "UPDATED_TIMESTAMP")
     private Instant updatedTimestamp;

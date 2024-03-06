@@ -507,24 +507,48 @@
         "type" : "string",
         "example" : "2022-03-10"
       },
+      "Metadata" : {
+        "type" : "object",
+        "properties" : {
+          "pageSize" : {
+            "format" : "int32",
+            "type" : "integer",
+            "example" : 25
+          },
+          "pageNumber" : {
+            "format" : "int32",
+            "type" : "integer",
+            "example" : 1
+          },
+          "totPage" : {
+            "format" : "int32",
+            "type" : "integer",
+            "example" : 3
+          }
+        }
+      },
       "PaymentResponse" : {
         "type" : "object",
         "properties" : {
+          "metadata" : {
+            "$ref" : "#/components/schemas/Metadata"
+          },
+          "count" : {
+            "format" : "int64",
+            "type" : "integer",
+            "example" : 100
+          },
+          "data" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/PositionPaymentStatusSnapshotInfo"
+            }
+          },
           "dateFrom" : {
             "$ref" : "#/components/schemas/LocalDate"
           },
           "dateTo" : {
             "$ref" : "#/components/schemas/LocalDate"
-          },
-          "count" : {
-            "format" : "int32",
-            "type" : "integer"
-          },
-          "payments" : {
-            "type" : "array",
-            "items" : {
-              "$ref" : "#/components/schemas/PositionPaymentStatusSnapshotInfo"
-            }
           }
         }
       },

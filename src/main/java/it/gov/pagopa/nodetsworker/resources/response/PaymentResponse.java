@@ -1,9 +1,9 @@
 package it.gov.pagopa.nodetsworker.resources.response;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.annotation.JsonSubTypes;
-import it.gov.pagopa.nodetsworker.models.BasePaymentInfo;
+import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import lombok.*;
+import lombok.extern.jackson.Jacksonized;
+import org.eclipse.microprofile.openapi.annotations.media.Schema;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -13,13 +13,18 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
+@Jacksonized
+@JsonPropertyOrder({"metadata", "count", "data"})
 public class PaymentResponse {
+
+    private Metadata metadata;
 
     private LocalDate dateFrom;
     private LocalDate dateTo;
 
-    private int count;
+    @Schema(example = "100")
+    private long count;
 
-    private List<PositionPaymentStatusSnapshotInfo> payments;
+    private List<PositionPaymentSSInfo> data;
 
 }

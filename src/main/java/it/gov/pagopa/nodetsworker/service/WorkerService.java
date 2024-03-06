@@ -1,7 +1,5 @@
 package it.gov.pagopa.nodetsworker.service;
 
-import it.gov.pagopa.nodetsworker.exceptions.AppErrorCodeMessageEnum;
-import it.gov.pagopa.nodetsworker.exceptions.AppException;
 import it.gov.pagopa.nodetsworker.models.*;
 import it.gov.pagopa.nodetsworker.repository.CosmosBizEventRepository;
 import it.gov.pagopa.nodetsworker.repository.CosmosNegBizEventClient;
@@ -10,13 +8,13 @@ import it.gov.pagopa.nodetsworker.repository.model.NegativeBizEvent;
 import it.gov.pagopa.nodetsworker.repository.model.PositiveBizEvent;
 import it.gov.pagopa.nodetsworker.repository.model.VerifyKOEvent;
 import it.gov.pagopa.nodetsworker.resources.response.TransactionResponse;
+import it.gov.pagopa.nodetsworker.util.ValidationUtil;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.jboss.logging.Logger;
 
 import java.time.LocalDate;
-import java.time.temporal.ChronoUnit;
 import java.util.*;
 
 import static it.gov.pagopa.nodetsworker.util.AppConstant.SERVICE_ID;
@@ -166,7 +164,7 @@ public class WorkerService {
 
     public TransactionResponse getInfoByNoticeNumber(String organizationFiscalCode, String noticeNumber, Optional<String> paymentToken, LocalDate dateFrom, LocalDate dateTo) {
 
-        DateRequest dateRequest = verifyDate(dateFrom, dateTo);
+        DateRequest dateRequest = ValidationUtil.verifyDateRequest(dateFrom, dateTo, dateRangeLimit);
 
         List<VerifyKOEvent> verifyKOEvents = verifyKOEventClient
                 .findEventsByCiAndNN(
@@ -208,7 +206,7 @@ public class WorkerService {
 
     public TransactionResponse getInfoByIUV(String organizationFiscalCode, String noticeNumber, LocalDate dateFrom, LocalDate dateTo) {
 
-        DateRequest dateRequest = verifyDate(dateFrom, dateTo);
+        DateRequest dateRequest = ValidationUtil.verifyDateRequest(dateFrom, dateTo, dateRangeLimit);
 
         List<VerifyKOEvent> verifyKOEvents = verifyKOEventClient
                 .findEventsByCiAndNN(
@@ -254,7 +252,7 @@ public class WorkerService {
             LocalDate dateFrom,
             LocalDate dateTo) {
 
-        DateRequest dateRequest = verifyDate(dateFrom, dateTo);
+        DateRequest dateRequest = ValidationUtil.verifyDateRequest(dateFrom, dateTo, dateRangeLimit);
 
         List<PositiveBizEvent> positiveEvents = positiveBizClient
                 .findEventsByCiAndNNAndToken(
@@ -288,7 +286,7 @@ public class WorkerService {
     public TransactionResponse getAttemptByIUVAndCCP(
             String organizationFiscalCode, String iuv, String ccp, LocalDate dateFrom, LocalDate dateTo) {
 
-        DateRequest dateRequest = verifyDate(dateFrom, dateTo);
+        DateRequest dateRequest = ValidationUtil.verifyDateRequest(dateFrom, dateTo, dateRangeLimit);
 
         List<PositiveBizEvent> positiveEvents = positiveBizClient
                 .findEventsByCiAndIUVAndCCP(
@@ -317,34 +315,6 @@ public class WorkerService {
                 .count(collect.size())
                 .payments(collect)
                 .build();
-    }
-
-    /**
-     * Check dates validity
-     *
-     * @param dateFrom
-     * @param dateTo
-     */
-    private DateRequest verifyDate(LocalDate dateFrom, LocalDate dateTo) {
-        if (dateFrom == null && dateTo != null || dateFrom != null && dateTo == null) {
-            throw new AppException(
-                    AppErrorCodeMessageEnum.POSITION_SERVICE_DATE_BAD_REQUEST,
-                    "Date from and date to must be both defined");
-        } else if (dateFrom != null && dateTo != null && dateFrom.isAfter(dateTo)) {
-            throw new AppException(
-                    AppErrorCodeMessageEnum.POSITION_SERVICE_DATE_BAD_REQUEST,
-                    "Date from must be before date to");
-        }
-        if (dateFrom == null && dateTo == null) {
-            dateTo = LocalDate.now();
-            dateFrom = dateTo.minusDays(dateRangeLimit);
-        }
-        if (ChronoUnit.DAYS.between(dateFrom, dateTo) > dateRangeLimit) {
-            throw new AppException(
-                    AppErrorCodeMessageEnum.INTERVAL_TOO_LARGE,
-                    dateRangeLimit);
-        }
-        return DateRequest.builder().from(dateFrom).to(dateTo).build();
     }
 
 //    private Pair<DateRequest, DateRequest> getHistoryDates(DateRequest dateRequest) {
