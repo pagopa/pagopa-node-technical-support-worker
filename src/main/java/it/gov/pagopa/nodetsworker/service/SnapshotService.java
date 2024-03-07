@@ -6,7 +6,7 @@ import it.gov.pagopa.nodetsworker.repository.model.PositionPaymentSSEntity;
 import it.gov.pagopa.nodetsworker.resources.mapper.SnapshotMapper;
 import it.gov.pagopa.nodetsworker.resources.response.Metadata;
 import it.gov.pagopa.nodetsworker.resources.response.PaymentResponse;
-import it.gov.pagopa.nodetsworker.resources.response.PositionPaymentSSInfo;
+import it.gov.pagopa.nodetsworker.util.AppDBUtil;
 import it.gov.pagopa.nodetsworker.util.ValidationUtil;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.persistence.EntityManager;
@@ -21,7 +21,6 @@ import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.jboss.logging.Logger;
 
 import java.sql.Date;
-import java.time.Instant;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
@@ -50,38 +49,33 @@ public class SnapshotService {
         DateRequest dateRequest = ValidationUtil.verifyDateRequest(dateFrom, dateTo, dateRangeLimit);
 
         CriteriaBuilder cb = em.getCriteriaBuilder();
-
-        CriteriaQuery<Long> countQuery = cb
-                .createQuery(Long.class);
-        countQuery.select(cb
-                .count(countQuery.from(PositionPaymentSSEntity.class)));
-        Long count = em.createQuery(countQuery)
-                .getSingleResult();
-
         CriteriaQuery<PositionPaymentSSEntity> cr = cb.createQuery(PositionPaymentSSEntity.class);
         Root<PositionPaymentSSEntity> root = cr.from(PositionPaymentSSEntity.class);
         CriteriaQuery<PositionPaymentSSEntity> select = cr.select(root);
-
-        select.where(cb.equal(root.get("paFiscalCode"), paFiscalCode));
-        if(StringUtils.isNotEmpty(noticeNumber)) {
-            select.where(cb.equal(root.get("noticeId"), noticeNumber));
-        }
-        if(StringUtils.isNotEmpty(paymentToken)) {
-            select.where(cb.equal(root.get("paymentToken"), paymentToken));
-        }
 
         List<Predicate> conditionsList = new ArrayList<>();
         Predicate onStart = cb.greaterThanOrEqualTo(root.get("insertedTimestamp").as(Date.class), Date.valueOf(dateRequest.getFrom()));
         Predicate onEnd = cb.lessThanOrEqualTo(root.get("insertedTimestamp").as(Date.class), Date.valueOf(dateRequest.getTo()));
         conditionsList.add(onStart);
         conditionsList.add(onEnd);
+        conditionsList.add(cb.equal(root.get("paFiscalCode"), paFiscalCode));
+        if(StringUtils.isNotEmpty(noticeNumber)) {
+            conditionsList.add(cb.equal(root.get("noticeId"), noticeNumber));
+        }
+        if(StringUtils.isNotEmpty(paymentToken)) {
+            conditionsList.add(cb.equal(root.get("paymentToken"), paymentToken));
+        }
+
         select.where(conditionsList.toArray(new Predicate[]{}));
 
+        select.orderBy(cb.asc(root.get("id")));
+
+        int count = em.createQuery(select).getResultList().size();
         long newPageNumber = pageNumber - 1;
-        long totPage = count / pageSize;
+        long totPage = AppDBUtil.getPageCount(count, (int) pageSize);
 
         TypedQuery<PositionPaymentSSEntity> typedQuery = em.createQuery(select);
-        typedQuery.setFirstResult((int) (pageNumber - 1));
+        typedQuery.setFirstResult((int) (newPageNumber));
         typedQuery.setMaxResults((int) pageSize);
 
         List<PositionPaymentSSEntity> maxResults = typedQuery.getResultList();
@@ -91,7 +85,7 @@ public class SnapshotService {
                 .count(count)
                 .metadata(
                         Metadata.builder()
-                                .pageNumber((int) newPageNumber)
+                                .pageNumber((int) pageNumber)
                                 .pageSize((int) pageSize)
                                 .totPage((int) totPage)
                                 .build()
