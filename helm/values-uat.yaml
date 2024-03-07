@@ -26,6 +26,7 @@ microservice-chart:
     COSMOS_VERIFYKO_ENDPOINT: "https://pagopa-u-weu-nodo-verifyko-cosmos-account.documents.azure.com:443/"
     DATASOURCE_USERNAME: "pp_nodo4_cfg"
     DATASOURCE_URL: "jdbc:postgresql://db-postgres-ndp.u.db-nodo-pagamenti.com:5444/ndpspct?prepareThreshold=0&currentSchema=NODO4_CFG"
+    DB_SERVICE_IDENTIFIER: "NDP004UAT"
     LOG_LEVEL: "INFO"
   envFieldRef:
     APP_NAME: "metadata.labels['app.kubernetes.io/instance']"

@@ -34,6 +34,9 @@ public class SnapshotService implements Serializable {
     @ConfigProperty(name = "date-range-limit")
     Integer dateRangeLimit;
 
+    @ConfigProperty(name = "db.serviceIdentifier")
+    String dbServiceIdentifier;
+
     @PersistenceContext
     EntityManager em;
 
@@ -76,7 +79,7 @@ public class SnapshotService implements Serializable {
         typedQuery.setFirstResult((int) (newPageNumber));
         typedQuery.setMaxResults((int) pageSize);
 
-        List<PositionPaymentSSEntity> maxResults = typedQuery.getResultList();
+        List<PositionPaymentSSEntity> positionPaymentSSEntityList = typedQuery.getResultList();
 
         return PaymentResponse
                 .builder()
@@ -88,7 +91,7 @@ public class SnapshotService implements Serializable {
                                 .totPage((int) totPage)
                                 .build()
                 )
-                .data(snapshotMapper.toPositionPaymentSSInfo(maxResults))
+                .data(snapshotMapper.toPositionPaymentSSInfoList(positionPaymentSSEntityList))
                 .dateFrom(dateFrom)
                 .dateTo(dateTo)
                 .build();

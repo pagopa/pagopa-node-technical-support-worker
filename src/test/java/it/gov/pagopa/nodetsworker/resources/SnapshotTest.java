@@ -380,7 +380,7 @@ class SnapshotTest {
     assertThat(res.getDateTo(), equalTo(dateTo));
     assertThat(res.getData().size(), equalTo(1));
     assertThat(res.getData(), hasItem(anyOf(
-            hasProperty("noticeId", equalTo("312116313084213084"))
+            hasProperty("noticeNumber", equalTo("312116313084213084"))
     )));
   }
 

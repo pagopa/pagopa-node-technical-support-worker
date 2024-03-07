@@ -1,5 +1,6 @@
 package it.gov.pagopa.nodetsworker.resources.response;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.*;
 
 import java.time.Instant;
@@ -11,8 +12,8 @@ import java.time.Instant;
 @Builder
 public class PositionPaymentSSInfo {
 
-    private String paFiscalCode;
-    private String noticeId;
+    private String organizationFiscalCode;
+    private String noticeNumber;
     private String creditorReferenceId;
     private String paymentToken;
     private String status;
@@ -20,5 +21,6 @@ public class PositionPaymentSSInfo {
     private Instant updatedTimestamp;
     private String insertedBy;
     private String updatedBy;
+    private String serviceIdentifier;
 
 }
