@@ -2,7 +2,6 @@ package it.gov.pagopa.nodetsworker.resources.response;
 
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import lombok.*;
-import lombok.extern.jackson.Jacksonized;
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
 
 import java.time.LocalDate;
@@ -13,7 +12,6 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-@Jacksonized
 @JsonPropertyOrder({"metadata", "count", "data"})
 public class PaymentResponse {
 

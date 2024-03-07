@@ -16,6 +16,8 @@ public class AppConstantTestHelper {
   public static final String SP04_NN = "/organizations/%s/noticeNumber/%s/paymentToken/%s";
   public static final String SP04_IUV = "/organizations/%s/iuv/%s/ccp/%s";
 
+  public static final String POS_PAY_SS_INFO_PATH = "snapshot/organizations/%s";
+
   public static final String PA_CODE = "12345678900";
   public static final String outcomeOK = "OK";
   public static final String outcomeKO = "KO";

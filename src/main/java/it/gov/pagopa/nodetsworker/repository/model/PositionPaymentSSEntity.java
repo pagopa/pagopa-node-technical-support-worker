@@ -42,6 +42,9 @@ public class PositionPaymentSSEntity {
     @Column(name = "UPDATED_TIMESTAMP")
     private Instant updatedTimestamp;
 
+    @Column(name = "FK_POSITION_PAYMENT")
+    private Long fkPositionPayment;
+
     @Column(name = "INSERTED_BY")
     private String insertedBy;
 
