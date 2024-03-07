@@ -29,53 +29,53 @@ public class CosmosResource implements QuarkusTestResourceLifecycleManager {
   public Map<String, String> start() {
 //                DockerImageName.parse("mcr.microsoft.com/cosmosdb/linux/azure-cosmos-emulator"))
 
-//    DockerImageName pagoPAImage = DockerImageName.parse("ghcr.io/pagopa/cosmosdb-emulator:latest")
-//            .asCompatibleSubstituteFor("mcr.microsoft.com/cosmosdb/linux/azure-cosmos-emulator");
-//
-////    DockerImageName pagoPAImage = DockerImageName.parse("mcr.microsoft.com/cosmosdb/linux/azure-cosmos-emulator"));
-//
-//    cosmos =
-//        new CosmosDBEmulatorContainer(pagoPAImage)
-//            .withEnv(
-//                "AZURE_COSMOS_EMULATOR_IP_ADDRESS_OVERRIDE",
-//                InetAddress.getLocalHost().getHostAddress())
-//            .withEnv("AZURE_COSMOS_EMULATOR_PARTITION_COUNT", "3")
-//            .withEnv("AZURE_COSMOS_EMULATOR_ENABLE_DATA_PERSISTENCE", "false")
-//            .withExposedPorts(exposedPorts);
-//
-//    cosmos.start();
-//
-//    CosmosResource.startTcpProxy(exposedPorts);
-//
-//    Path keyStoreFile = File.createTempFile("azure-cosmos-emulator", ".keystore").toPath();
-//    KeyStore keyStore = cosmos.buildNewKeyStore();
-//    keyStore.store(
-//        new FileOutputStream(keyStoreFile.toFile()), cosmos.getEmulatorKey().toCharArray());
-//
-//    System.setProperty("javax.net.ssl.trustStore", keyStoreFile.toString());
-//    System.setProperty("javax.net.ssl.trustStorePassword", cosmos.getEmulatorKey());
-//    System.setProperty("javax.net.ssl.trustStoreType", "PKCS12");
+    DockerImageName pagoPAImage = DockerImageName.parse("ghcr.io/pagopa/cosmosdb-emulator:latest")
+            .asCompatibleSubstituteFor("mcr.microsoft.com/cosmosdb/linux/azure-cosmos-emulator");
+
+//    DockerImageName pagoPAImage = DockerImageName.parse("mcr.microsoft.com/cosmosdb/linux/azure-cosmos-emulator"));
+
+    cosmos =
+        new CosmosDBEmulatorContainer(pagoPAImage)
+            .withEnv(
+                "AZURE_COSMOS_EMULATOR_IP_ADDRESS_OVERRIDE",
+                InetAddress.getLocalHost().getHostAddress())
+            .withEnv("AZURE_COSMOS_EMULATOR_PARTITION_COUNT", "3")
+            .withEnv("AZURE_COSMOS_EMULATOR_ENABLE_DATA_PERSISTENCE", "false")
+            .withExposedPorts(exposedPorts);
+
+    cosmos.start();
+
+    CosmosResource.startTcpProxy(exposedPorts);
+
+    Path keyStoreFile = File.createTempFile("azure-cosmos-emulator", ".keystore").toPath();
+    KeyStore keyStore = cosmos.buildNewKeyStore();
+    keyStore.store(
+        new FileOutputStream(keyStoreFile.toFile()), cosmos.getEmulatorKey().toCharArray());
+
+    System.setProperty("javax.net.ssl.trustStore", keyStoreFile.toString());
+    System.setProperty("javax.net.ssl.trustStorePassword", cosmos.getEmulatorKey());
+    System.setProperty("javax.net.ssl.trustStoreType", "PKCS12");
 
     Map<String, String> conf = new HashMap<>();
-//    conf.put("mockserver.cosmos.endpoint", cosmos.getEmulatorEndpoint());
-//    conf.put("mockserver.cosmos.key", cosmos.getEmulatorKey());
+    conf.put("mockserver.cosmos.endpoint", cosmos.getEmulatorEndpoint());
+    conf.put("mockserver.cosmos.key", cosmos.getEmulatorKey());
     return conf;
   }
 
   @Override
   public void stop() {
-//    cosmos.stop();
-//    startedProxies.forEach(p -> p.shutdown());
+    cosmos.stop();
+    startedProxies.forEach(p -> p.shutdown());
   }
 
   private static void startTcpProxy(Integer... ports) {
-//    for (Integer port : ports) {
-//      StaticTcpProxyConfig tcpProxyConfig =
-//          new StaticTcpProxyConfig(port, cosmos.getHost(), cosmos.getMappedPort(port));
-//      tcpProxyConfig.setWorkerCount(1);
-//      TcpProxy tcpProxy = new TcpProxy(tcpProxyConfig);
-//      tcpProxy.start();
-//      startedProxies.add(tcpProxy);
-//    }
+    for (Integer port : ports) {
+      StaticTcpProxyConfig tcpProxyConfig =
+          new StaticTcpProxyConfig(port, cosmos.getHost(), cosmos.getMappedPort(port));
+      tcpProxyConfig.setWorkerCount(1);
+      TcpProxy tcpProxy = new TcpProxy(tcpProxyConfig);
+      tcpProxy.start();
+      startedProxies.add(tcpProxy);
+    }
   }
 }

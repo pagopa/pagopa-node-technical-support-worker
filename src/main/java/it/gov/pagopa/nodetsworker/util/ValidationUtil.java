@@ -9,6 +9,8 @@ import java.time.temporal.ChronoUnit;
 
 public class ValidationUtil {
 
+    private ValidationUtil() {}
+
     /**
      * Check dates validity
      *

@@ -1,11 +1,9 @@
 package it.gov.pagopa.nodetsworker.resources;
 
-import io.smallrye.mutiny.Uni;
 import it.gov.pagopa.nodetsworker.models.ProblemJson;
 import it.gov.pagopa.nodetsworker.resources.response.PaymentResponse;
 import it.gov.pagopa.nodetsworker.service.SnapshotService;
 import jakarta.enterprise.context.ApplicationScoped;
-import jakarta.inject.Inject;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
 import jakarta.ws.rs.*;
@@ -24,8 +22,11 @@ import java.time.LocalDate;
 @ApplicationScoped
 public class SnapshotResource implements Serializable {
 
-    @Inject
-    SnapshotService snapshotService;
+    private final SnapshotService snapshotService;
+
+    public SnapshotResource(SnapshotService snapshotService) {
+        this.snapshotService = snapshotService;
+    }
 
     @APIResponses(
             value = {

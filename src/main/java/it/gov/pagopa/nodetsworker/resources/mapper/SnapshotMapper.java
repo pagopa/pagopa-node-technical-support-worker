@@ -15,7 +15,5 @@ public interface SnapshotMapper {
 
     List<PositionPaymentSSInfo> toPositionPaymentSSInfo(List<PositionPaymentSSEntity> fdrGetPaymentDto);
 
-//    Metadata toMetadata(MetadataDto metadataDto);
-
 }
 
