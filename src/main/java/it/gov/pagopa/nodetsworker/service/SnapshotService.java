@@ -18,8 +18,8 @@ import jakarta.persistence.criteria.Predicate;
 import jakarta.persistence.criteria.Root;
 import jakarta.transaction.Transactional;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
-import org.jboss.logging.Logger;
 
+import java.io.Serializable;
 import java.sql.Date;
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -27,9 +27,8 @@ import java.util.List;
 
 @ApplicationScoped
 @Transactional
-public class SnapshotService {
+public class SnapshotService implements Serializable {
 
-    private final Logger log;
     private final SnapshotMapper snapshotMapper;
 
     @ConfigProperty(name = "date-range-limit")
@@ -38,8 +37,7 @@ public class SnapshotService {
     @PersistenceContext
     EntityManager em;
 
-    public SnapshotService(Logger log, SnapshotMapper snapshotMapper) {
-        this.log = log;
+    public SnapshotService(SnapshotMapper snapshotMapper) {
         this.snapshotMapper = snapshotMapper;
     }
 
