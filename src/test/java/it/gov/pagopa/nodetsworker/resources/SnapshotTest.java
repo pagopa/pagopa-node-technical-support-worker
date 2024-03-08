@@ -16,12 +16,16 @@ import static io.restassured.RestAssured.given;
 import static it.gov.pagopa.nodetsworker.util.AppConstantTestHelper.*;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
+import static org.hamcrest.Matchers.hasProperty;
 
 @QuarkusTest
 class SnapshotTest {
 
   @ConfigProperty(name = "date-range-limit")
   Integer dateRangeLimit;
+
+  @ConfigProperty(name = "db.serviceIdentifier")
+  String dbServiceIdentifier;
 
   @SneakyThrows
   @Test
@@ -176,7 +180,6 @@ class SnapshotTest {
   @DisplayName("Wrong PA")
   void paWrong() {
     String noticeNumber = String.valueOf(Instant.now().toEpochMilli());
-    String token = "pt_" + noticeNumber;
     StringBuilder url = new StringBuilder(POS_PAY_SS_INFO_PATH.formatted("PaWrong"));
 
     LocalDate dateFrom = LocalDate.of(2023, 1, 30);
@@ -207,7 +210,6 @@ class SnapshotTest {
   @Test
   @DisplayName("snapshot test ok")
   void ok() {
-    String noticeNumber = String.valueOf(Instant.now().toEpochMilli());
     StringBuilder url = new StringBuilder(POS_PAY_SS_INFO_PATH.formatted(PA_CODE));
 
     LocalDate dateFrom = LocalDate.of(2023, 1, 30);
@@ -234,7 +236,8 @@ class SnapshotTest {
     assertThat(res.getDateTo(), equalTo(dateTo));
     assertThat(res.getData(), hasItem(anyOf(
             hasProperty("status", equalTo("CANCELLED")),
-            hasProperty("insertedBy", equalTo("nodoInviaCarrelloRPT"))
+            hasProperty("insertedBy", equalTo("nodoInviaCarrelloRPT")),
+            hasProperty("serviceIdentifier", equalTo(dbServiceIdentifier))
     )));
   }
 
@@ -242,7 +245,6 @@ class SnapshotTest {
   @Test
   @DisplayName("No records found for future dates")
   void datesInFuture() {
-    String noticeNumber = String.valueOf(Instant.now().toEpochMilli());
     StringBuilder url = new StringBuilder(POS_PAY_SS_INFO_PATH.formatted(PA_CODE));
 
     LocalDate dateFrom = LocalDate.of(2024, 1, 30);
@@ -275,7 +277,6 @@ class SnapshotTest {
   @DisplayName("OK pagination 1 record per page")
   void oneResultPerPage() {
     String noticeNumber = String.valueOf(Instant.now().toEpochMilli());
-    String token = "pt_" + noticeNumber;
     StringBuilder url = new StringBuilder(POS_PAY_SS_INFO_PATH.formatted(PA_CODE));
 
     LocalDate dateFrom = LocalDate.of(2023, 1, 30);
@@ -310,7 +311,6 @@ class SnapshotTest {
   @Test
   @DisplayName("Get third page and check paymentToken")
   void rightPaymentTokenInChosenPage() {
-    String noticeNumber = String.valueOf(Instant.now().toEpochMilli());
     StringBuilder url = new StringBuilder(POS_PAY_SS_INFO_PATH.formatted(PA_CODE));
 
     LocalDate dateFrom = LocalDate.of(2023, 1, 30);
@@ -344,7 +344,8 @@ class SnapshotTest {
     assertThat(res.getData().size(), equalTo(1));
     assertThat(res.getData(), hasItem(anyOf(
             hasProperty("paymentToken", equalTo("9360bcf8d2ad410080241a623f05002d")),
-            hasProperty("status", equalTo("CANCELLED_NORPT"))
+            hasProperty("status", equalTo("CANCELLED_NORPT")),
+            hasProperty("serviceIdentifier", equalTo(dbServiceIdentifier))
     )));
   }
 
@@ -380,7 +381,8 @@ class SnapshotTest {
     assertThat(res.getDateTo(), equalTo(dateTo));
     assertThat(res.getData().size(), equalTo(1));
     assertThat(res.getData(), hasItem(anyOf(
-            hasProperty("noticeNumber", equalTo("312116313084213084"))
+            hasProperty("noticeNumber", equalTo("312116313084213084")),
+            hasProperty("serviceIdentifier", equalTo(dbServiceIdentifier))
     )));
   }
 
@@ -416,7 +418,8 @@ class SnapshotTest {
     assertThat(res.getDateTo(), equalTo(dateTo));
     assertThat(res.getData().size(), equalTo(1));
     assertThat(res.getData(), hasItem(anyOf(
-            hasProperty("paymentToken", equalTo("e2d633ae0dea4264872d6920102f0f57"))
+            hasProperty("paymentToken", equalTo("e2d633ae0dea4264872d6920102f0f57")),
+            hasProperty("serviceIdentifier", equalTo(dbServiceIdentifier))
     )));
   }
 

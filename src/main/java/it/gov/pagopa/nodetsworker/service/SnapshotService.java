@@ -34,9 +34,6 @@ public class SnapshotService implements Serializable {
     @ConfigProperty(name = "date-range-limit")
     Integer dateRangeLimit;
 
-    @ConfigProperty(name = "db.serviceIdentifier")
-    String dbServiceIdentifier;
-
     @PersistenceContext
     EntityManager em;
 
