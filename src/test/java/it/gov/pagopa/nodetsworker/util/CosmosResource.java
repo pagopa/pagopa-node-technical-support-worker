@@ -30,8 +30,7 @@ public class CosmosResource implements QuarkusTestResourceLifecycleManager {
   public Map<String, String> start() {
 //                DockerImageName.parse("mcr.microsoft.com/cosmosdb/linux/azure-cosmos-emulator"))
 
-    DockerImageName pagoPAImage = DockerImageName.parse("ghcr.io/pagopa/cosmosdb-emulator:latest")
-            .asCompatibleSubstituteFor("mcr.microsoft.com/cosmosdb/linux/azure-cosmos-emulator");
+    DockerImageName pagoPAImage = DockerImageName.parse("mcr.microsoft.com/cosmosdb/linux/azure-cosmos-emulator");
 
 //    DockerImageName pagoPAImage = DockerImageName.parse("mcr.microsoft.com/cosmosdb/linux/azure-cosmos-emulator"));
 
