@@ -6,13 +6,12 @@ import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.MappingConstants;
-import org.mapstruct.factory.Mappers;
 
 import java.io.Serializable;
 import java.util.List;
 
 @Mapper(componentModel = MappingConstants.ComponentModel.JAKARTA)
-public abstract class SnapshotMapper {
+public abstract class SnapshotMapper implements Serializable {
 
     @ConfigProperty(name = "db.serviceIdentifier")
     String dbServiceIdentifier;

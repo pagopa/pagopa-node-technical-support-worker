@@ -1,6 +1,5 @@
 package it.gov.pagopa.nodetsworker.resources.response;
 
-import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.*;
 
 import java.time.Instant;
