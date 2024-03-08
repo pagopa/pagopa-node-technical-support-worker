@@ -541,7 +541,7 @@
           "data" : {
             "type" : "array",
             "items" : {
-              "$ref" : "#/components/schemas/PositionPaymentStatusSnapshotInfo"
+              "$ref" : "#/components/schemas/PositionPaymentSSInfo"
             }
           },
           "dateFrom" : {
@@ -552,13 +552,13 @@
           }
         }
       },
-      "PositionPaymentStatusSnapshotInfo" : {
+      "PositionPaymentSSInfo" : {
         "type" : "object",
         "properties" : {
-          "paFiscalCode" : {
+          "organizationFiscalCode" : {
             "type" : "string"
           },
-          "noticeId" : {
+          "noticeNumber" : {
             "type" : "string"
           },
           "creditorReferenceId" : {
@@ -580,6 +580,9 @@
             "type" : "string"
           },
           "updatedBy" : {
+            "type" : "string"
+          },
+          "serviceIdentifier" : {
             "type" : "string"
           }
         }
