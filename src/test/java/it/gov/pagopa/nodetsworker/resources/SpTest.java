@@ -9,6 +9,7 @@ import io.restassured.RestAssured;
 import io.restassured.common.mapper.TypeRef;
 import io.restassured.filter.log.RequestLoggingFilter;
 import io.restassured.filter.log.ResponseLoggingFilter;
+import it.gov.pagopa.nodetsworker.exceptions.AppException;
 import it.gov.pagopa.nodetsworker.models.PaymentAttemptInfo;
 import it.gov.pagopa.nodetsworker.repository.CosmosBizEventClient;
 import it.gov.pagopa.nodetsworker.repository.CosmosNegBizEventClient;
@@ -39,8 +40,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.greaterThan;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 @Slf4j
 class SpTest {
@@ -408,6 +408,27 @@ class SpTest {
     assertThat(o.getChannelId(), equalTo(CHANNEL_CODE));
     assertThat(o.getBrokerPspId(), equalTo(INT_PSP_CODE));
     assertThat(o.getPaymentToken(), equalTo(ccp));
+  }
+
+  @Test
+  @DisplayName("sp04 by ci,iuv,ccp with negative")
+  void badDates() {
+    String iuv = String.valueOf(Instant.now().toEpochMilli());
+    String ccp = "ccp_" + iuv;
+    String url = SP04_IUV.formatted(PA_CODE, iuv, ccp);
+
+    npi.setPaymentToken(ccp);
+    dp.setIuv(iuv);
+
+    when(streamBiz.toList()).thenReturn(Arrays.asList(
+    ));
+    when(streamVerify.toList()).thenReturn(Arrays.asList(
+    ));
+    when(streamBizneg.toList()).thenReturn(Arrays.asList(
+            new NegativeBizEvent("", "", "","",true,dp,creditor,psp,null,npi,null,null,10l,null)
+    ));
+
+    assertThat(ws.getAttemptByIUVAndCCP(PA_CODE, iuv,ccp, LocalDate.now(), LocalDate.now().minusYears(1)),doThrow(AppException.class));
   }
 
   private void setFieldValue(Object obj,String field,Object value) throws NoSuchFieldException, IllegalAccessException {
