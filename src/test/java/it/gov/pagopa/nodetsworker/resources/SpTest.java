@@ -9,6 +9,7 @@ import io.restassured.RestAssured;
 import io.restassured.common.mapper.TypeRef;
 import io.restassured.filter.log.RequestLoggingFilter;
 import io.restassured.filter.log.ResponseLoggingFilter;
+import it.gov.pagopa.nodetsworker.exceptions.AppErrorCodeMessageEnum;
 import it.gov.pagopa.nodetsworker.exceptions.AppException;
 import it.gov.pagopa.nodetsworker.models.PaymentAttemptInfo;
 import it.gov.pagopa.nodetsworker.repository.CosmosBizEventClient;
@@ -21,6 +22,7 @@ import it.gov.pagopa.nodetsworker.util.AppConstantTestHelper;
 import it.gov.pagopa.nodetsworker.util.Util;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
+import org.hamcrest.Matcher;
 import org.jboss.logging.Logger;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -428,7 +430,11 @@ class SpTest {
             new NegativeBizEvent("", "", "","",true,dp,creditor,psp,null,npi,null,null,10l,null)
     ));
 
-    assertThat(ws.getAttemptByIUVAndCCP(PA_CODE, iuv,ccp, LocalDate.now(), LocalDate.now().minusYears(1)),doThrow(AppException.class));
+    try {
+      ws.getAttemptByIUVAndCCP(PA_CODE, iuv, ccp, LocalDate.now(), LocalDate.now().minusYears(1));
+    }catch (AppException e){
+      assertThat(e.getCodeMessage(),equalTo(AppErrorCodeMessageEnum.POSITION_SERVICE_DATE_BAD_REQUEST));
+    }
   }
 
   private void setFieldValue(Object obj,String field,Object value) throws NoSuchFieldException, IllegalAccessException {
