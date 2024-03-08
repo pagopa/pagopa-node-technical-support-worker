@@ -1,40 +1,36 @@
 package it.gov.pagopa.nodetsworker.resources;
 
 import com.azure.cosmos.CosmosClient;
-import com.azure.cosmos.CosmosClientBuilder;
 import com.azure.cosmos.CosmosContainer;
 import com.azure.cosmos.CosmosDatabase;
-import com.azure.cosmos.models.CosmosItemRequestOptions;
 import com.azure.cosmos.models.SqlQuerySpec;
 import com.azure.cosmos.util.CosmosPagedIterable;
-import io.quarkus.test.junit.QuarkusTest;
 import io.restassured.RestAssured;
 import io.restassured.common.mapper.TypeRef;
 import io.restassured.filter.log.RequestLoggingFilter;
 import io.restassured.filter.log.ResponseLoggingFilter;
 import it.gov.pagopa.nodetsworker.models.PaymentAttemptInfo;
-import it.gov.pagopa.nodetsworker.models.PaymentInfo;
-import it.gov.pagopa.nodetsworker.repository.CosmosBizEventRepository;
+import it.gov.pagopa.nodetsworker.repository.CosmosBizEventClient;
 import it.gov.pagopa.nodetsworker.repository.CosmosNegBizEventClient;
 import it.gov.pagopa.nodetsworker.repository.CosmosVerifyKOEventClient;
 import it.gov.pagopa.nodetsworker.repository.model.*;
 import it.gov.pagopa.nodetsworker.resources.response.TransactionResponse;
+import it.gov.pagopa.nodetsworker.service.WorkerService;
 import it.gov.pagopa.nodetsworker.util.AppConstantTestHelper;
 import it.gov.pagopa.nodetsworker.util.Util;
-import jakarta.enterprise.context.ApplicationScoped;
-import jakarta.enterprise.inject.Produces;
-import jakarta.inject.Named;
 import lombok.SneakyThrows;
-import org.eclipse.microprofile.config.inject.ConfigProperty;
+import lombok.extern.slf4j.Slf4j;
+import org.jboss.logging.Logger;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
 
+import java.lang.reflect.Field;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.util.Arrays;
-import java.util.Random;
+import java.util.Optional;
 import java.util.stream.Stream;
 
 import static io.restassured.RestAssured.given;
@@ -43,66 +39,105 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.greaterThan;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-@QuarkusTest
-class Sp03Test {
+@Slf4j
+class SpTest {
+
+  WorkerService ws = new WorkerService();
+  CosmosVerifyKOEventClient verifyKOEventClient = new CosmosVerifyKOEventClient();
+  CosmosBizEventClient positiveBizClient = new CosmosBizEventClient();
+  CosmosNegBizEventClient negativeBizClient = new CosmosNegBizEventClient();
 
   private Psp psp = new Psp(INT_PSP_CODE,CHANNEL_CODE,PSP_CODE,"","","","");
   private DebtorPosition dp = new DebtorPosition("","","");
   private it.gov.pagopa.nodetsworker.repository.model.PaymentInfo pi = new it.gov.pagopa.nodetsworker.repository.model.PaymentInfo("","","","","","", BigDecimal.ONE,BigDecimal.ZERO,BigDecimal.ONE,"","",1l,"","","",null,"");
-  private it.gov.pagopa.nodetsworker.repository.model.NegativePaymentInfo npi = new it.gov.pagopa.nodetsworker.repository.model.NegativePaymentInfo("",LocalDate.now(),"", BigDecimal.ONE,10l,"","","",null);
+  private NegativePaymentInfo npi = new NegativePaymentInfo("",LocalDate.now(),"", BigDecimal.ONE,10l,"","","",null);
   private Fault fb = new Fault("FAULT_CODE","",10000l,"");
   private Creditor creditor = new Creditor(PA_CODE,"","","","");
+//
+  private static Stream streamVerify = mock(Stream.class);
+  private static Stream streamBiz = mock(Stream.class);
+  private static Stream streamBizneg = mock(Stream.class);
+//    @Produces
+//    @Named("verifyKo")
+//    @ApplicationScoped
+//    CosmosClient verifyKo() {
+//      CosmosPagedIterable cosmosPagedIterable = Mockito.mock(CosmosPagedIterable.class);
+//      CosmosDatabase cosmosDatabase = Mockito.mock(CosmosDatabase.class);
+//      CosmosContainer cosmosContainer = Mockito.mock(CosmosContainer.class);
+//      CosmosClient cosmosClient = Mockito.mock(CosmosClient.class);
+//      when(cosmosPagedIterable.stream()).thenReturn(streamVerify);
+//      when(cosmosContainer.queryItems(any(SqlQuerySpec.class),any(),any())).thenReturn(cosmosPagedIterable);
+//      when(cosmosDatabase.getContainer(CosmosVerifyKOEventClient.tablename)).thenReturn(cosmosContainer);
+//      when(cosmosClient.getDatabase(CosmosVerifyKOEventClient.dbname)).thenReturn(cosmosDatabase);
+//      return cosmosClient;
+//    }
+//
+//  @Produces
+//    @Named("bizneg")
+//    @ApplicationScoped
+//    CosmosClient negbizClient() {
+//      CosmosPagedIterable cosmosPagedIterable = Mockito.mock(CosmosPagedIterable.class);
+//      CosmosDatabase cosmosDatabase = Mockito.mock(CosmosDatabase.class);
+//      CosmosContainer cosmosContainer = Mockito.mock(CosmosContainer.class);
+//      CosmosClient cosmosClient = Mockito.mock(CosmosClient.class);
+//      when(cosmosPagedIterable.stream()).thenReturn(streamBizneg);
+//      when(cosmosContainer.queryItems(any(SqlQuerySpec.class),any(),any())).thenReturn(cosmosPagedIterable);
+//      when(cosmosDatabase.getContainer(CosmosNegBizEventClient.tablename)).thenReturn(cosmosContainer);
+//      when(cosmosClient.getDatabase(CosmosNegBizEventClient.dbname)).thenReturn(cosmosDatabase);
+//      return cosmosClient;
+//    }
+//
+//    @Produces
+//    @Named("biz")
+//    @ApplicationScoped
+//    CosmosClient biz() {
+//      CosmosPagedIterable cosmosPagedIterable = Mockito.mock(CosmosPagedIterable.class);
+//      CosmosDatabase cosmosDatabase = Mockito.mock(CosmosDatabase.class);
+//      CosmosContainer cosmosContainer = Mockito.mock(CosmosContainer.class);
+//      CosmosClient cosmosClient = Mockito.mock(CosmosClient.class);
+//      when(cosmosPagedIterable.stream()).thenReturn(streamBiz);
+//      when(cosmosContainer.queryItems(any(SqlQuerySpec.class),any(),any())).thenReturn(cosmosPagedIterable);
+//      when(cosmosDatabase.getContainer(CosmosBizEventRepository.tablename)).thenReturn(cosmosContainer);
+//      when(cosmosClient.getDatabase(CosmosBizEventRepository.dbname)).thenReturn(cosmosDatabase);
+//      return cosmosClient;
+//    }
 
-  private static Stream streamVerify = Mockito.mock(Stream.class);
-  private static Stream streamBiz = Mockito.mock(Stream.class);
-  private static Stream streamBizneg = Mockito.mock(Stream.class);
+  @BeforeEach
+  public void setUp() throws NoSuchFieldException, IllegalAccessException {
+    CosmosDatabase cosmosDatabase = mock(CosmosDatabase.class);
+    CosmosPagedIterable cosmosPagedIterableBiz = mock(CosmosPagedIterable.class);
+    CosmosPagedIterable cosmosPagedIterableNegBiz = mock(CosmosPagedIterable.class);
+    CosmosPagedIterable cosmosPagedIterableVerKO = mock(CosmosPagedIterable.class);
 
-    @Produces
-    @Named("verifyKo")
-    @ApplicationScoped
-    CosmosClient verifyKo() {
-      CosmosPagedIterable cosmosPagedIterable = Mockito.mock(CosmosPagedIterable.class);
-      CosmosDatabase cosmosDatabase = Mockito.mock(CosmosDatabase.class);
-      CosmosContainer cosmosContainer = Mockito.mock(CosmosContainer.class);
-      CosmosClient cosmosClient = Mockito.mock(CosmosClient.class);
-      when(cosmosPagedIterable.stream()).thenReturn(streamVerify);
-      when(cosmosContainer.queryItems(any(SqlQuerySpec.class),any(),any())).thenReturn(cosmosPagedIterable);
-      when(cosmosDatabase.getContainer(CosmosVerifyKOEventClient.tablename)).thenReturn(cosmosContainer);
-      when(cosmosClient.getDatabase(CosmosVerifyKOEventClient.dbname)).thenReturn(cosmosDatabase);
-      return cosmosClient;
-    }
+    CosmosContainer cosmosContainerBiz = mock(CosmosContainer.class);
+    CosmosContainer cosmosContainerNegBiz = mock(CosmosContainer.class);
+    CosmosContainer cosmosContainerVerKO = mock(CosmosContainer.class);
+    CosmosClient cosmosClient = mock(CosmosClient.class);
+    when(cosmosPagedIterableBiz.stream()).thenReturn(streamBiz);
+    when(cosmosPagedIterableNegBiz.stream()).thenReturn(streamBizneg);
+    when(cosmosPagedIterableVerKO.stream()).thenReturn(streamVerify);
+    when(cosmosContainerNegBiz.queryItems(any(SqlQuerySpec.class),any(),any())).thenReturn(cosmosPagedIterableNegBiz);
+    when(cosmosContainerBiz.queryItems(any(SqlQuerySpec.class),any(),any())).thenReturn(cosmosPagedIterableBiz);
+    when(cosmosContainerVerKO.queryItems(any(SqlQuerySpec.class),any(),any())).thenReturn(cosmosPagedIterableVerKO);
+    when(cosmosClient.getDatabase(any())).thenReturn(cosmosDatabase);
+    when(cosmosDatabase.getContainer(CosmosNegBizEventClient.tablename)).thenReturn(cosmosContainerNegBiz);
+    when(cosmosDatabase.getContainer(CosmosBizEventClient.tablename)).thenReturn(cosmosContainerBiz);
+    when(cosmosDatabase.getContainer(CosmosVerifyKOEventClient.tablename)).thenReturn(cosmosContainerVerKO);
 
-  @Produces
-    @Named("bizneg")
-    @ApplicationScoped
-    CosmosClient negbizClient() {
-      CosmosPagedIterable cosmosPagedIterable = Mockito.mock(CosmosPagedIterable.class);
-      CosmosDatabase cosmosDatabase = Mockito.mock(CosmosDatabase.class);
-      CosmosContainer cosmosContainer = Mockito.mock(CosmosContainer.class);
-      CosmosClient cosmosClient = Mockito.mock(CosmosClient.class);
-      when(cosmosPagedIterable.stream()).thenReturn(streamBizneg);
-      when(cosmosContainer.queryItems(any(SqlQuerySpec.class),any(),any())).thenReturn(cosmosPagedIterable);
-      when(cosmosDatabase.getContainer(CosmosNegBizEventClient.tablename)).thenReturn(cosmosContainer);
-      when(cosmosClient.getDatabase(CosmosNegBizEventClient.dbname)).thenReturn(cosmosDatabase);
-      return cosmosClient;
-    }
-
-    @Produces
-    @Named("biz")
-    @ApplicationScoped
-    CosmosClient biz() {
-      CosmosPagedIterable cosmosPagedIterable = Mockito.mock(CosmosPagedIterable.class);
-      CosmosDatabase cosmosDatabase = Mockito.mock(CosmosDatabase.class);
-      CosmosContainer cosmosContainer = Mockito.mock(CosmosContainer.class);
-      CosmosClient cosmosClient = Mockito.mock(CosmosClient.class);
-      when(cosmosPagedIterable.stream()).thenReturn(streamBiz);
-      when(cosmosContainer.queryItems(any(SqlQuerySpec.class),any(),any())).thenReturn(cosmosPagedIterable);
-      when(cosmosDatabase.getContainer(CosmosBizEventRepository.tablename)).thenReturn(cosmosContainer);
-      when(cosmosClient.getDatabase(CosmosBizEventRepository.dbname)).thenReturn(cosmosDatabase);
-      return cosmosClient;
-    }
+    setFieldValue(ws,"dateRangeLimit",7);
+    setFieldValue(ws,"verifyKOEventClient",verifyKOEventClient);
+    setFieldValue(ws,"positiveBizClient",positiveBizClient);
+    setFieldValue(ws,"negativeBizClient",negativeBizClient);
+    setFieldValue(verifyKOEventClient,"client",cosmosClient);
+    setFieldValue(positiveBizClient,"client",cosmosClient);
+    setFieldValue(negativeBizClient,"client",cosmosClient);
+    setFieldValue(negativeBizClient,"log",mock(Logger.class));
+    setFieldValue(positiveBizClient,"log",mock(Logger.class));
+    setFieldValue(verifyKOEventClient,"log",mock(Logger.class));
+  }
 
   @SneakyThrows
   @Test
@@ -123,18 +158,10 @@ class Sp03Test {
             new NegativeBizEvent("", "", "","",true,dp,creditor,psp,null,npi,null,null,10l,null)
     ));
 
-    TransactionResponse res =
-        given()
-            .param("dateFrom", Util.format(LocalDate.now().minusDays(2)))
-            .param("dateTo", Util.format(LocalDate.now().plusDays(2)))
-            .when()
-            .get(url)
-            .then()
-            .statusCode(200)
-            .extract()
-            .as(new TypeRef<TransactionResponse<PaymentInfo>>() {});
+
+    TransactionResponse res = ws.getInfoByNoticeNumber(PA_CODE, "", Optional.empty(), LocalDate.now(), LocalDate.now());
     assertThat(res.getPayments().size(), greaterThan(0));
-    PaymentInfo o = (PaymentInfo) res.getPayments().get(0);
+    it.gov.pagopa.nodetsworker.models.PaymentInfo o = (it.gov.pagopa.nodetsworker.models.PaymentInfo) res.getPayments().get(0);
     assertThat(o.getNoticeNumber(), equalTo(noticeNumber));
     assertThat(o.getOrganizationFiscalCode(), equalTo(PA_CODE));
     assertThat(o.getOutcome(), equalTo(outcomeKO));
@@ -160,25 +187,16 @@ class Sp03Test {
     ));
     when(streamBizneg.toList()).thenReturn(Arrays.asList());
 
-    TransactionResponse res =
-            given()
-                    .param("dateFrom", Util.format(LocalDate.now().minusDays(2)))
-                    .param("dateTo", Util.format(LocalDate.now().plusDays(2)))
-                    .when()
-                    .get(url)
-                    .then()
-                    .statusCode(200)
-                    .extract()
-                    .as(new TypeRef<TransactionResponse<PaymentInfo>>() {});
+    TransactionResponse res = ws.getInfoByNoticeNumber(PA_CODE, "", Optional.empty(), LocalDate.now(), LocalDate.now());
     assertThat(res.getPayments().size(), equalTo(2));
-    PaymentInfo o = (PaymentInfo) res.getPayments().get(0);
+    it.gov.pagopa.nodetsworker.models.PaymentInfo o = (it.gov.pagopa.nodetsworker.models.PaymentInfo) res.getPayments().get(0);
     assertThat(o.getNoticeNumber(), equalTo(noticeNumber));
     assertThat(o.getOrganizationFiscalCode(), equalTo(PA_CODE));
     assertThat(o.getPspId(), equalTo(PSP_CODE));
     assertThat(o.getChannelId(), equalTo(CHANNEL_CODE));
     assertThat(o.getBrokerPspId(), equalTo(INT_PSP_CODE));
     assertThat(o.getFaultBean().getFaultCode(), equalTo("FAULT_CODE"));
-    PaymentInfo o2 = (PaymentInfo) res.getPayments().get(1);
+    it.gov.pagopa.nodetsworker.models.PaymentInfo o2 = (it.gov.pagopa.nodetsworker.models.PaymentInfo) res.getPayments().get(1);
     assertThat(o2.getNoticeNumber(), equalTo(noticeNumber));
     assertThat(o2.getOrganizationFiscalCode(), equalTo(PA_CODE));
     assertThat(o2.getPspId(), equalTo(PSP_CODE));
@@ -205,18 +223,9 @@ class Sp03Test {
             new NegativeBizEvent("", "", "","",true,dp,creditor,psp,null,npi,null,null,10l,null)
     ));
 
-    TransactionResponse res =
-        given()
-            .param("dateFrom", Util.format(LocalDate.now()))
-            .param("dateTo", Util.format(LocalDate.now()))
-            .when()
-            .get(url)
-            .then()
-            .statusCode(200)
-            .extract()
-            .as(new TypeRef<TransactionResponse<PaymentInfo>>() {});
+    TransactionResponse res =ws.getInfoByNoticeNumber(PA_CODE, "", Optional.empty(), LocalDate.now(), LocalDate.now());
     assertThat(res.getPayments().size(), greaterThan(0));
-    PaymentInfo o = (PaymentInfo) res.getPayments().get(0);
+    it.gov.pagopa.nodetsworker.models.PaymentInfo o = (it.gov.pagopa.nodetsworker.models.PaymentInfo) res.getPayments().get(0);
     assertThat(o.getNoticeNumber(), equalTo(noticeNumber));
     assertThat(o.getOrganizationFiscalCode(), equalTo(PA_CODE));
     assertThat(o.getPspId(), equalTo(PSP_CODE));
@@ -241,18 +250,9 @@ class Sp03Test {
     when(streamBizneg.toList()).thenReturn(Arrays.asList(
     ));
 
-    TransactionResponse res =
-        given()
-            .param("dateFrom", Util.format(LocalDate.now()))
-            .param("dateTo", Util.format(LocalDate.now()))
-            .when()
-            .get(url)
-            .then()
-            .statusCode(200)
-            .extract()
-            .as(new TypeRef<TransactionResponse<PaymentInfo>>() {});
+    TransactionResponse res =ws.getInfoByNoticeNumber(PA_CODE, "", Optional.empty(), LocalDate.now(), LocalDate.now());
     assertThat(res.getPayments().size(), greaterThan(0));
-    PaymentInfo o = (PaymentInfo) res.getPayments().get(0);
+    it.gov.pagopa.nodetsworker.models.PaymentInfo o = (it.gov.pagopa.nodetsworker.models.PaymentInfo) res.getPayments().get(0);
     assertThat(o.getIuv(), equalTo(iuv));
     assertThat(o.getOrganizationFiscalCode(), equalTo(PA_CODE));
     assertThat(o.getOutcome(), equalTo(AppConstantTestHelper.outcomeOK));
@@ -279,55 +279,14 @@ class Sp03Test {
     ));
 
 
-    TransactionResponse res =
-        given()
-            .param("dateFrom", Util.format(LocalDate.now()))
-            .param("dateTo", Util.format(LocalDate.now()))
-            .when()
-            .get(url)
-            .then()
-            .statusCode(200)
-            .extract()
-            .as(new TypeRef<TransactionResponse<PaymentInfo>>() {});
+    TransactionResponse res =ws.getInfoByNoticeNumber(PA_CODE, "", Optional.empty(), LocalDate.now(), LocalDate.now());
     assertThat(res.getPayments().size(), greaterThan(0));
-    PaymentInfo o = (PaymentInfo) res.getPayments().get(0);
+    it.gov.pagopa.nodetsworker.models.PaymentInfo o = (it.gov.pagopa.nodetsworker.models.PaymentInfo) res.getPayments().get(0);
     assertThat(o.getIuv(), equalTo(iuv));
     assertThat(o.getOrganizationFiscalCode(), equalTo(PA_CODE));
     assertThat(o.getPspId(), equalTo(PSP_CODE));
     assertThat(o.getChannelId(), equalTo(CHANNEL_CODE));
     assertThat(o.getBrokerPspId(), equalTo(INT_PSP_CODE));
-  }
-
-  @SneakyThrows
-  @Test
-  @DisplayName("dateFrom 400")
-  void test5() {
-    String iuv = String.valueOf(Instant.now().toEpochMilli());
-    String url = SP03_IUV.formatted(PA_CODE, iuv);
-
-    given().param("dateFrom", Util.format(LocalDate.now())).when().get(url).then().statusCode(400);
-  }
-
-  @SneakyThrows
-  @Test
-  @DisplayName("dateTo 400")
-  void test6() {
-    String iuv = String.valueOf(Instant.now().toEpochMilli());
-    String url = SP03_IUV.formatted(PA_CODE, iuv);
-
-    given().param("dateTo", Util.format(LocalDate.now())).when().get(url).then().statusCode(400);
-  }
-
-  @SneakyThrows
-  @Test
-  @DisplayName("bad date 400")
-  void test7() {
-    String iuv = String.valueOf(Instant.now().toEpochMilli());
-    String url = SP03_IUV.formatted(PA_CODE, iuv);
-
-    RestAssured.filters(new RequestLoggingFilter(), new ResponseLoggingFilter());
-
-    given().param("dateTo", "aaa").when().get(url).then().statusCode(404);
   }
 
 
@@ -350,16 +309,7 @@ class Sp03Test {
     when(streamBizneg.toList()).thenReturn(Arrays.asList(
     ));
 
-    TransactionResponse res =
-            given()
-                    .param("dateFrom", Util.format(LocalDate.now()))
-                    .param("dateTo", Util.format(LocalDate.now()))
-                    .when()
-                    .get(url)
-                    .then()
-                    .statusCode(200)
-                    .extract()
-                    .as(new TypeRef<TransactionResponse<PaymentAttemptInfo>>() {});
+    TransactionResponse res = ws.getAttemptByNoticeNumberAndPaymentToken(PA_CODE, noticeNumber, token, LocalDate.now(), LocalDate.now());
     assertThat(res.getPayments().size(), greaterThan(0));
     PaymentAttemptInfo o = (PaymentAttemptInfo) res.getPayments().get(0);
     assertThat(o.getNoticeNumber(), equalTo(noticeNumber));
@@ -389,16 +339,7 @@ class Sp03Test {
             new NegativeBizEvent("", "", "","",true,dp,creditor,psp,null,npi,null,null,10l,null)
     ));
 
-    TransactionResponse res =
-            given()
-                    .param("dateFrom", Util.format(LocalDate.now()))
-                    .param("dateTo", Util.format(LocalDate.now()))
-                    .when()
-                    .get(url)
-                    .then()
-                    .statusCode(200)
-                    .extract()
-                    .as(new TypeRef<TransactionResponse<PaymentAttemptInfo>>() {});
+    TransactionResponse res = ws.getAttemptByNoticeNumberAndPaymentToken(PA_CODE, noticeNumber, token, LocalDate.now(), LocalDate.now());
     assertThat(res.getPayments().size(), greaterThan(0));
     PaymentAttemptInfo o = (PaymentAttemptInfo) res.getPayments().get(0);
     assertThat(o.getNoticeNumber(), equalTo(noticeNumber));
@@ -428,16 +369,7 @@ class Sp03Test {
     when(streamBizneg.toList()).thenReturn(Arrays.asList(
     ));
 
-    TransactionResponse res =
-            given()
-                    .param("dateFrom", Util.format(LocalDate.now()))
-                    .param("dateTo", Util.format(LocalDate.now()))
-                    .when()
-                    .get(url)
-                    .then()
-                    .statusCode(200)
-                    .extract()
-                    .as(new TypeRef<TransactionResponse<PaymentAttemptInfo>>() {});
+    TransactionResponse res = ws.getAttemptByIUVAndCCP(PA_CODE, iuv,ccp, LocalDate.now(), LocalDate.now());
     assertThat(res.getPayments().size(), greaterThan(0));
     PaymentAttemptInfo o = (PaymentAttemptInfo) res.getPayments().get(0);
     assertThat(o.getIuv(), equalTo(iuv));
@@ -467,16 +399,7 @@ class Sp03Test {
             new NegativeBizEvent("", "", "","",true,dp,creditor,psp,null,npi,null,null,10l,null)
     ));
 
-    TransactionResponse res =
-            given()
-                    .param("dateFrom", Util.format(LocalDate.now()))
-                    .param("dateTo", Util.format(LocalDate.now()))
-                    .when()
-                    .get(url)
-                    .then()
-                    .statusCode(200)
-                    .extract()
-                    .as(new TypeRef<TransactionResponse<PaymentAttemptInfo>>() {});
+    TransactionResponse res =ws.getAttemptByIUVAndCCP(PA_CODE, iuv,ccp, LocalDate.now(), LocalDate.now());
     assertThat(res.getPayments().size(), greaterThan(0));
     PaymentAttemptInfo o = (PaymentAttemptInfo) res.getPayments().get(0);
     assertThat(o.getIuv(), equalTo(iuv));
@@ -487,25 +410,10 @@ class Sp03Test {
     assertThat(o.getPaymentToken(), equalTo(ccp));
   }
 
-  @SneakyThrows
-  @Test
-  @DisplayName("dateFrom 400")
-  void sp04_test5() {
-    String iuv = String.valueOf(new Random().nextLong(11111111111l, 99999999999l));
-    String ccp = "ccp_" + iuv;
-    String url = SP04_IUV.formatted(PA_CODE, iuv, ccp);
-
-    given().param("dateFrom", Util.format(LocalDate.now())).when().get(url).then().statusCode(400);
+  private void setFieldValue(Object obj,String field,Object value) throws NoSuchFieldException, IllegalAccessException {
+    Field f = obj.getClass().getDeclaredField(field);
+    f.setAccessible(true);
+    f.set(obj,value);
   }
 
-  @SneakyThrows
-  @Test
-  @DisplayName("dateTo 400")
-  void sp04_test6() {
-    String iuv = String.valueOf(new Random().nextLong(11111111111l, 99999999999l));
-    String ccp = "ccp_" + iuv;
-    String url = SP04_IUV.formatted(PA_CODE, iuv, ccp);
-
-    given().param("dateTo", Util.format(LocalDate.now())).when().get(url).then().statusCode(400);
-  }
 }

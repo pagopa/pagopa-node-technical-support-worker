@@ -1,7 +1,7 @@
 package it.gov.pagopa.nodetsworker.service;
 
 import it.gov.pagopa.nodetsworker.models.*;
-import it.gov.pagopa.nodetsworker.repository.CosmosBizEventRepository;
+import it.gov.pagopa.nodetsworker.repository.CosmosBizEventClient;
 import it.gov.pagopa.nodetsworker.repository.CosmosNegBizEventClient;
 import it.gov.pagopa.nodetsworker.repository.CosmosVerifyKOEventClient;
 import it.gov.pagopa.nodetsworker.repository.model.NegativeBizEvent;
@@ -29,7 +29,7 @@ public class WorkerService {
     @Inject
     Logger log;
     @Inject
-    CosmosBizEventRepository positiveBizClient;
+    CosmosBizEventClient positiveBizClient;
     @Inject
     CosmosNegBizEventClient negativeBizClient;
     @Inject

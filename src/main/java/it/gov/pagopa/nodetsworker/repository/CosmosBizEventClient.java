@@ -13,7 +13,6 @@ import it.gov.pagopa.nodetsworker.util.Util;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.inject.Named;
-import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.jboss.logging.Logger;
 
 import java.time.LocalDate;
@@ -24,7 +23,7 @@ import java.util.Optional;
 
 @ApplicationScoped
 @Startup
-public class CosmosBizEventRepository {
+public class CosmosBizEventClient {
 
   public static String dbname = "db";
   public static String tablename = "biz-events";
