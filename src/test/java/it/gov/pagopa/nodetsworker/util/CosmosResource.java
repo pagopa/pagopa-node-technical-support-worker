@@ -14,6 +14,7 @@ import java.util.List;
 import java.util.Map;
 import lombok.SneakyThrows;
 import org.testcontainers.containers.CosmosDBEmulatorContainer;
+import org.testcontainers.images.PullPolicy;
 import org.testcontainers.utility.DockerImageName;
 
 public class CosmosResource implements QuarkusTestResourceLifecycleManager {
@@ -41,6 +42,7 @@ public class CosmosResource implements QuarkusTestResourceLifecycleManager {
                 InetAddress.getLocalHost().getHostAddress())
             .withEnv("AZURE_COSMOS_EMULATOR_PARTITION_COUNT", "3")
             .withEnv("AZURE_COSMOS_EMULATOR_ENABLE_DATA_PERSISTENCE", "false")
+            .withImagePullPolicy(PullPolicy.alwaysPull())
             .withExposedPorts(exposedPorts);
 
     cosmos.start();
