@@ -23,8 +23,8 @@ import java.util.List;
 @Startup
 public class CosmosVerifyKOEventClient {
 
-  private static final String dbname = "nodo_verifyko";
-  private static final String tablename = "events";
+  public static final String dbname = "nodo_verifyko";
+  public static final String tablename = "events";
 
   @Inject
   @Named("verifyKo")

@@ -25,8 +25,8 @@ import java.util.Optional;
 @Startup
 public class CosmosBizEventClient {
 
-  private  static final String dbname = "db";
-  private static final String tablename = "biz-events";
+  public static final String dbname = "db";
+  public static final String tablename = "biz-events";
 
   @Inject Logger log;
   @Named("biz")

@@ -24,8 +24,8 @@ import java.util.Optional;
 @Startup
 public class CosmosNegBizEventClient {
 
-  private static final String dbname = "db";
-  private static final String tablename = "negative-biz-events";
+  public static final String dbname = "db";
+  public static final String tablename = "negative-biz-events";
 
   @Inject
   @Named("bizneg")
