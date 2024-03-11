@@ -18,7 +18,6 @@
     <skipITs>true</skipITs>
     <surefire-plugin.version>3.0.0</surefire-plugin.version>
     <org.mapstruct.version>1.5.3.Final</org.mapstruct.version>
-    <sonar.skip>true</sonar.skip>
   </properties>
   <dependencyManagement>
     <dependencies>
