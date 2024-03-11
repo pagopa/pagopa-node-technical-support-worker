@@ -5,9 +5,10 @@ import jakarta.ws.rs.container.ContainerRequestContext;
 import jakarta.ws.rs.container.ContainerResponseContext;
 import jakarta.ws.rs.container.ContainerResponseFilter;
 import jakarta.ws.rs.ext.Provider;
-import java.util.concurrent.TimeUnit;
 import org.jboss.logging.Logger;
 import org.slf4j.MDC;
+
+import java.util.concurrent.TimeUnit;
 
 @Provider
 public class ResponseFilter implements ContainerResponseFilter {

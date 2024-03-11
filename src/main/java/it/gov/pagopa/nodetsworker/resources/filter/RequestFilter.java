@@ -5,9 +5,10 @@ import jakarta.ws.rs.container.ContainerRequestContext;
 import jakarta.ws.rs.container.ContainerRequestFilter;
 import jakarta.ws.rs.core.MultivaluedMap;
 import jakarta.ws.rs.ext.Provider;
+import org.jboss.logging.Logger;
+
 import java.io.IOException;
 import java.util.UUID;
-import org.jboss.logging.Logger;
 
 @Provider
 public class RequestFilter implements ContainerRequestFilter {

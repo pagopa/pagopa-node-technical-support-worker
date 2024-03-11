@@ -1,7 +1,6 @@
 package it.gov.pagopa.nodetsworker.repository;
 
 import com.azure.cosmos.CosmosClient;
-import com.azure.cosmos.CosmosClientBuilder;
 import com.azure.cosmos.CosmosContainer;
 import com.azure.cosmos.models.CosmosQueryRequestOptions;
 import com.azure.cosmos.models.SqlParameter;
@@ -13,7 +12,6 @@ import it.gov.pagopa.nodetsworker.util.Util;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.inject.Named;
-import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.jboss.logging.Logger;
 
 import java.time.LocalDate;
