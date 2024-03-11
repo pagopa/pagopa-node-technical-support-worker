@@ -18,6 +18,7 @@
     <skipITs>true</skipITs>
     <surefire-plugin.version>3.0.0</surefire-plugin.version>
     <org.mapstruct.version>1.5.3.Final</org.mapstruct.version>
+    <sonar.jacoco.reportPath>target/jacoco-report/jacoco.xml</sonar.jacoco.reportPath>
   </properties>
   <dependencyManagement>
     <dependencies>
