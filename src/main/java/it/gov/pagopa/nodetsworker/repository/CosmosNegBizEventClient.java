@@ -24,8 +24,8 @@ import java.util.Optional;
 @Startup
 public class CosmosNegBizEventClient {
 
-  public static String dbname = "db";
-  public static String tablename = "negative-biz-events";
+  private static final String dbname = "db";
+  private static final String tablename = "negative-biz-events";
 
   @Inject
   @Named("bizneg")
@@ -33,7 +33,7 @@ public class CosmosNegBizEventClient {
 
   @Inject Logger log;
 
-  private String dateFilter = " and c.paymentInfo.paymentDateTime > @from and c.paymentInfo.paymentDateTime < @to";
+  private static final String dateFilter = " and c.paymentInfo.paymentDateTime > @from and c.paymentInfo.paymentDateTime < @to";
 
   private CosmosPagedIterable<NegativeBizEvent> query(SqlQuerySpec query) {
     log.info("executing query:" + query.getQueryText());

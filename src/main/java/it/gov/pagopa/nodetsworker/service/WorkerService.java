@@ -23,8 +23,8 @@ import static it.gov.pagopa.nodetsworker.util.AppConstant.STATUS_COMPLETED;
 @ApplicationScoped
 public class WorkerService {
 
-    private static String outcomeOK = "OK";
-    private static String outcomeKO = "KO";
+    private static final String outcomeOK = "OK";
+    private static final String outcomeKO = "KO";
 
     @Inject
     Logger log;
@@ -38,8 +38,6 @@ public class WorkerService {
     @ConfigProperty(name = "date-range-limit")
     Integer dateRangeLimit;
 
-    private List<String> tipiEventoAttempts = Arrays.asList("activatePaymentNotice","activatePaymentNoticeV2","nodoInviaRPT","nodoInviaCarrelloRPT");
-
     private PaymentInfo eventToPaymentInfo(VerifyKOEvent evt) {
 
         return PaymentInfo.builder()
@@ -49,7 +47,7 @@ public class WorkerService {
                 .positiveBizEvtId(evt.getId())
                 .brokerPspId(evt.getPsp().getIdBrokerPsp())
                 .channelId(evt.getPsp().getIdChannel())
-                .insertedTimestamp(evt.getFaultBean().getDateTime().toString())
+                .insertedTimestamp(evt.getFaultBean().getDateTime())
                 .noticeNumber(evt.getDebtorPosition().getNoticeNumber())
                 .iuv(evt.getDebtorPosition().getIuv())
                 .organizationFiscalCode(evt.getCreditor().getIdPA())
@@ -66,7 +64,7 @@ public class WorkerService {
                 .positiveBizEvtId(evt.getId())
                 .brokerPspId(evt.getPsp().getIdBrokerPsp())
                 .channelId(evt.getPsp().getIdChannel())
-                .insertedTimestamp(evt.getPaymentInfo().getPaymentDateTime().toString())
+                .insertedTimestamp(evt.getPaymentInfo().getPaymentDateTime())
                 .paymentToken(evt.getPaymentInfo().getPaymentToken())
                 .ccp(evt.getPaymentInfo().getPaymentToken())
                 .noticeNumber(evt.getDebtorPosition().getNoticeNumber())
@@ -84,7 +82,7 @@ public class WorkerService {
                 .positiveBizEvtId(evt.getId())
                 .brokerPspId(evt.getPsp().getIdBrokerPsp())
                 .channelId(evt.getPsp().getIdChannel())
-                .insertedTimestamp(evt.getPaymentInfo().getPaymentDateTime().toString())
+                .insertedTimestamp(evt.getPaymentInfo().getPaymentDateTime())
                 .paymentToken(evt.getPaymentInfo().getPaymentToken())
                 .ccp(evt.getPaymentInfo().getPaymentToken())
                 .noticeNumber(evt.getDebtorPosition().getNoticeNumber())
@@ -104,7 +102,7 @@ public class WorkerService {
                 .negativeBizEvtId(evt.getId())
                 .brokerPspId(evt.getPsp().getIdBrokerPsp())
                 .channelId(evt.getPsp().getIdChannel())
-                .insertedTimestamp(evt.getPaymentInfo().getPaymentDateTime().toString())
+                .insertedTimestamp(evt.getPaymentInfo().getPaymentDateTime())
                 .paymentToken(evt.getPaymentInfo().getPaymentToken())
                 .ccp(evt.getPaymentInfo().getPaymentToken())
                 .noticeNumber(evt.getDebtorPosition().getNoticeNumber())
@@ -122,7 +120,7 @@ public class WorkerService {
                 .negativeBizEvtId(evt.getId())
                 .brokerPspId(evt.getPsp().getIdBrokerPsp())
                 .channelId(evt.getPsp().getIdChannel())
-                .insertedTimestamp(evt.getPaymentInfo().getPaymentDateTime().toString())
+                .insertedTimestamp(evt.getPaymentInfo().getPaymentDateTime())
                 .paymentToken(evt.getPaymentInfo().getPaymentToken())
                 .ccp(evt.getPaymentInfo().getPaymentToken())
                 .noticeNumber(evt.getDebtorPosition().getNoticeNumber())
@@ -191,9 +189,9 @@ public class WorkerService {
 
         List<BasePaymentInfo> collect = new ArrayList<>();
 
-        collect.addAll(verifyKOEvents.stream().map(d->eventToPaymentInfo(d)).toList());
-        collect.addAll(positiveEvents.stream().map(d->eventToPaymentInfo(d)).toList());
-        collect.addAll(negativeEvents.stream().map(d->eventToPaymentInfo(d)).toList());
+        collect.addAll(verifyKOEvents.stream().map(this::eventToPaymentInfo).toList());
+        collect.addAll(positiveEvents.stream().map(this::eventToPaymentInfo).toList());
+        collect.addAll(negativeEvents.stream().map(this::eventToPaymentInfo).toList());
 
         return TransactionResponse.builder()
                 .dateFrom(dateRequest.getFrom())
@@ -233,9 +231,9 @@ public class WorkerService {
 
         List<BasePaymentInfo> collect = new ArrayList<>();
 
-        collect.addAll(verifyKOEvents.stream().map(d->eventToPaymentInfo(d)).toList());
-        collect.addAll(positiveEvents.stream().map(d->eventToPaymentInfo(d)).toList());
-        collect.addAll(negativeEvents.stream().map(d->eventToPaymentInfo(d)).toList());
+        collect.addAll(verifyKOEvents.stream().map(this::eventToPaymentInfo).toList());
+        collect.addAll(positiveEvents.stream().map(this::eventToPaymentInfo).toList());
+        collect.addAll(negativeEvents.stream().map(this::eventToPaymentInfo).toList());
 
         return TransactionResponse.builder()
                 .dateFrom(dateRequest.getFrom())
@@ -317,61 +315,4 @@ public class WorkerService {
                 .build();
     }
 
-//    private Pair<DateRequest, DateRequest> getHistoryDates(DateRequest dateRequest) {
-//        LocalDate dateLimit = LocalDate.now().minusDays(reCosmosDayLimit);
-//        LocalDate historyDateFrom = null;
-//        LocalDate historyDateTo = null;
-//        LocalDate actualDateFrom = null;
-//        LocalDate actualDateTo = null;
-//
-//        if(dateRequest.getFrom().isBefore(dateLimit)){
-//            historyDateFrom = dateRequest.getFrom();
-//            historyDateTo = Arrays.asList(dateLimit,dateRequest.getTo()).stream().min(LocalDate::compareTo).get();
-//        }
-//
-//        if(dateRequest.getTo().isAfter(dateLimit)){
-//            actualDateFrom = Arrays.asList(dateLimit,dateRequest.getFrom()).stream().max(LocalDate::compareTo).get();
-//            if(historyDateTo!=null){
-//                actualDateFrom = actualDateFrom.plusDays(1);
-//            }
-//            actualDateTo = dateRequest.getTo();
-//        }
-//
-//        return Pair.of(
-//                historyDateFrom!=null? DateRequest.builder().from(historyDateFrom).to(historyDateTo).build():null,
-//                actualDateFrom!=null? DateRequest.builder().from(actualDateFrom).to(actualDateTo).build():null
-//        );
-//    }
-
-//    public Map countByPartitionKey(String pk) {
-//        log.infof("Querying partitionKey on table storage: %s", pk);
-//        Instant start = Instant.now();
-//        long tableItems = reTableStorageClient.findReByPartitionKey(pk);
-//        Instant finish = Instant.now();
-//        long tableTimeElapsed = Duration.between(start, finish).toMillis();
-//        log.infof("Done querying partitionKey %s on table storage. Count %s", pk, tableItems);
-//
-//
-//        log.infof("Querying partitionKey on cosmos: %s", pk);
-//        start = Instant.now();
-//        Long cosmosItems = reClient.findReByPartitionKey(pk).stream().findFirst().get().getCount();
-//        finish = Instant.now();
-//        long cosmosTimeElapsed = Duration.between(start, finish).toMillis();
-//        log.infof("Done querying partitionKey %s on cosmos. Count %s", pk, cosmosItems);
-//
-//
-//        Map<String, Map> response = new HashMap<>();
-//        Map<String, Long> table = new HashMap<>();
-//        table.put("items", tableItems);
-//        table.put("millis", tableTimeElapsed);
-//
-//        Map<String, Long> cosmos = new HashMap<>();
-//        cosmos.put("items", cosmosItems);
-//        cosmos.put("millis", cosmosTimeElapsed);
-//
-//        response.put("table", table);
-//        response.put("cosmos", cosmos);
-//
-//        return response;
-//    }
 }

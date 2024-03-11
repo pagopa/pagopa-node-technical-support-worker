@@ -25,25 +25,19 @@ import java.util.Optional;
 @Startup
 public class CosmosBizEventClient {
 
-  public static String dbname = "db";
-  public static String tablename = "biz-events";
+  private  static final String dbname = "db";
+  private static final String tablename = "biz-events";
 
   @Inject Logger log;
   @Named("biz")
   @Inject CosmosClient client;
 
-  private String dateFilter = " and c.paymentInfo.paymentDateTime >= @from and c.paymentInfo.paymentDateTime < @to";
+  private static final String dateFilter = " and c.paymentInfo.paymentDateTime >= @from and c.paymentInfo.paymentDateTime < @to";
 
   private CosmosPagedIterable<PositiveBizEvent> query(SqlQuerySpec query) {
     log.info("executing query:" + query.getQueryText());
     CosmosContainer container = client.getDatabase(dbname).getContainer(tablename);
     return container.queryItems(query, new CosmosQueryRequestOptions(), PositiveBizEvent.class);
-  }
-
-  private CosmosPagedIterable<Count> queryCount(SqlQuerySpec query) {
-    log.info("executing query:" + query.getQueryText());
-    CosmosContainer container = client.getDatabase(dbname).getContainer(tablename);
-    return container.queryItems(query, new CosmosQueryRequestOptions(), Count.class);
   }
 
   public CosmosPagedIterable<PositiveBizEvent> findEventsByCiAndNNAndToken(
