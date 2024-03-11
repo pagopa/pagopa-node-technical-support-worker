@@ -5,6 +5,7 @@ import io.restassured.http.Header;
 import it.gov.pagopa.nodetsworker.repository.model.*;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -25,7 +26,12 @@ public class AppConstantTestHelper {
   public static final String outcomeOK = "OK";
   public static final String outcomeKO = "KO";
 
+  public static Long toMillis(LocalDateTime d) {
+    return d.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli();
+  }
+
   public static final Header HEADER = new Header("Content-Type", "application/json");
+
 
   public static final TableEntity newRe(String pa, String noticeNumber, String iuv) {
     TableEntity entity =
@@ -54,7 +60,7 @@ public class AppConstantTestHelper {
                     .faultBean(
                             Fault.builder()
                                     .dateTime(LocalDateTime.now().toString())
-                                    .timestamp(Util.toMillis(LocalDateTime.now()))
+                                    .timestamp(toMillis(LocalDateTime.now()))
                                     .build()
                     )
                     .psp(Psp.builder().idBrokerPsp("intTest").idPsp("pspTest").idChannel("canaleTest").build())
@@ -70,7 +76,7 @@ public class AppConstantTestHelper {
     PositiveBizEvent p =
         PositiveBizEvent.builder()
             .id(UUID.randomUUID().toString())
-            .timestamp(Util.toMillis(LocalDateTime.now()))
+            .timestamp(toMillis(LocalDateTime.now()))
             .psp(Psp.builder().idBrokerPsp("intTest").idPsp("pspTest").idChannel("canaleTest").build())
             .creditor(Creditor.builder().idPA(pa).build())
             .debtorPosition(
@@ -89,7 +95,7 @@ public class AppConstantTestHelper {
     NegativeBizEvent p =
         NegativeBizEvent.builder()
             .id(UUID.randomUUID().toString())
-            .timestamp(Util.toMillis(LocalDateTime.now()))
+            .timestamp(toMillis(LocalDateTime.now()))
                 .psp(Psp.builder().idBrokerPsp("intTest").idPsp("pspTest").idChannel("canaleTest").build())
 
                 .creditor(Creditor.builder().idPA(pa).build())

@@ -9,10 +9,6 @@ public class AppMessageUtil {
 
   private static final String MESSAGES = "messages";
 
-  private AppMessageUtil() {
-    throw new IllegalStateException("Utility class");
-  }
-
   private static ResourceBundle getBundle(Locale locale) {
     return Optional.ofNullable(locale)
         .map(localez -> ResourceBundle.getBundle(MESSAGES, localez))
