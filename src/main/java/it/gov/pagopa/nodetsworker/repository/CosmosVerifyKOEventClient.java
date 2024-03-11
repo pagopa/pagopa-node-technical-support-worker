@@ -7,7 +7,7 @@ import com.azure.cosmos.models.SqlParameter;
 import com.azure.cosmos.models.SqlQuerySpec;
 import com.azure.cosmos.util.CosmosPagedIterable;
 import io.quarkus.runtime.Startup;
-import it.gov.pagopa.nodetsworker.repository.model.VerifyKOEvent;
+import it.gov.pagopa.nodetsworker.repository.models.VerifyKOEvent;
 import it.gov.pagopa.nodetsworker.util.Util;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;

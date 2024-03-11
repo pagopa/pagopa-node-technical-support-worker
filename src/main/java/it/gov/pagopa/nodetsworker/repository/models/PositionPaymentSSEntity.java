@@ -1,4 +1,4 @@
-package it.gov.pagopa.nodetsworker.repository.model;
+package it.gov.pagopa.nodetsworker.repository.models;
 
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;

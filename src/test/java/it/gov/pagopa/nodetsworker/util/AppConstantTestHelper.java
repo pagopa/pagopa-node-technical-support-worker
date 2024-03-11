@@ -2,7 +2,7 @@ package it.gov.pagopa.nodetsworker.util;
 
 import com.azure.data.tables.models.TableEntity;
 import io.restassured.http.Header;
-import it.gov.pagopa.nodetsworker.repository.model.*;
+import it.gov.pagopa.nodetsworker.repository.models.*;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneId;

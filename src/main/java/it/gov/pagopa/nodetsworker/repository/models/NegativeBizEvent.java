@@ -1,4 +1,4 @@
-package it.gov.pagopa.nodetsworker.repository.model;
+package it.gov.pagopa.nodetsworker.repository.models;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.AllArgsConstructor;

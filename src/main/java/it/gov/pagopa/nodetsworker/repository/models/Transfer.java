@@ -1,5 +1,6 @@
-package it.gov.pagopa.nodetsworker.repository.model;
+package it.gov.pagopa.nodetsworker.repository.models;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -11,7 +12,8 @@ import java.math.BigDecimal;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class NegativeTransfer {
+@JsonIgnoreProperties(ignoreUnknown = true)
+public class Transfer {
   private String idTransfer;
   private String fiscalCodePA;
   private String companyName;
@@ -19,6 +21,6 @@ public class NegativeTransfer {
   private String transferCategory;
   private String remittanceInformation;
   private String IBAN;
-  private Boolean MBD;
+  private String MBDAttachment;
   private Object metadata;
 }

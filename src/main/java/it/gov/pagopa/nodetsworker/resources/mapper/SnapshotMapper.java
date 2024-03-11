@@ -1,6 +1,6 @@
 package it.gov.pagopa.nodetsworker.resources.mapper;
 
-import it.gov.pagopa.nodetsworker.repository.model.PositionPaymentSSEntity;
+import it.gov.pagopa.nodetsworker.repository.models.PositionPaymentSSEntity;
 import it.gov.pagopa.nodetsworker.resources.response.PositionPaymentSSInfo;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.mapstruct.Mapper;

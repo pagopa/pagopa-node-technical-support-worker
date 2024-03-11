@@ -12,7 +12,7 @@ import it.gov.pagopa.nodetsworker.models.PaymentAttemptInfo;
 import it.gov.pagopa.nodetsworker.repository.CosmosBizEventClient;
 import it.gov.pagopa.nodetsworker.repository.CosmosNegBizEventClient;
 import it.gov.pagopa.nodetsworker.repository.CosmosVerifyKOEventClient;
-import it.gov.pagopa.nodetsworker.repository.model.*;
+import it.gov.pagopa.nodetsworker.repository.models.*;
 import it.gov.pagopa.nodetsworker.resources.response.TransactionResponse;
 import it.gov.pagopa.nodetsworker.service.WorkerService;
 import it.gov.pagopa.nodetsworker.util.AppConstantTestHelper;
@@ -50,7 +50,7 @@ class SpTest {
 
   private Psp psp = new Psp(INT_PSP_CODE,CHANNEL_CODE,PSP_CODE,"","","","");
   private DebtorPosition dp = new DebtorPosition("","","");
-  private it.gov.pagopa.nodetsworker.repository.model.PaymentInfo pi = new it.gov.pagopa.nodetsworker.repository.model.PaymentInfo("","","","","","", BigDecimal.ONE,BigDecimal.ZERO,BigDecimal.ONE,"","",1l,"","","",null,"");
+  private it.gov.pagopa.nodetsworker.repository.models.PaymentInfo pi = new it.gov.pagopa.nodetsworker.repository.models.PaymentInfo("","","","","","", BigDecimal.ONE,BigDecimal.ZERO,BigDecimal.ONE,"","",1l,"","","",null,"");
   private NegativePaymentInfo npi = new NegativePaymentInfo("",LocalDate.now(),"", BigDecimal.ONE,10l,"","","",null);
   private Fault fb = new Fault("FAULT_CODE","",10000l,"");
   private Creditor creditor = new Creditor(PA_CODE,"","","","");

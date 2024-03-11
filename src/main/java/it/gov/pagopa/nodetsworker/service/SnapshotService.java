@@ -2,7 +2,7 @@ package it.gov.pagopa.nodetsworker.service;
 
 import io.micrometer.common.util.StringUtils;
 import it.gov.pagopa.nodetsworker.models.DateRequest;
-import it.gov.pagopa.nodetsworker.repository.model.PositionPaymentSSEntity;
+import it.gov.pagopa.nodetsworker.repository.models.PositionPaymentSSEntity;
 import it.gov.pagopa.nodetsworker.resources.mapper.SnapshotMapper;
 import it.gov.pagopa.nodetsworker.resources.response.Metadata;
 import it.gov.pagopa.nodetsworker.resources.response.PaymentResponse;
