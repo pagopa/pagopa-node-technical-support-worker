@@ -15,7 +15,10 @@ import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.jboss.logging.Logger;
 
 import java.time.LocalDate;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Optional;
 
 import static it.gov.pagopa.nodetsworker.util.AppConstant.SERVICE_ID;
 import static it.gov.pagopa.nodetsworker.util.AppConstant.STATUS_COMPLETED;
@@ -23,8 +26,8 @@ import static it.gov.pagopa.nodetsworker.util.AppConstant.STATUS_COMPLETED;
 @ApplicationScoped
 public class WorkerService {
 
-    private static final String outcomeOK = "OK";
-    private static final String outcomeKO = "KO";
+    private static final String OUTCOME_OK = "OK";
+    private static final String OUTCOME_KO = "KO";
 
     @Inject
     Logger log;
@@ -51,7 +54,7 @@ public class WorkerService {
                 .noticeNumber(evt.getDebtorPosition().getNoticeNumber())
                 .iuv(evt.getDebtorPosition().getIuv())
                 .organizationFiscalCode(evt.getCreditor().getIdPA())
-                .outcome(outcomeKO)
+                .outcome(OUTCOME_KO)
                 .faultBean(FaultBean.builder().faultCode(evt.getFaultBean().getFaultCode()).description(evt.getFaultBean().getDescription()).timestamp(evt.getFaultBean().getDateTime()).build())
                 .build();
     }
@@ -70,7 +73,7 @@ public class WorkerService {
                 .noticeNumber(evt.getDebtorPosition().getNoticeNumber())
                 .iuv(evt.getDebtorPosition().getIuv())
                 .organizationFiscalCode(evt.getCreditor().getIdPA())
-                .outcome(outcomeOK)
+                .outcome(OUTCOME_OK)
                 .build();
     }
 
@@ -90,7 +93,7 @@ public class WorkerService {
                 .organizationFiscalCode(evt.getCreditor().getIdPA())
                 .stationId(evt.getCreditor().getIdStation())
                 .brokerOrganizationId(evt.getCreditor().getIdBrokerPA())
-                .outcome(outcomeOK)
+                .outcome(OUTCOME_OK)
                 .build();
     }
 
@@ -108,7 +111,7 @@ public class WorkerService {
                 .noticeNumber(evt.getDebtorPosition().getNoticeNumber())
                 .iuv(evt.getDebtorPosition().getIuv())
                 .organizationFiscalCode(evt.getCreditor().getIdPA())
-                .outcome(evt.getReAwakable()!=null && evt.getReAwakable() ? outcomeKO : null)
+                .outcome(evt.getReAwakable()!=null && evt.getReAwakable() ? OUTCOME_KO : null)
                 .build();
     }
 
@@ -128,7 +131,7 @@ public class WorkerService {
                 .organizationFiscalCode(evt.getCreditor().getIdPA())
                 .stationId(evt.getCreditor().getIdStation())
                 .brokerOrganizationId(evt.getCreditor().getIdBrokerPA())
-                .outcome(evt.getReAwakable()!=null && evt.getReAwakable() ? outcomeKO : null)
+                .outcome(evt.getReAwakable()!=null && evt.getReAwakable() ? OUTCOME_KO : null)
                 .build();
     }
 

@@ -24,8 +24,8 @@ import java.util.Optional;
 @Startup
 public class CosmosNegBizEventClient {
 
-  public static final String dbname = "db";
-  public static final String tablename = "negative-biz-events";
+  public static final String DBNAME = "db";
+  public static final String TABLENAME = "negative-biz-events";
 
   @Inject
   @Named("bizneg")
@@ -33,11 +33,11 @@ public class CosmosNegBizEventClient {
 
   @Inject Logger log;
 
-  private static final String dateFilter = " and c.paymentInfo.paymentDateTime > @from and c.paymentInfo.paymentDateTime < @to";
+  private static final String DATEFILTER = " and c.paymentInfo.paymentDateTime > @from and c.paymentInfo.paymentDateTime < @to";
 
   private CosmosPagedIterable<NegativeBizEvent> query(SqlQuerySpec query) {
     log.info("executing query:" + query.getQueryText());
-    CosmosContainer container = client.getDatabase(dbname).getContainer(tablename);
+    CosmosContainer container = client.getDatabase(DBNAME).getContainer(TABLENAME);
     return container.queryItems(query, new CosmosQueryRequestOptions(), NegativeBizEvent.class);
   }
 
@@ -61,7 +61,7 @@ public class CosmosNegBizEventClient {
                     + " c.creditor.idPA = @organizationFiscalCode"
                     + " and c.debtorPosition.noticeNumber = @noticeNumber"
                     + (paymentToken.isPresent()?" and c.paymentInfo.paymentToken = @paymentToken":"")
-                    + dateFilter)
+                    + DATEFILTER)
             .setParameters(paramList);
     return query(q);
   }
@@ -82,7 +82,7 @@ public class CosmosNegBizEventClient {
                     + " c.creditor.idPA = @organizationFiscalCode"
                     + " and c.debtorPosition.iuv = @iuv"
                     + (ccp.isPresent()?" and c.paymentInfo.paymentToken = @ccp":"")
-                    + dateFilter)
+                    + DATEFILTER)
             .setParameters(paramList);
     return query(q);
   }

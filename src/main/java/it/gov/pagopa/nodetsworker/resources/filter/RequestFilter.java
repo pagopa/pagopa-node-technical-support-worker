@@ -20,8 +20,6 @@ public class RequestFilter implements ContainerRequestFilter {
     long requestStartTime = System.nanoTime();
     containerRequestContext.setProperty("requestStartTime", requestStartTime);
 
-    String sessionId = UUID.randomUUID().toString();
-
     String requestMethod = containerRequestContext.getMethod();
     String requestPath = containerRequestContext.getUriInfo().getPath();
 

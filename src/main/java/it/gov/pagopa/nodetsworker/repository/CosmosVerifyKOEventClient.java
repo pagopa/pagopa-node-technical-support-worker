@@ -23,8 +23,8 @@ import java.util.List;
 @Startup
 public class CosmosVerifyKOEventClient {
 
-  public static final String dbname = "nodo_verifyko";
-  public static final String tablename = "events";
+  public static final String DBNAME = "nodo_verifyko";
+  public static final String TABLENAME = "events";
 
   @Inject
   @Named("verifyKo")
@@ -32,11 +32,11 @@ public class CosmosVerifyKOEventClient {
 
   @Inject Logger log;
 
-  private static final String dateFilter = " and c.faultBean.dateTime > @from and c.faultBean.dateTime < @to";
+  private static final String DATEFILTER = " and c.faultBean.dateTime > @from and c.faultBean.dateTime < @to";
 
   private CosmosPagedIterable<VerifyKOEvent> query(SqlQuerySpec query) {
     log.info("executing query:" + query.getQueryText());
-    CosmosContainer container = client.getDatabase(dbname).getContainer(tablename);
+    CosmosContainer container = client.getDatabase(DBNAME).getContainer(TABLENAME);
     return container.queryItems(query, new CosmosQueryRequestOptions(), VerifyKOEvent.class);
   }
 
@@ -57,7 +57,7 @@ public class CosmosVerifyKOEventClient {
                 "SELECT * FROM c where"
                     + " c.creditor.idPA = @organizationFiscalCode"
                     + " and c.debtorPosition.noticeNumber = @noticeNumber"
-                    + dateFilter
+                    + DATEFILTER
         )
             .setParameters(paramList);
     return query(q);

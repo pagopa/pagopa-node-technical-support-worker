@@ -7,7 +7,6 @@ import com.azure.cosmos.models.SqlParameter;
 import com.azure.cosmos.models.SqlQuerySpec;
 import com.azure.cosmos.util.CosmosPagedIterable;
 import io.quarkus.runtime.Startup;
-import it.gov.pagopa.nodetsworker.repository.model.Count;
 import it.gov.pagopa.nodetsworker.repository.model.PositiveBizEvent;
 import it.gov.pagopa.nodetsworker.util.Util;
 import jakarta.enterprise.context.ApplicationScoped;
@@ -25,18 +24,18 @@ import java.util.Optional;
 @Startup
 public class CosmosBizEventClient {
 
-  public static final String dbname = "db";
-  public static final String tablename = "biz-events";
+  public static final String DBNAME = "db";
+  public static final String TABLENAME = "biz-events";
 
   @Inject Logger log;
   @Named("biz")
   @Inject CosmosClient client;
 
-  private static final String dateFilter = " and c.paymentInfo.paymentDateTime >= @from and c.paymentInfo.paymentDateTime < @to";
+  private static final String DATEFILTER = " and c.paymentInfo.paymentDateTime >= @from and c.paymentInfo.paymentDateTime < @to";
 
   private CosmosPagedIterable<PositiveBizEvent> query(SqlQuerySpec query) {
     log.info("executing query:" + query.getQueryText());
-    CosmosContainer container = client.getDatabase(dbname).getContainer(tablename);
+    CosmosContainer container = client.getDatabase(DBNAME).getContainer(TABLENAME);
     return container.queryItems(query, new CosmosQueryRequestOptions(), PositiveBizEvent.class);
   }
 
@@ -60,7 +59,7 @@ public class CosmosBizEventClient {
                     + " c.creditor.idPA = @organizationFiscalCode"
                     + " and c.debtorPosition.noticeNumber = @noticeNumber"
                     + (paymentToken.isPresent()?" and c.paymentInfo.paymentToken = @paymentToken":"")
-                    + dateFilter
+                    + DATEFILTER
         )
             .setParameters(paramList);
     return query(q);
@@ -82,7 +81,7 @@ public class CosmosBizEventClient {
                     + " c.creditor.idPA = @organizationFiscalCode"
                     + " and c.debtorPosition.iuv = @iuv"
                     + (ccp.isPresent()?" and c.paymentInfo.paymentToken = @ccp":"")
-                    + dateFilter)
+                    + DATEFILTER)
             .setParameters(paramList);
     return query(q);
   }
