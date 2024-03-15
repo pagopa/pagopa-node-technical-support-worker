@@ -26,7 +26,6 @@ microservice-chart:
     COSMOS_VERIFYKO_ENDPOINT: "https://pagopa-d-weu-nodo-verifyko-cosmos-account.documents.azure.com:443/"
     DATASOURCE_USERNAME: "NODO_OFFLINE"
     DATASOURCE_URL: "jdbc:oracle:thin:@(DESCRIPTION=(ENABLE=BROKEN)(ADDRESS=(PROTOCOL=tcp)(PORT=1522)(HOST=db-nodo-pagamenti.d.db-nodo-pagamenti.com))(CONNECT_DATA=(SERVICE_NAME=NDPSPCT_SERVICE))(SO_KEEPALIVE=true)(TCP_KEEPIDLE=60)(TCP_KEEPINTVL=30)(TCP_KEEPCNT=15))"
-    DB_KIND: "oracle"
     DB_SERVICE_IDENTIFIER: "NDP002DEV"
     LOG_LEVEL: "INFO"
   envFieldRef:

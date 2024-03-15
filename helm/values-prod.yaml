@@ -26,7 +26,6 @@ microservice-chart:
     COSMOS_VERIFYKO_ENDPOINT: "https://pagopa-p-weu-nodo-verifyko-cosmos-account.documents.azure.com:443/"
     DATASOURCE_USERNAME: "TBD"
     DATASOURCE_URL: "TBD"
-    DB_KIND: "oracle"
     DB_SERVICE_IDENTIFIER: "NDP003PROD"
     LOG_LEVEL: "INFO"
   envFieldRef:
