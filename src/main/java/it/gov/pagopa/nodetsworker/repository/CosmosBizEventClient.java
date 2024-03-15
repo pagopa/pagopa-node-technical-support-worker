@@ -7,13 +7,11 @@ import com.azure.cosmos.models.SqlParameter;
 import com.azure.cosmos.models.SqlQuerySpec;
 import com.azure.cosmos.util.CosmosPagedIterable;
 import io.quarkus.runtime.Startup;
-import it.gov.pagopa.nodetsworker.repository.model.Count;
-import it.gov.pagopa.nodetsworker.repository.model.PositiveBizEvent;
+import it.gov.pagopa.nodetsworker.repository.models.PositiveBizEvent;
 import it.gov.pagopa.nodetsworker.util.Util;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.inject.Named;
-import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.jboss.logging.Logger;
 
 import java.time.LocalDate;
@@ -24,27 +22,21 @@ import java.util.Optional;
 
 @ApplicationScoped
 @Startup
-public class CosmosBizEventRepository {
+public class CosmosBizEventClient {
 
-  public static String dbname = "db";
-  public static String tablename = "biz-events";
+  public static final String DBNAME = "db";
+  public static final String TABLENAME = "biz-events";
 
   @Inject Logger log;
   @Named("biz")
   @Inject CosmosClient client;
 
-  private String dateFilter = " and c.paymentInfo.paymentDateTime >= @from and c.paymentInfo.paymentDateTime < @to";
+  private static final String DATEFILTER = " and c.paymentInfo.paymentDateTime >= @from and c.paymentInfo.paymentDateTime < @to";
 
   private CosmosPagedIterable<PositiveBizEvent> query(SqlQuerySpec query) {
     log.info("executing query:" + query.getQueryText());
-    CosmosContainer container = client.getDatabase(dbname).getContainer(tablename);
+    CosmosContainer container = client.getDatabase(DBNAME).getContainer(TABLENAME);
     return container.queryItems(query, new CosmosQueryRequestOptions(), PositiveBizEvent.class);
-  }
-
-  private CosmosPagedIterable<Count> queryCount(SqlQuerySpec query) {
-    log.info("executing query:" + query.getQueryText());
-    CosmosContainer container = client.getDatabase(dbname).getContainer(tablename);
-    return container.queryItems(query, new CosmosQueryRequestOptions(), Count.class);
   }
 
   public CosmosPagedIterable<PositiveBizEvent> findEventsByCiAndNNAndToken(
@@ -67,7 +59,7 @@ public class CosmosBizEventRepository {
                     + " c.creditor.idPA = @organizationFiscalCode"
                     + " and c.debtorPosition.noticeNumber = @noticeNumber"
                     + (paymentToken.isPresent()?" and c.paymentInfo.paymentToken = @paymentToken":"")
-                    + dateFilter
+                    + DATEFILTER
         )
             .setParameters(paramList);
     return query(q);
@@ -89,7 +81,7 @@ public class CosmosBizEventRepository {
                     + " c.creditor.idPA = @organizationFiscalCode"
                     + " and c.debtorPosition.iuv = @iuv"
                     + (ccp.isPresent()?" and c.paymentInfo.paymentToken = @ccp":"")
-                    + dateFilter)
+                    + DATEFILTER)
             .setParameters(paramList);
     return query(q);
   }

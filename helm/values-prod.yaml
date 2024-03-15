@@ -24,6 +24,9 @@ microservice-chart:
     COSMOS_BIZ_ENDPOINT: "https://pagopa-p-weu-bizevents-ds-cosmos-account.documents.azure.com:443/"
     COSMOS_NEG_BIZ_ENDPOINT: "https://pagopa-p-weu-bizevents-neg-ds-cosmos-account.documents.azure.com:443/"
     COSMOS_VERIFYKO_ENDPOINT: "https://pagopa-p-weu-nodo-verifyko-cosmos-account.documents.azure.com:443/"
+    DATASOURCE_USERNAME: "TBD"
+    DATASOURCE_URL: "TBD"
+    DB_SERVICE_IDENTIFIER: "NDP003PROD"
     LOG_LEVEL: "INFO"
   envFieldRef:
     APP_NAME: "metadata.labels['app.kubernetes.io/instance']"
@@ -35,6 +38,7 @@ microservice-chart:
       COSMOS_BIZ_KEY: "cosmos-biz-account-key"
       COSMOS_NEG_BIZ_KEY: "cosmos-neg-biz-account-key"
       COSMOS_VERIFYKO_KEY: "cosmos-verifyko-account-key"
+      DATASOURCE_PASSWORD: "db-nexi-offline-password"
     keyvault:
       name: "pagopa-p-nodo-kv"
       tenantId: "7788edaf-0346-4068-9d79-c868aed15b3d"

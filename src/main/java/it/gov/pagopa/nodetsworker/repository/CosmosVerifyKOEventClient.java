@@ -1,19 +1,17 @@
 package it.gov.pagopa.nodetsworker.repository;
 
 import com.azure.cosmos.CosmosClient;
-import com.azure.cosmos.CosmosClientBuilder;
 import com.azure.cosmos.CosmosContainer;
 import com.azure.cosmos.models.CosmosQueryRequestOptions;
 import com.azure.cosmos.models.SqlParameter;
 import com.azure.cosmos.models.SqlQuerySpec;
 import com.azure.cosmos.util.CosmosPagedIterable;
 import io.quarkus.runtime.Startup;
-import it.gov.pagopa.nodetsworker.repository.model.VerifyKOEvent;
+import it.gov.pagopa.nodetsworker.repository.models.VerifyKOEvent;
 import it.gov.pagopa.nodetsworker.util.Util;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.inject.Named;
-import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.jboss.logging.Logger;
 
 import java.time.LocalDate;
@@ -25,8 +23,8 @@ import java.util.List;
 @Startup
 public class CosmosVerifyKOEventClient {
 
-  public static String dbname = "nodo_verifyko";
-  public static String tablename = "events";
+  public static final String DBNAME = "nodo_verifyko";
+  public static final String TABLENAME = "events";
 
   @Inject
   @Named("verifyKo")
@@ -34,11 +32,11 @@ public class CosmosVerifyKOEventClient {
 
   @Inject Logger log;
 
-  private String dateFilter = " and c.faultBean.dateTime > @from and c.faultBean.dateTime < @to";
+  private static final String DATEFILTER = " and c.faultBean.dateTime > @from and c.faultBean.dateTime < @to";
 
   private CosmosPagedIterable<VerifyKOEvent> query(SqlQuerySpec query) {
     log.info("executing query:" + query.getQueryText());
-    CosmosContainer container = client.getDatabase(dbname).getContainer(tablename);
+    CosmosContainer container = client.getDatabase(DBNAME).getContainer(TABLENAME);
     return container.queryItems(query, new CosmosQueryRequestOptions(), VerifyKOEvent.class);
   }
 
@@ -59,7 +57,7 @@ public class CosmosVerifyKOEventClient {
                 "SELECT * FROM c where"
                     + " c.creditor.idPA = @organizationFiscalCode"
                     + " and c.debtorPosition.noticeNumber = @noticeNumber"
-                    + dateFilter
+                    + DATEFILTER
         )
             .setParameters(paramList);
     return query(q);

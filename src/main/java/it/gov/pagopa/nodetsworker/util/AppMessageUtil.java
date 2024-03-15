@@ -7,11 +7,11 @@ import java.util.ResourceBundle;
 
 public class AppMessageUtil {
 
-  private static final String MESSAGES = "messages";
-
   private AppMessageUtil() {
     throw new IllegalStateException("Utility class");
   }
+
+  private static final String MESSAGES = "messages";
 
   private static ResourceBundle getBundle(Locale locale) {
     return Optional.ofNullable(locale)

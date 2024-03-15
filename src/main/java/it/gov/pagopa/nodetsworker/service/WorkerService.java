@@ -1,23 +1,24 @@
 package it.gov.pagopa.nodetsworker.service;
 
-import it.gov.pagopa.nodetsworker.exceptions.AppErrorCodeMessageEnum;
-import it.gov.pagopa.nodetsworker.exceptions.AppException;
 import it.gov.pagopa.nodetsworker.models.*;
-import it.gov.pagopa.nodetsworker.repository.CosmosBizEventRepository;
+import it.gov.pagopa.nodetsworker.repository.CosmosBizEventClient;
 import it.gov.pagopa.nodetsworker.repository.CosmosNegBizEventClient;
 import it.gov.pagopa.nodetsworker.repository.CosmosVerifyKOEventClient;
-import it.gov.pagopa.nodetsworker.repository.model.NegativeBizEvent;
-import it.gov.pagopa.nodetsworker.repository.model.PositiveBizEvent;
-import it.gov.pagopa.nodetsworker.repository.model.VerifyKOEvent;
+import it.gov.pagopa.nodetsworker.repository.models.NegativeBizEvent;
+import it.gov.pagopa.nodetsworker.repository.models.PositiveBizEvent;
+import it.gov.pagopa.nodetsworker.repository.models.VerifyKOEvent;
 import it.gov.pagopa.nodetsworker.resources.response.TransactionResponse;
+import it.gov.pagopa.nodetsworker.util.ValidationUtil;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.jboss.logging.Logger;
 
 import java.time.LocalDate;
-import java.time.temporal.ChronoUnit;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Optional;
 
 import static it.gov.pagopa.nodetsworker.util.AppConstant.SERVICE_ID;
 import static it.gov.pagopa.nodetsworker.util.AppConstant.STATUS_COMPLETED;
@@ -25,13 +26,13 @@ import static it.gov.pagopa.nodetsworker.util.AppConstant.STATUS_COMPLETED;
 @ApplicationScoped
 public class WorkerService {
 
-    private static String outcomeOK = "OK";
-    private static String outcomeKO = "KO";
+    private static final String OUTCOME_OK = "OK";
+    private static final String OUTCOME_KO = "KO";
 
     @Inject
     Logger log;
     @Inject
-    CosmosBizEventRepository positiveBizClient;
+    CosmosBizEventClient positiveBizClient;
     @Inject
     CosmosNegBizEventClient negativeBizClient;
     @Inject
@@ -39,8 +40,6 @@ public class WorkerService {
 
     @ConfigProperty(name = "date-range-limit")
     Integer dateRangeLimit;
-
-    private List<String> tipiEventoAttempts = Arrays.asList("activatePaymentNotice","activatePaymentNoticeV2","nodoInviaRPT","nodoInviaCarrelloRPT");
 
     private PaymentInfo eventToPaymentInfo(VerifyKOEvent evt) {
 
@@ -51,11 +50,11 @@ public class WorkerService {
                 .positiveBizEvtId(evt.getId())
                 .brokerPspId(evt.getPsp().getIdBrokerPsp())
                 .channelId(evt.getPsp().getIdChannel())
-                .insertedTimestamp(evt.getFaultBean().getDateTime().toString())
+                .insertedTimestamp(evt.getFaultBean().getDateTime())
                 .noticeNumber(evt.getDebtorPosition().getNoticeNumber())
                 .iuv(evt.getDebtorPosition().getIuv())
                 .organizationFiscalCode(evt.getCreditor().getIdPA())
-                .outcome(outcomeKO)
+                .outcome(OUTCOME_KO)
                 .faultBean(FaultBean.builder().faultCode(evt.getFaultBean().getFaultCode()).description(evt.getFaultBean().getDescription()).timestamp(evt.getFaultBean().getDateTime()).build())
                 .build();
     }
@@ -68,13 +67,13 @@ public class WorkerService {
                 .positiveBizEvtId(evt.getId())
                 .brokerPspId(evt.getPsp().getIdBrokerPsp())
                 .channelId(evt.getPsp().getIdChannel())
-                .insertedTimestamp(evt.getPaymentInfo().getPaymentDateTime().toString())
+                .insertedTimestamp(evt.getPaymentInfo().getPaymentDateTime())
                 .paymentToken(evt.getPaymentInfo().getPaymentToken())
                 .ccp(evt.getPaymentInfo().getPaymentToken())
                 .noticeNumber(evt.getDebtorPosition().getNoticeNumber())
                 .iuv(evt.getDebtorPosition().getIuv())
                 .organizationFiscalCode(evt.getCreditor().getIdPA())
-                .outcome(outcomeOK)
+                .outcome(OUTCOME_OK)
                 .build();
     }
 
@@ -86,7 +85,7 @@ public class WorkerService {
                 .positiveBizEvtId(evt.getId())
                 .brokerPspId(evt.getPsp().getIdBrokerPsp())
                 .channelId(evt.getPsp().getIdChannel())
-                .insertedTimestamp(evt.getPaymentInfo().getPaymentDateTime().toString())
+                .insertedTimestamp(evt.getPaymentInfo().getPaymentDateTime())
                 .paymentToken(evt.getPaymentInfo().getPaymentToken())
                 .ccp(evt.getPaymentInfo().getPaymentToken())
                 .noticeNumber(evt.getDebtorPosition().getNoticeNumber())
@@ -94,7 +93,7 @@ public class WorkerService {
                 .organizationFiscalCode(evt.getCreditor().getIdPA())
                 .stationId(evt.getCreditor().getIdStation())
                 .brokerOrganizationId(evt.getCreditor().getIdBrokerPA())
-                .outcome(outcomeOK)
+                .outcome(OUTCOME_OK)
                 .build();
     }
 
@@ -106,13 +105,13 @@ public class WorkerService {
                 .negativeBizEvtId(evt.getId())
                 .brokerPspId(evt.getPsp().getIdBrokerPsp())
                 .channelId(evt.getPsp().getIdChannel())
-                .insertedTimestamp(evt.getPaymentInfo().getPaymentDateTime().toString())
+                .insertedTimestamp(evt.getPaymentInfo().getPaymentDateTime())
                 .paymentToken(evt.getPaymentInfo().getPaymentToken())
                 .ccp(evt.getPaymentInfo().getPaymentToken())
                 .noticeNumber(evt.getDebtorPosition().getNoticeNumber())
                 .iuv(evt.getDebtorPosition().getIuv())
                 .organizationFiscalCode(evt.getCreditor().getIdPA())
-                .outcome(evt.getReAwakable()!=null && evt.getReAwakable() ? outcomeKO : null)
+                .outcome(evt.getReAwakable()!=null && evt.getReAwakable() ? OUTCOME_KO : null)
                 .build();
     }
 
@@ -124,7 +123,7 @@ public class WorkerService {
                 .negativeBizEvtId(evt.getId())
                 .brokerPspId(evt.getPsp().getIdBrokerPsp())
                 .channelId(evt.getPsp().getIdChannel())
-                .insertedTimestamp(evt.getPaymentInfo().getPaymentDateTime().toString())
+                .insertedTimestamp(evt.getPaymentInfo().getPaymentDateTime())
                 .paymentToken(evt.getPaymentInfo().getPaymentToken())
                 .ccp(evt.getPaymentInfo().getPaymentToken())
                 .noticeNumber(evt.getDebtorPosition().getNoticeNumber())
@@ -132,7 +131,7 @@ public class WorkerService {
                 .organizationFiscalCode(evt.getCreditor().getIdPA())
                 .stationId(evt.getCreditor().getIdStation())
                 .brokerOrganizationId(evt.getCreditor().getIdBrokerPA())
-                .outcome(evt.getReAwakable()!=null && evt.getReAwakable() ? outcomeKO : null)
+                .outcome(evt.getReAwakable()!=null && evt.getReAwakable() ? OUTCOME_KO : null)
                 .build();
     }
 
@@ -166,7 +165,7 @@ public class WorkerService {
 
     public TransactionResponse getInfoByNoticeNumber(String organizationFiscalCode, String noticeNumber, Optional<String> paymentToken, LocalDate dateFrom, LocalDate dateTo) {
 
-        DateRequest dateRequest = verifyDate(dateFrom, dateTo);
+        DateRequest dateRequest = ValidationUtil.verifyDateRequest(dateFrom, dateTo, dateRangeLimit);
 
         List<VerifyKOEvent> verifyKOEvents = verifyKOEventClient
                 .findEventsByCiAndNN(
@@ -193,9 +192,9 @@ public class WorkerService {
 
         List<BasePaymentInfo> collect = new ArrayList<>();
 
-        collect.addAll(verifyKOEvents.stream().map(d->eventToPaymentInfo(d)).toList());
-        collect.addAll(positiveEvents.stream().map(d->eventToPaymentInfo(d)).toList());
-        collect.addAll(negativeEvents.stream().map(d->eventToPaymentInfo(d)).toList());
+        collect.addAll(verifyKOEvents.stream().map(this::eventToPaymentInfo).toList());
+        collect.addAll(positiveEvents.stream().map(this::eventToPaymentInfo).toList());
+        collect.addAll(negativeEvents.stream().map(this::eventToPaymentInfo).toList());
 
         return TransactionResponse.builder()
                 .dateFrom(dateRequest.getFrom())
@@ -208,7 +207,7 @@ public class WorkerService {
 
     public TransactionResponse getInfoByIUV(String organizationFiscalCode, String noticeNumber, LocalDate dateFrom, LocalDate dateTo) {
 
-        DateRequest dateRequest = verifyDate(dateFrom, dateTo);
+        DateRequest dateRequest = ValidationUtil.verifyDateRequest(dateFrom, dateTo, dateRangeLimit);
 
         List<VerifyKOEvent> verifyKOEvents = verifyKOEventClient
                 .findEventsByCiAndNN(
@@ -235,9 +234,9 @@ public class WorkerService {
 
         List<BasePaymentInfo> collect = new ArrayList<>();
 
-        collect.addAll(verifyKOEvents.stream().map(d->eventToPaymentInfo(d)).toList());
-        collect.addAll(positiveEvents.stream().map(d->eventToPaymentInfo(d)).toList());
-        collect.addAll(negativeEvents.stream().map(d->eventToPaymentInfo(d)).toList());
+        collect.addAll(verifyKOEvents.stream().map(this::eventToPaymentInfo).toList());
+        collect.addAll(positiveEvents.stream().map(this::eventToPaymentInfo).toList());
+        collect.addAll(negativeEvents.stream().map(this::eventToPaymentInfo).toList());
 
         return TransactionResponse.builder()
                 .dateFrom(dateRequest.getFrom())
@@ -254,7 +253,7 @@ public class WorkerService {
             LocalDate dateFrom,
             LocalDate dateTo) {
 
-        DateRequest dateRequest = verifyDate(dateFrom, dateTo);
+        DateRequest dateRequest = ValidationUtil.verifyDateRequest(dateFrom, dateTo, dateRangeLimit);
 
         List<PositiveBizEvent> positiveEvents = positiveBizClient
                 .findEventsByCiAndNNAndToken(
@@ -288,7 +287,7 @@ public class WorkerService {
     public TransactionResponse getAttemptByIUVAndCCP(
             String organizationFiscalCode, String iuv, String ccp, LocalDate dateFrom, LocalDate dateTo) {
 
-        DateRequest dateRequest = verifyDate(dateFrom, dateTo);
+        DateRequest dateRequest = ValidationUtil.verifyDateRequest(dateFrom, dateTo, dateRangeLimit);
 
         List<PositiveBizEvent> positiveEvents = positiveBizClient
                 .findEventsByCiAndIUVAndCCP(
@@ -319,89 +318,4 @@ public class WorkerService {
                 .build();
     }
 
-    /**
-     * Check dates validity
-     *
-     * @param dateFrom
-     * @param dateTo
-     */
-    private DateRequest verifyDate(LocalDate dateFrom, LocalDate dateTo) {
-        if (dateFrom == null && dateTo != null || dateFrom != null && dateTo == null) {
-            throw new AppException(
-                    AppErrorCodeMessageEnum.POSITION_SERVICE_DATE_BAD_REQUEST,
-                    "Date from and date to must be both defined");
-        } else if (dateFrom != null && dateTo != null && dateFrom.isAfter(dateTo)) {
-            throw new AppException(
-                    AppErrorCodeMessageEnum.POSITION_SERVICE_DATE_BAD_REQUEST,
-                    "Date from must be before date to");
-        }
-        if (dateFrom == null && dateTo == null) {
-            dateTo = LocalDate.now();
-            dateFrom = dateTo.minusDays(dateRangeLimit);
-        }
-        if (ChronoUnit.DAYS.between(dateFrom, dateTo) > dateRangeLimit) {
-            throw new AppException(
-                    AppErrorCodeMessageEnum.INTERVAL_TOO_LARGE,
-                    dateRangeLimit);
-        }
-        return DateRequest.builder().from(dateFrom).to(dateTo).build();
-    }
-
-//    private Pair<DateRequest, DateRequest> getHistoryDates(DateRequest dateRequest) {
-//        LocalDate dateLimit = LocalDate.now().minusDays(reCosmosDayLimit);
-//        LocalDate historyDateFrom = null;
-//        LocalDate historyDateTo = null;
-//        LocalDate actualDateFrom = null;
-//        LocalDate actualDateTo = null;
-//
-//        if(dateRequest.getFrom().isBefore(dateLimit)){
-//            historyDateFrom = dateRequest.getFrom();
-//            historyDateTo = Arrays.asList(dateLimit,dateRequest.getTo()).stream().min(LocalDate::compareTo).get();
-//        }
-//
-//        if(dateRequest.getTo().isAfter(dateLimit)){
-//            actualDateFrom = Arrays.asList(dateLimit,dateRequest.getFrom()).stream().max(LocalDate::compareTo).get();
-//            if(historyDateTo!=null){
-//                actualDateFrom = actualDateFrom.plusDays(1);
-//            }
-//            actualDateTo = dateRequest.getTo();
-//        }
-//
-//        return Pair.of(
-//                historyDateFrom!=null? DateRequest.builder().from(historyDateFrom).to(historyDateTo).build():null,
-//                actualDateFrom!=null? DateRequest.builder().from(actualDateFrom).to(actualDateTo).build():null
-//        );
-//    }
-
-//    public Map countByPartitionKey(String pk) {
-//        log.infof("Querying partitionKey on table storage: %s", pk);
-//        Instant start = Instant.now();
-//        long tableItems = reTableStorageClient.findReByPartitionKey(pk);
-//        Instant finish = Instant.now();
-//        long tableTimeElapsed = Duration.between(start, finish).toMillis();
-//        log.infof("Done querying partitionKey %s on table storage. Count %s", pk, tableItems);
-//
-//
-//        log.infof("Querying partitionKey on cosmos: %s", pk);
-//        start = Instant.now();
-//        Long cosmosItems = reClient.findReByPartitionKey(pk).stream().findFirst().get().getCount();
-//        finish = Instant.now();
-//        long cosmosTimeElapsed = Duration.between(start, finish).toMillis();
-//        log.infof("Done querying partitionKey %s on cosmos. Count %s", pk, cosmosItems);
-//
-//
-//        Map<String, Map> response = new HashMap<>();
-//        Map<String, Long> table = new HashMap<>();
-//        table.put("items", tableItems);
-//        table.put("millis", tableTimeElapsed);
-//
-//        Map<String, Long> cosmos = new HashMap<>();
-//        cosmos.put("items", cosmosItems);
-//        cosmos.put("millis", cosmosTimeElapsed);
-//
-//        response.put("table", table);
-//        response.put("cosmos", cosmos);
-//
-//        return response;
-//    }
 }
