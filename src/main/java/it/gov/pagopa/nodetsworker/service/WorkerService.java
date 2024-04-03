@@ -1,13 +1,17 @@
 package it.gov.pagopa.nodetsworker.service;
 
-import it.gov.pagopa.nodetsworker.models.*;
+import it.gov.pagopa.nodetsworker.models.BasePaymentInfo;
+import it.gov.pagopa.nodetsworker.models.DateRequest;
+import it.gov.pagopa.nodetsworker.models.FaultBean;
+import it.gov.pagopa.nodetsworker.models.PaymentAttemptInfo;
 import it.gov.pagopa.nodetsworker.repository.CosmosBizEventClient;
 import it.gov.pagopa.nodetsworker.repository.CosmosNegBizEventClient;
 import it.gov.pagopa.nodetsworker.repository.CosmosVerifyKOEventClient;
 import it.gov.pagopa.nodetsworker.repository.models.NegativeBizEvent;
 import it.gov.pagopa.nodetsworker.repository.models.PositiveBizEvent;
 import it.gov.pagopa.nodetsworker.repository.models.VerifyKOEvent;
-import it.gov.pagopa.nodetsworker.resources.response.TransactionResponse;
+import it.gov.pagopa.nodetsworker.resources.response.PaymentAttemptsResponse;
+import it.gov.pagopa.nodetsworker.resources.response.PaymentsResponse;
 import it.gov.pagopa.nodetsworker.util.ValidationUtil;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
@@ -41,13 +45,13 @@ public class WorkerService {
     @ConfigProperty(name = "date-range-limit")
     Integer dateRangeLimit;
 
-    private PaymentInfo eventToPaymentInfo(VerifyKOEvent evt) {
+    private BasePaymentInfo eventToPaymentInfo(VerifyKOEvent evt) {
 
-        return PaymentInfo.builder()
+        return BasePaymentInfo.builder()
                 .businessProcess("VerifyPaymentNotice")
                 .serviceIdentifier(evt.getServiceIdentifier())
                 .pspId(evt.getPsp().getIdPsp())
-                .positiveBizEvtId(evt.getId())
+                .verifyKoEvtId(evt.getId())
                 .brokerPspId(evt.getPsp().getIdBrokerPsp())
                 .channelId(evt.getPsp().getIdChannel())
                 .insertedTimestamp(evt.getFaultBean().getDateTime())
@@ -59,8 +63,8 @@ public class WorkerService {
                 .build();
     }
 
-    private PaymentInfo eventToPaymentInfo(PositiveBizEvent evt) {
-        return PaymentInfo.builder()
+    private BasePaymentInfo eventToPaymentInfo(PositiveBizEvent evt) {
+        return BasePaymentInfo.builder()
                 .status(STATUS_COMPLETED)
                 .serviceIdentifier(evt.getProperties()!=null?evt.getProperties().get(SERVICE_ID):"n/a")
                 .pspId(evt.getPsp().getIdPsp())
@@ -97,8 +101,8 @@ public class WorkerService {
                 .build();
     }
 
-    private PaymentInfo eventToPaymentInfo(NegativeBizEvent evt) {
-        return PaymentInfo.builder()
+    private BasePaymentInfo eventToPaymentInfo(NegativeBizEvent evt) {
+        return BasePaymentInfo.builder()
                 .businessProcess(evt.getBusinessProcess())
                 .serviceIdentifier(evt.getProperties()!=null?evt.getProperties().get(SERVICE_ID):"n/a")
                 .pspId(evt.getPsp().getIdPsp())
@@ -163,7 +167,7 @@ public class WorkerService {
         return pai;
     }
 
-    public TransactionResponse getInfoByNoticeNumber(String organizationFiscalCode, String noticeNumber, Optional<String> paymentToken, LocalDate dateFrom, LocalDate dateTo) {
+    public PaymentsResponse getInfoByNoticeNumber(String organizationFiscalCode, String noticeNumber, Optional<String> paymentToken, LocalDate dateFrom, LocalDate dateTo) {
 
         DateRequest dateRequest = ValidationUtil.verifyDateRequest(dateFrom, dateTo, dateRangeLimit);
 
@@ -196,16 +200,17 @@ public class WorkerService {
         collect.addAll(positiveEvents.stream().map(this::eventToPaymentInfo).toList());
         collect.addAll(negativeEvents.stream().map(this::eventToPaymentInfo).toList());
 
-        return TransactionResponse.builder()
-                .dateFrom(dateRequest.getFrom())
-                .dateTo(dateRequest.getTo())
-                .count(collect.size())
-                .payments(collect.stream().sorted(Comparator.comparing(BasePaymentInfo::getInsertedTimestamp)).toList())
-                .build();
+        PaymentsResponse resp = new PaymentsResponse();
+        resp.setPayments(collect.stream().sorted(Comparator.comparing(BasePaymentInfo::getInsertedTimestamp)).toList());
+        resp.setDateFrom(dateRequest.getFrom());
+        resp.setDateTo(dateRequest.getTo());
+        resp.setCount(collect.size());
+
+        return resp;
     }
 
 
-    public TransactionResponse getInfoByIUV(String organizationFiscalCode, String noticeNumber, LocalDate dateFrom, LocalDate dateTo) {
+    public PaymentsResponse getInfoByIUV(String organizationFiscalCode, String noticeNumber, LocalDate dateFrom, LocalDate dateTo) {
 
         DateRequest dateRequest = ValidationUtil.verifyDateRequest(dateFrom, dateTo, dateRangeLimit);
 
@@ -238,15 +243,16 @@ public class WorkerService {
         collect.addAll(positiveEvents.stream().map(this::eventToPaymentInfo).toList());
         collect.addAll(negativeEvents.stream().map(this::eventToPaymentInfo).toList());
 
-        return TransactionResponse.builder()
-                .dateFrom(dateRequest.getFrom())
-                .dateTo(dateRequest.getTo())
-                .count(collect.size())
-                .payments(collect.stream().sorted(Comparator.comparing(BasePaymentInfo::getInsertedTimestamp)).toList())
-                .build();
+        PaymentsResponse resp = new PaymentsResponse();
+        resp.setPayments(collect.stream().sorted(Comparator.comparing(BasePaymentInfo::getInsertedTimestamp)).toList());
+        resp.setDateFrom(dateRequest.getFrom());
+        resp.setDateTo(dateRequest.getTo());
+        resp.setCount(collect.size());
+
+        return resp;
     }
 
-    public TransactionResponse getAttemptByNoticeNumberAndPaymentToken(
+    public PaymentAttemptsResponse getAttemptByNoticeNumberAndPaymentToken(
             String organizationFiscalCode,
             String noticeNumber,
             String paymentToken,
@@ -271,20 +277,20 @@ public class WorkerService {
                         dateRequest.getFrom(),
                         dateRequest.getTo()).stream().toList();
 
-        List<BasePaymentInfo> collect = new ArrayList<>();
+        List<PaymentAttemptInfo> collect = new ArrayList<>();
 
         collect.addAll(positiveEvents.stream().map(d->enrichPaymentAttemptInfo(eventToPaymentAttemptInfo(d),d)).toList());
         collect.addAll(negativeEvents.stream().map(d->enrichPaymentAttemptInfo(eventToPaymentAttemptInfo(d),d)).toList());
 
-        return TransactionResponse.builder()
-                .dateFrom(dateRequest.getFrom())
-                .dateTo(dateRequest.getTo())
-                .count(collect.size())
-                .payments(collect)
-                .build();
+        PaymentAttemptsResponse resp = new PaymentAttemptsResponse();
+        resp.setPayments(collect);
+        resp.setDateFrom(dateRequest.getFrom());
+        resp.setDateTo(dateRequest.getTo());
+        resp.setCount(collect.size());
+        return resp;
     }
 
-    public TransactionResponse getAttemptByIUVAndCCP(
+    public PaymentAttemptsResponse getAttemptByIUVAndCCP(
             String organizationFiscalCode, String iuv, String ccp, LocalDate dateFrom, LocalDate dateTo) {
 
         DateRequest dateRequest = ValidationUtil.verifyDateRequest(dateFrom, dateTo, dateRangeLimit);
@@ -305,17 +311,17 @@ public class WorkerService {
                         dateRequest.getFrom(),
                         dateRequest.getTo()).stream().toList();
 
-        List<BasePaymentInfo> collect = new ArrayList<>();
+        List<PaymentAttemptInfo> collect = new ArrayList<>();
 
         collect.addAll(positiveEvents.stream().map(d->enrichPaymentAttemptInfo(eventToPaymentAttemptInfo(d),d)).toList());
         collect.addAll(negativeEvents.stream().map(d->enrichPaymentAttemptInfo(eventToPaymentAttemptInfo(d),d)).toList());
 
-        return TransactionResponse.builder()
-                .dateFrom(dateRequest.getFrom())
-                .dateTo(dateRequest.getTo())
-                .count(collect.size())
-                .payments(collect)
-                .build();
+        PaymentAttemptsResponse resp = new PaymentAttemptsResponse();
+        resp.setPayments(collect);
+        resp.setDateFrom(dateRequest.getFrom());
+        resp.setDateTo(dateRequest.getTo());
+        resp.setCount(collect.size());
+        return resp;
     }
 
 }

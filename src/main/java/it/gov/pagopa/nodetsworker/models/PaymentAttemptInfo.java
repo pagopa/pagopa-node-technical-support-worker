@@ -13,12 +13,13 @@ import java.math.BigDecimal;
 @NoArgsConstructor
 @AllArgsConstructor
 @SuperBuilder
-public class PaymentAttemptInfo extends BasePaymentAttemptInfo {
+public class PaymentAttemptInfo extends BasePaymentInfo {
 
-  private String paymentToken;
-  private String ccp;
-  private String pmReceipt;
+  private String brokerOrganizationId;
+  private String stationId;
   private String paymentMethod;
+  private BigDecimal amount;
+  private String pmReceipt;
   private String touchPoint;
   private BigDecimal fee;
   private BigDecimal feeOrganization;

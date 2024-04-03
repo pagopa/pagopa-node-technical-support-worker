@@ -1,7 +1,6 @@
 package it.gov.pagopa.nodetsworker.resources.response;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.annotation.JsonSubTypes;
 import it.gov.pagopa.nodetsworker.models.BasePaymentInfo;
 import lombok.*;
 
@@ -13,7 +12,7 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class TransactionResponse<T extends BasePaymentInfo> {
+public class PaymentsResponse{
 
   private LocalDate dateFrom;
   private LocalDate dateTo;
@@ -21,9 +20,5 @@ public class TransactionResponse<T extends BasePaymentInfo> {
   private int count;
 
   @JsonProperty("data")
-  @JsonSubTypes({
-    @JsonSubTypes.Type(value = BasePaymentInfo.class, name = "car"),
-    @JsonSubTypes.Type(value = BasePaymentInfo.class, name = "truck")
-  })
-  private List<T> payments;
+  private List<BasePaymentInfo> payments;
 }

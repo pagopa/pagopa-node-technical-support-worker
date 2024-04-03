@@ -1,7 +1,8 @@
 package it.gov.pagopa.nodetsworker.resources;
 
 import it.gov.pagopa.nodetsworker.models.ProblemJson;
-import it.gov.pagopa.nodetsworker.resources.response.TransactionResponse;
+import it.gov.pagopa.nodetsworker.resources.response.PaymentAttemptsResponse;
+import it.gov.pagopa.nodetsworker.resources.response.PaymentsResponse;
 import it.gov.pagopa.nodetsworker.service.WorkerService;
 import jakarta.inject.Inject;
 import jakarta.validation.constraints.NotNull;
@@ -32,7 +33,7 @@ public class WorkerResource implements Serializable {
             content =
                 @Content(
                     mediaType = MediaType.APPLICATION_JSON,
-                    schema = @Schema(implementation = TransactionResponse.class))),
+                    schema = @Schema(implementation = PaymentsResponse.class))),
         @APIResponse(
             responseCode = "400",
             description = "Bad Request",
@@ -69,7 +70,7 @@ public class WorkerResource implements Serializable {
             content =
                 @Content(
                     mediaType = MediaType.APPLICATION_JSON,
-                    schema = @Schema(implementation = TransactionResponse.class))),
+                    schema = @Schema(implementation = PaymentsResponse.class))),
         @APIResponse(
             responseCode = "400",
             description = "Bad Request",
@@ -105,7 +106,7 @@ public class WorkerResource implements Serializable {
             content =
                 @Content(
                     mediaType = MediaType.APPLICATION_JSON,
-                    schema = @Schema(implementation = TransactionResponse.class))),
+                    schema = @Schema(implementation = PaymentAttemptsResponse.class))),
         @APIResponse(
             responseCode = "400",
             description = "Bad Request",
@@ -142,7 +143,7 @@ public class WorkerResource implements Serializable {
             content =
                 @Content(
                     mediaType = MediaType.APPLICATION_JSON,
-                    schema = @Schema(implementation = TransactionResponse.class))),
+                    schema = @Schema(implementation = PaymentAttemptsResponse.class))),
         @APIResponse(
             responseCode = "400",
             description = "Bad Request",

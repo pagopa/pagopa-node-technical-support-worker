@@ -8,12 +8,14 @@ import com.azure.cosmos.util.CosmosPagedIterable;
 import io.quarkus.test.junit.QuarkusTest;
 import it.gov.pagopa.nodetsworker.exceptions.AppErrorCodeMessageEnum;
 import it.gov.pagopa.nodetsworker.exceptions.AppException;
+import it.gov.pagopa.nodetsworker.models.BasePaymentInfo;
 import it.gov.pagopa.nodetsworker.models.PaymentAttemptInfo;
 import it.gov.pagopa.nodetsworker.repository.CosmosBizEventClient;
 import it.gov.pagopa.nodetsworker.repository.CosmosNegBizEventClient;
 import it.gov.pagopa.nodetsworker.repository.CosmosVerifyKOEventClient;
 import it.gov.pagopa.nodetsworker.repository.models.*;
-import it.gov.pagopa.nodetsworker.resources.response.TransactionResponse;
+import it.gov.pagopa.nodetsworker.resources.response.PaymentAttemptsResponse;
+import it.gov.pagopa.nodetsworker.resources.response.PaymentsResponse;
 import it.gov.pagopa.nodetsworker.service.WorkerService;
 import it.gov.pagopa.nodetsworker.util.AppConstantTestHelper;
 import lombok.SneakyThrows;
@@ -31,13 +33,13 @@ import java.util.Arrays;
 import java.util.Optional;
 import java.util.stream.Stream;
 
-import static io.restassured.RestAssured.given;
 import static it.gov.pagopa.nodetsworker.util.AppConstantTestHelper.*;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.greaterThan;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 @QuarkusTest
 @Slf4j
@@ -157,9 +159,9 @@ class SpTest {
     ));
 
 
-    TransactionResponse res = ws.getInfoByNoticeNumber(PA_CODE, "", Optional.empty(), LocalDate.now(), LocalDate.now());
+    PaymentsResponse res = ws.getInfoByNoticeNumber(PA_CODE, "", Optional.empty(), LocalDate.now(), LocalDate.now());
     assertThat(res.getPayments().size(), greaterThan(0));
-    it.gov.pagopa.nodetsworker.models.PaymentInfo o = (it.gov.pagopa.nodetsworker.models.PaymentInfo) res.getPayments().get(0);
+    BasePaymentInfo o = (BasePaymentInfo) res.getPayments().get(0);
     assertThat(o.getNoticeNumber(), equalTo(noticeNumber));
     assertThat(o.getOrganizationFiscalCode(), equalTo(PA_CODE));
     assertThat(o.getOutcome(), equalTo(outcomeKO));
@@ -185,16 +187,16 @@ class SpTest {
     ));
     when(streamBizneg.toList()).thenReturn(Arrays.asList());
 
-    TransactionResponse res = ws.getInfoByNoticeNumber(PA_CODE, "", Optional.empty(), LocalDate.now(), LocalDate.now());
+    PaymentsResponse res = ws.getInfoByNoticeNumber(PA_CODE, "", Optional.empty(), LocalDate.now(), LocalDate.now());
     assertThat(res.getPayments().size(), equalTo(2));
-    it.gov.pagopa.nodetsworker.models.PaymentInfo o = (it.gov.pagopa.nodetsworker.models.PaymentInfo) res.getPayments().get(0);
+    BasePaymentInfo o = (BasePaymentInfo) res.getPayments().get(0);
     assertThat(o.getNoticeNumber(), equalTo(noticeNumber));
     assertThat(o.getOrganizationFiscalCode(), equalTo(PA_CODE));
     assertThat(o.getPspId(), equalTo(PSP_CODE));
     assertThat(o.getChannelId(), equalTo(CHANNEL_CODE));
     assertThat(o.getBrokerPspId(), equalTo(INT_PSP_CODE));
     assertThat(o.getFaultBean().getFaultCode(), equalTo("FAULT_CODE"));
-    it.gov.pagopa.nodetsworker.models.PaymentInfo o2 = (it.gov.pagopa.nodetsworker.models.PaymentInfo) res.getPayments().get(1);
+    BasePaymentInfo o2 = (BasePaymentInfo) res.getPayments().get(1);
     assertThat(o2.getNoticeNumber(), equalTo(noticeNumber));
     assertThat(o2.getOrganizationFiscalCode(), equalTo(PA_CODE));
     assertThat(o2.getPspId(), equalTo(PSP_CODE));
@@ -221,9 +223,9 @@ class SpTest {
             new NegativeBizEvent("", "", "","",true,dp,creditor,psp,null,npi,null,null,10l,null)
     ));
 
-    TransactionResponse res =ws.getInfoByNoticeNumber(PA_CODE, "", Optional.empty(), LocalDate.now(), LocalDate.now());
+    PaymentsResponse res =ws.getInfoByNoticeNumber(PA_CODE, "", Optional.empty(), LocalDate.now(), LocalDate.now());
     assertThat(res.getPayments().size(), greaterThan(0));
-    it.gov.pagopa.nodetsworker.models.PaymentInfo o = (it.gov.pagopa.nodetsworker.models.PaymentInfo) res.getPayments().get(0);
+    BasePaymentInfo o = (BasePaymentInfo) res.getPayments().get(0);
     assertThat(o.getNoticeNumber(), equalTo(noticeNumber));
     assertThat(o.getOrganizationFiscalCode(), equalTo(PA_CODE));
     assertThat(o.getPspId(), equalTo(PSP_CODE));
@@ -248,9 +250,9 @@ class SpTest {
     when(streamBizneg.toList()).thenReturn(Arrays.asList(
     ));
 
-    TransactionResponse res =ws.getInfoByNoticeNumber(PA_CODE, "", Optional.empty(), LocalDate.now(), LocalDate.now());
+    PaymentsResponse res =ws.getInfoByNoticeNumber(PA_CODE, "", Optional.empty(), LocalDate.now(), LocalDate.now());
     assertThat(res.getPayments().size(), greaterThan(0));
-    it.gov.pagopa.nodetsworker.models.PaymentInfo o = (it.gov.pagopa.nodetsworker.models.PaymentInfo) res.getPayments().get(0);
+    BasePaymentInfo o = (BasePaymentInfo) res.getPayments().get(0);
     assertThat(o.getIuv(), equalTo(iuv));
     assertThat(o.getOrganizationFiscalCode(), equalTo(PA_CODE));
     assertThat(o.getOutcome(), equalTo(AppConstantTestHelper.outcomeOK));
@@ -277,9 +279,9 @@ class SpTest {
     ));
 
 
-    TransactionResponse res =ws.getInfoByNoticeNumber(PA_CODE, "", Optional.empty(), LocalDate.now(), LocalDate.now());
+    PaymentsResponse res =ws.getInfoByNoticeNumber(PA_CODE, "", Optional.empty(), LocalDate.now(), LocalDate.now());
     assertThat(res.getPayments().size(), greaterThan(0));
-    it.gov.pagopa.nodetsworker.models.PaymentInfo o = (it.gov.pagopa.nodetsworker.models.PaymentInfo) res.getPayments().get(0);
+    BasePaymentInfo o = (BasePaymentInfo) res.getPayments().get(0);
     assertThat(o.getIuv(), equalTo(iuv));
     assertThat(o.getOrganizationFiscalCode(), equalTo(PA_CODE));
     assertThat(o.getPspId(), equalTo(PSP_CODE));
@@ -307,7 +309,7 @@ class SpTest {
     when(streamBizneg.toList()).thenReturn(Arrays.asList(
     ));
 
-    TransactionResponse res = ws.getAttemptByNoticeNumberAndPaymentToken(PA_CODE, noticeNumber, token, LocalDate.now(), LocalDate.now());
+    PaymentAttemptsResponse res = ws.getAttemptByNoticeNumberAndPaymentToken(PA_CODE, noticeNumber, token, LocalDate.now(), LocalDate.now());
     assertThat(res.getPayments().size(), greaterThan(0));
     PaymentAttemptInfo o = (PaymentAttemptInfo) res.getPayments().get(0);
     assertThat(o.getNoticeNumber(), equalTo(noticeNumber));
@@ -337,7 +339,7 @@ class SpTest {
             new NegativeBizEvent("", "", "","",true,dp,creditor,psp,null,npi,null,null,10l,null)
     ));
 
-    TransactionResponse res = ws.getAttemptByNoticeNumberAndPaymentToken(PA_CODE, noticeNumber, token, LocalDate.now(), LocalDate.now());
+    PaymentAttemptsResponse res = ws.getAttemptByNoticeNumberAndPaymentToken(PA_CODE, noticeNumber, token, LocalDate.now(), LocalDate.now());
     assertThat(res.getPayments().size(), greaterThan(0));
     PaymentAttemptInfo o = (PaymentAttemptInfo) res.getPayments().get(0);
     assertThat(o.getNoticeNumber(), equalTo(noticeNumber));
@@ -367,7 +369,7 @@ class SpTest {
     when(streamBizneg.toList()).thenReturn(Arrays.asList(
     ));
 
-    TransactionResponse res = ws.getAttemptByIUVAndCCP(PA_CODE, iuv,ccp, LocalDate.now(), LocalDate.now());
+    PaymentAttemptsResponse res = ws.getAttemptByIUVAndCCP(PA_CODE, iuv,ccp, LocalDate.now(), LocalDate.now());
     assertThat(res.getPayments().size(), greaterThan(0));
     PaymentAttemptInfo o = (PaymentAttemptInfo) res.getPayments().get(0);
     assertThat(o.getIuv(), equalTo(iuv));
@@ -397,7 +399,7 @@ class SpTest {
             new NegativeBizEvent("", "", "","",true,dp,creditor,psp,null,npi,null,null,10l,null)
     ));
 
-    TransactionResponse res =ws.getAttemptByIUVAndCCP(PA_CODE, iuv,ccp, LocalDate.now(), LocalDate.now());
+    PaymentAttemptsResponse res =ws.getAttemptByIUVAndCCP(PA_CODE, iuv,ccp, LocalDate.now(), LocalDate.now());
     assertThat(res.getPayments().size(), greaterThan(0));
     PaymentAttemptInfo o = (PaymentAttemptInfo) res.getPayments().get(0);
     assertThat(o.getIuv(), equalTo(iuv));

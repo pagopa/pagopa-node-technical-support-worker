@@ -30,8 +30,13 @@ public class BasePaymentInfo {
 //  private String updatedTimestamp;
   private String serviceIdentifier;
 
+  private String paymentToken;
+  private String ccp;
+
   @JsonInclude(JsonInclude.Include.NON_NULL)
   private String positiveBizEvtId;
+  @JsonInclude(JsonInclude.Include.NON_NULL)
+  private String verifyKoEvtId;
   @JsonInclude(JsonInclude.Include.NON_NULL)
   private String negativeBizEvtId;
 
