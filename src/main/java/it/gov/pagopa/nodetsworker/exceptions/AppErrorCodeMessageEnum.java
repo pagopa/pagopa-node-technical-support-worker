@@ -15,7 +15,6 @@ public enum AppErrorCodeMessageEnum implements AppErrorCodeMessageInterface {
       "0402", "bad.request.inputJson.instant", RestResponse.Status.BAD_REQUEST),
   BAD_REQUEST_INPUT_JSON_ENUM(
       "0403", "bad.request.inputJson.enum", RestResponse.Status.BAD_REQUEST),
-
   BAD_REQUEST_INPUT_JSON_DESERIALIZE_ERROR(
       "0404", "bad.request.inputJson.deserialize", RestResponse.Status.BAD_REQUEST),
   BAD_REQUEST_INPUT_JSON_NON_VALID_FORMAT(
