@@ -12,7 +12,7 @@ import lombok.experimental.SuperBuilder;
 @NoArgsConstructor
 @AllArgsConstructor
 @SuperBuilder
-public class BasePaymentInfo {
+public class PaymentInfo {
 
   @JsonInclude(JsonInclude.Include.NON_NULL)
   private String businessProcess;

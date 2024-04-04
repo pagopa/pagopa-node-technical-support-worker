@@ -1,7 +1,7 @@
 package it.gov.pagopa.nodetsworker.resources;
 
 import it.gov.pagopa.nodetsworker.models.ProblemJson;
-import it.gov.pagopa.nodetsworker.resources.response.PaymentAttemptsResponse;
+import it.gov.pagopa.nodetsworker.resources.response.PaymentsFullResponse;
 import it.gov.pagopa.nodetsworker.resources.response.PaymentsResponse;
 import it.gov.pagopa.nodetsworker.service.WorkerService;
 import jakarta.inject.Inject;
@@ -106,7 +106,7 @@ public class WorkerResource implements Serializable {
             content =
                 @Content(
                     mediaType = MediaType.APPLICATION_JSON,
-                    schema = @Schema(implementation = PaymentAttemptsResponse.class))),
+                    schema = @Schema(implementation = PaymentsFullResponse.class))),
         @APIResponse(
             responseCode = "400",
             description = "Bad Request",
@@ -131,7 +131,7 @@ public class WorkerResource implements Serializable {
       @QueryParam("dateFrom") LocalDate dateFrom,
       @QueryParam("dateTo") LocalDate dateTo) {
     return Response.ok(
-                    workerService.getAttemptByNoticeNumberAndPaymentToken(organizationFiscalCode, noticeNumber, paymentToken,dateFrom, dateTo))
+                    workerService.getPaymentsFullByNoticeNumberAndPaymentToken(organizationFiscalCode, noticeNumber, paymentToken,dateFrom, dateTo))
         .build();
   }
 
@@ -143,7 +143,7 @@ public class WorkerResource implements Serializable {
             content =
                 @Content(
                     mediaType = MediaType.APPLICATION_JSON,
-                    schema = @Schema(implementation = PaymentAttemptsResponse.class))),
+                    schema = @Schema(implementation = PaymentsFullResponse.class))),
         @APIResponse(
             responseCode = "400",
             description = "Bad Request",
@@ -168,7 +168,7 @@ public class WorkerResource implements Serializable {
       @QueryParam("dateFrom") LocalDate dateFrom,
       @QueryParam("dateTo") LocalDate dateTo) {
     return Response.ok(
-            workerService.getAttemptByIUVAndCCP(organizationFiscalCode, iuv, ccp, dateFrom, dateTo))
+            workerService.getPaymentsFullByIUVAndCCP(organizationFiscalCode, iuv, ccp, dateFrom, dateTo))
         .build();
   }
 }

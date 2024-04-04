@@ -1,7 +1,7 @@
 package it.gov.pagopa.nodetsworker.resources.response;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import it.gov.pagopa.nodetsworker.models.BasePaymentInfo;
+import it.gov.pagopa.nodetsworker.models.PaymentInfo;
 import lombok.*;
 
 import java.time.LocalDate;
@@ -20,5 +20,5 @@ public class PaymentsResponse{
   private int count;
 
   @JsonProperty("data")
-  private List<BasePaymentInfo> payments;
+  private List<PaymentInfo> payments;
 }

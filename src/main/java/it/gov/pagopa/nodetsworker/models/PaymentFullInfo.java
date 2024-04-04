@@ -13,7 +13,7 @@ import java.math.BigDecimal;
 @NoArgsConstructor
 @AllArgsConstructor
 @SuperBuilder
-public class PaymentAttemptInfo extends BasePaymentInfo {
+public class PaymentFullInfo extends PaymentInfo {
 
   private String brokerOrganizationId;
   private String stationId;

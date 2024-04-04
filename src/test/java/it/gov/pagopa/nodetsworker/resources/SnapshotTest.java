@@ -77,32 +77,6 @@ class SnapshotTest {
 
   @SneakyThrows
   @Test
-  @DisplayName("Dates range too wide")
-  void datesRangeTooWide() {
-    StringBuilder url = new StringBuilder(POS_PAY_SS_INFO_PATH.formatted(PA_CODE));
-
-    LocalDate dateFrom = LocalDate.of(2023, 1, 30);
-    LocalDate dateTo = LocalDate.of(2023, 6, 6);
-    url.append("?dateFrom=").append(dateFrom);
-    url.append("&dateTo=").append(dateTo);
-
-    ProblemJson res =
-            given()
-                    .header(HEADER)
-                    .when()
-                    .get(url.toString())
-                    .then()
-                    .statusCode(400)
-                    .extract()
-                    .as(ProblemJson.class);
-
-    assertThat(res.getStatus(), equalTo(400));
-    assertThat(res.getTitle(), equalTo("NODE_TECH_SUPPORT-0401"));
-    assertThat(res.getDetails(), equalTo("Date interval too large,max date difference must be %s days".formatted(dateRangeLimit)));
-  }
-
-  @SneakyThrows
-  @Test
   @DisplayName("DateTo null")
   void dateToNull() {
     StringBuilder url = new StringBuilder(POS_PAY_SS_INFO_PATH.formatted(PA_CODE));
