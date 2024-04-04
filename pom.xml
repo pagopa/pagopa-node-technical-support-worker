@@ -4,7 +4,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>it.gov.pagopa</groupId>
   <artifactId>node-techical-support-worker</artifactId>
-  <version>1.2.5-1-updates</version>
+  <version>1.2.5-2-updates</version>
   <properties>
     <compiler-plugin.version>3.11.0</compiler-plugin.version>
     <lombok.version>1.18.26</lombok.version>
