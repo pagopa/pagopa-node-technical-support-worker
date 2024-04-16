@@ -5,7 +5,6 @@ import it.gov.pagopa.nodetsworker.exceptions.AppException;
 import it.gov.pagopa.nodetsworker.models.DateRequest;
 
 import java.time.LocalDate;
-import java.time.temporal.ChronoUnit;
 
 public class ValidationUtil {
 
@@ -30,11 +29,6 @@ public class ValidationUtil {
         if (dateFrom == null && dateTo == null) {
             dateTo = LocalDate.now();
             dateFrom = dateTo.minusDays(dateRangeLimit);
-        }
-        if (ChronoUnit.DAYS.between(dateFrom, dateTo) > dateRangeLimit) {
-            throw new AppException(
-                    AppErrorCodeMessageEnum.INTERVAL_TOO_LARGE,
-                    dateRangeLimit);
         }
         return DateRequest.builder().from(dateFrom).to(dateTo).build();
     }

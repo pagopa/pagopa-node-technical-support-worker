@@ -13,10 +13,15 @@ import java.math.BigDecimal;
 @NoArgsConstructor
 @AllArgsConstructor
 @SuperBuilder
-public class BasePaymentAttemptInfo extends BasePaymentInfo {
+public class PaymentFullInfo extends PaymentInfo {
 
   private String brokerOrganizationId;
   private String stationId;
   private String paymentMethod;
   private BigDecimal amount;
+  private String pmReceipt;
+  private String touchPoint;
+  private BigDecimal fee;
+  private BigDecimal feeOrganization;
+
 }
