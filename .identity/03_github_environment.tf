@@ -34,10 +34,6 @@ locals {
     "NAMESPACE" : local.domain,
   }
   repo_secrets = {
-    "SONAR_TOKEN" : data.azurerm_key_vault_secret.key_vault_sonar.value,
-    "BOT_TOKEN_GITHUB" : data.azurerm_key_vault_secret.key_vault_bot_token.value,
-    "CUCUMBER_PUBLISH_TOKEN" : data.azurerm_key_vault_secret.key_vault_cucumber_token.value,
-    "SLACK_WEBHOOK_URL": data.azurerm_key_vault_secret.key_vault_slack_webhook_url.value
   }
 }
 
@@ -57,7 +53,6 @@ resource "github_actions_environment_secret" "github_environment_runner_secrets"
 # ENV Variables #
 #################
 
-
 resource "github_actions_environment_variable" "github_environment_runner_variables" {
   for_each      = local.env_variables
   repository    = local.github.repository
@@ -66,31 +61,47 @@ resource "github_actions_environment_variable" "github_environment_runner_variab
   value         = each.value
 }
 
-#############################
-# Secrets of the Repository #
-#############################
 
-
-resource "github_actions_secret" "repo_secrets" {
-  for_each        = local.repo_secrets
-  repository      = local.github.repository
-  secret_name     = each.key
-  plaintext_value = each.value
+#tfsec:ignore:github-actions-no-plain-text-action-secrets # not real secret
+resource "github_actions_secret" "secret_sonar_token" {
+  repository       = local.github.repository
+  secret_name      = "SONAR_TOKEN"
+  plaintext_value  = data.azurerm_key_vault_secret.key_vault_sonar.value
 }
+
+#tfsec:ignore:github-actions-no-plain-text-action-secrets # not real secret
+resource "github_actions_secret" "secret_bot_token" {
+
+  repository       = local.github.repository
+  secret_name      = "BOT_TOKEN_GITHUB"
+  plaintext_value  = data.azurerm_key_vault_secret.key_vault_bot_token.value
+}
+
+#tfsec:ignore:github-actions-no-plain-text-action-secrets # not real secret
+resource "github_actions_secret" "secret_cucumber_token" {
+
+  repository       = local.github.repository
+  secret_name      = "CUCUMBER_PUBLISH_TOKEN"
+  plaintext_value  = data.azurerm_key_vault_secret.key_vault_cucumber_token.value
+}
+
+#tfsec:ignore:github-actions-no-plain-text-action-secrets # not real secret
+resource "github_actions_secret" "secret_read_package_token" {
+
+  repository       = local.github.repository
+  secret_name      = "READ_PACKAGES_TOKEN"
+  plaintext_value  = data.azurerm_key_vault_secret.key_vault_read_package_token.value
+}
+
 
 ############
 ## Labels ##
 ############
-resource "github_issue_label" "breaking_change" {
-  repository = local.github.repository
-  name       = "breaking-change"
-  color      = "FF0000"
-}
 
-resource "github_issue_label" "new_release" {
+resource "github_issue_label" "patch" {
   repository = local.github.repository
-  name       = "new-release"
-  color      = "FFFF00"
+  name       = "patch"
+  color      = "FF0000"
 }
 
 resource "github_issue_label" "ignore_for_release" {
@@ -98,3 +109,4 @@ resource "github_issue_label" "ignore_for_release" {
   name       = "ignore-for-release"
   color      = "008000"
 }
+

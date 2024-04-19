@@ -3,8 +3,6 @@ name: Release And Deploy
 # Controls when the workflow will run
 on:
   pull_request:
-    branches:
-      - main
     types: [ closed ]
 
   # Allows you to run this workflow manually from the Actions tab
@@ -34,11 +32,11 @@ on:
         type: boolean
         description: deploy beta version on AKS
         default: false
-#      skip_release:
-#        required: false
-#        type: boolean
-#        description: skip the release. Only deploy
-#        default: false
+  #      skip_release:
+  #        required: false
+  #        type: boolean
+  #        description: skip the release. Only deploy
+  #        default: false
 
   workflow_call:
     inputs:
@@ -96,13 +94,45 @@ jobs:
     runs-on: ubuntu-latest
     if: ${{ needs.setup.outputs.semver != 'skip' }}
     steps:
-      - name: Build and Push
-        id: semver
-        uses: pagopa/github-actions-template/ghcr-build-push@v1.5.4
+      #      - name: Build and Push
+      #        id: semver
+      #        uses: pagopa/github-actions-template/ghcr-build-push@v1.5.4
+      #        with:
+      #          branch: ${{ github.ref_name}}
+      #          github_token: ${{ secrets.GITHUB_TOKEN }}
+      #          tag: ${{ needs.release.outputs.version }}
+      - name: Checkout
+        uses: actions/checkout@v3
         with:
-          branch: ${{ github.ref_name}}
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          tag: ${{ needs.release.outputs.version }}
+          ref: ${{ github.ref_name }}
+
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v2
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Docker meta
+        id: meta
+        uses: docker/metadata-action@v4.3.0
+        with:
+          images: ghcr.io/${{ github.repository }}
+          tags: |
+            latest
+            ${{ needs.release.outputs.version }}
+            type=ref,event=branch
+            type=sha
+
+      - name: Build and push
+        uses: docker/build-push-action@v4
+        with:
+          context: .
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          secrets: |
+            GH_TOKEN=${{ secrets.READ_PACKAGES_TOKEN }}
 
   deploy_aks:
     name: Deploy on AKS

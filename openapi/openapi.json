@@ -1,9 +1,9 @@
 {
   "openapi": "3.0.3",
   "info": {
-    "title": "Node technical support - API (DEV)",
+    "title": "Node technical support - API (local) ${service}",
     "termsOfService": "https://www.pagopa.gov.it/",
-    "version": "1.2.5-2-NOD-724-api-assistenza-status-snapshot"
+    "version": "1.2.5-8-updates"
   },
   "servers": [
     {
@@ -80,7 +80,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/TransactionResponse"
+                  "$ref": "#/components/schemas/PaymentsResponse"
                 }
               }
             }
@@ -159,7 +159,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/TransactionResponse"
+                  "$ref": "#/components/schemas/PaymentsFullResponse"
                 }
               }
             }
@@ -230,7 +230,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/TransactionResponse"
+                  "$ref": "#/components/schemas/PaymentsResponse"
                 }
               }
             }
@@ -309,7 +309,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/TransactionResponse"
+                  "$ref": "#/components/schemas/PaymentsFullResponse"
                 }
               }
             }
@@ -437,53 +437,6 @@
   },
   "components": {
     "schemas": {
-      "BasePaymentInfo": {
-        "type": "object",
-        "properties": {
-          "businessProcess": {
-            "type": "string"
-          },
-          "organizationFiscalCode": {
-            "type": "string"
-          },
-          "noticeNumber": {
-            "type": "string"
-          },
-          "iuv": {
-            "type": "string"
-          },
-          "pspId": {
-            "type": "string"
-          },
-          "brokerPspId": {
-            "type": "string"
-          },
-          "channelId": {
-            "type": "string"
-          },
-          "outcome": {
-            "type": "string"
-          },
-          "status": {
-            "type": "string"
-          },
-          "insertedTimestamp": {
-            "type": "string"
-          },
-          "serviceIdentifier": {
-            "type": "string"
-          },
-          "positiveBizEvtId": {
-            "type": "string"
-          },
-          "negativeBizEvtId": {
-            "type": "string"
-          },
-          "faultBean": {
-            "$ref": "#/components/schemas/FaultBean"
-          }
-        }
-      },
       "ErrorCode": {
         "type": "object",
         "properties": {
@@ -573,6 +526,142 @@
           }
         }
       },
+      "PaymentFullInfo": {
+        "type": "object",
+        "properties": {
+          "businessProcess": {
+            "type": "string"
+          },
+          "organizationFiscalCode": {
+            "type": "string"
+          },
+          "noticeNumber": {
+            "type": "string"
+          },
+          "iuv": {
+            "type": "string"
+          },
+          "pspId": {
+            "type": "string"
+          },
+          "brokerPspId": {
+            "type": "string"
+          },
+          "channelId": {
+            "type": "string"
+          },
+          "outcome": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          },
+          "insertedTimestamp": {
+            "type": "string"
+          },
+          "serviceIdentifier": {
+            "type": "string"
+          },
+          "paymentToken": {
+            "type": "string"
+          },
+          "ccp": {
+            "type": "string"
+          },
+          "positiveBizEvtId": {
+            "type": "string"
+          },
+          "verifyKoEvtId": {
+            "type": "string"
+          },
+          "negativeBizEvtId": {
+            "type": "string"
+          },
+          "faultBean": {
+            "$ref": "#/components/schemas/FaultBean"
+          },
+          "brokerOrganizationId": {
+            "type": "string"
+          },
+          "stationId": {
+            "type": "string"
+          },
+          "paymentMethod": {
+            "type": "string"
+          },
+          "amount": {
+            "type": "number"
+          },
+          "pmReceipt": {
+            "type": "string"
+          },
+          "touchPoint": {
+            "type": "string"
+          },
+          "fee": {
+            "type": "number"
+          },
+          "feeOrganization": {
+            "type": "number"
+          }
+        }
+      },
+      "PaymentInfo": {
+        "type": "object",
+        "properties": {
+          "businessProcess": {
+            "type": "string"
+          },
+          "organizationFiscalCode": {
+            "type": "string"
+          },
+          "noticeNumber": {
+            "type": "string"
+          },
+          "iuv": {
+            "type": "string"
+          },
+          "pspId": {
+            "type": "string"
+          },
+          "brokerPspId": {
+            "type": "string"
+          },
+          "channelId": {
+            "type": "string"
+          },
+          "outcome": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          },
+          "insertedTimestamp": {
+            "type": "string"
+          },
+          "serviceIdentifier": {
+            "type": "string"
+          },
+          "paymentToken": {
+            "type": "string"
+          },
+          "ccp": {
+            "type": "string"
+          },
+          "positiveBizEvtId": {
+            "type": "string"
+          },
+          "verifyKoEvtId": {
+            "type": "string"
+          },
+          "negativeBizEvtId": {
+            "type": "string"
+          },
+          "faultBean": {
+            "$ref": "#/components/schemas/FaultBean"
+          }
+        }
+      },
       "PaymentResponse": {
         "type": "object",
         "properties": {
@@ -595,6 +684,48 @@
           },
           "dateTo": {
             "$ref": "#/components/schemas/LocalDate"
+          }
+        }
+      },
+      "PaymentsFullResponse": {
+        "type": "object",
+        "properties": {
+          "dateFrom": {
+            "$ref": "#/components/schemas/LocalDate"
+          },
+          "dateTo": {
+            "$ref": "#/components/schemas/LocalDate"
+          },
+          "count": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PaymentFullInfo"
+            }
+          }
+        }
+      },
+      "PaymentsResponse": {
+        "type": "object",
+        "properties": {
+          "dateFrom": {
+            "$ref": "#/components/schemas/LocalDate"
+          },
+          "dateTo": {
+            "$ref": "#/components/schemas/LocalDate"
+          },
+          "count": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PaymentInfo"
+            }
           }
         }
       },
@@ -652,27 +783,6 @@
             "description": "A human readable explanation specific to this occurrence of the problem.",
             "type": "string",
             "example": "There was an error processing the request"
-          }
-        }
-      },
-      "TransactionResponse": {
-        "type": "object",
-        "properties": {
-          "dateFrom": {
-            "$ref": "#/components/schemas/LocalDate"
-          },
-          "dateTo": {
-            "$ref": "#/components/schemas/LocalDate"
-          },
-          "count": {
-            "format": "int32",
-            "type": "integer"
-          },
-          "data": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/BasePaymentInfo"
-            }
           }
         }
       }
