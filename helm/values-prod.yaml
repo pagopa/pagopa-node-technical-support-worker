@@ -25,7 +25,7 @@ microservice-chart:
     COSMOS_NEG_BIZ_ENDPOINT: "https://pagopa-p-weu-bizevents-neg-ds-cosmos-account.documents.azure.com:443/"
     COSMOS_VERIFYKO_ENDPOINT: "https://pagopa-p-weu-nodo-verifyko-cosmos-account.documents.azure.com:443/"
     DATASOURCE_USERNAME: "NODO_OFFLINE"
-    DATASOURCE_URL: "jdbc:oracle:thin:@(DESCRIPTION=(ENABLE=BROKEN)(ADDRESS=(PROTOCOL=tcp)(PORT=1521)(HOST=db-nodo-pagamenti.p.db-nodo-pagamenti.com))(CONNECT_DATA=(SERVICE_NAME=NDPSPCP_SERVICE))(SO_KEEPALIVE=true)(TCP_KEEPIDLE=60)(TCP_KEEPINTVL=30)(TCP_KEEPCNT=15))"
+    DATASOURCE_URL: "jdbc:oracle:thin:@(DESCRIPTION=(ENABLE=BROKEN)(ADDRESS=(PROTOCOL=tcp)(PORT=1521)(HOST=db-nodo-pagamenti.p.db-nodo-pagamenti.com))(CONNECT_DATA=(SERVICE_NAME=NDPSPCP_NODO_OFFLINE))(SO_KEEPALIVE=true)(TCP_KEEPIDLE=60)(TCP_KEEPINTVL=30)(TCP_KEEPCNT=15))"
     DB_SERVICE_IDENTIFIER: "NDP003PROD"
     LOG_LEVEL: "INFO"
   envFieldRef:
