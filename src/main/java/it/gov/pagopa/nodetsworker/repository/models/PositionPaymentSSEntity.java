@@ -14,7 +14,7 @@ import java.time.Instant;
 @Data
 @Builder
 @Entity
-@Table(name = "V_POSITION_PAYMENT_STATUS_SNAPSHOT")
+@Table(name = "V_POSITION_PAYMENT_STATUS_SNAPSHOT", schema = "NODO_OFFLINE")
 public class PositionPaymentSSEntity {
 
     @Id
