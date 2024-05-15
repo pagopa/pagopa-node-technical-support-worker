@@ -2,8 +2,8 @@ apiVersion: v2
 name: pagopa-tech-support-api
 description: Technical support api
 type: application
-version: "0.58.0"
-appVersion: "1.2.8-NOD-857-fix-prod"
+version: "0.59.0"
+appVersion: "1.2.9"
 dependencies:
   - name: microservice-chart
     version: 3.0.0
