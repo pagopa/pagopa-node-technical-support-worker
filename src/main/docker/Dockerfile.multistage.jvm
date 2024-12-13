@@ -1,5 +1,5 @@
 ## Stage 1 : build with maven builder image with native capabilities
-FROM quay.io/quarkus/ubi-quarkus-graalvmce-builder-image:22.3-java17 AS build
+FROM quay.io/quarkus/ubi-quarkus-graalvmce-builder-image:22.3-java17@sha256:6e0894685358782ce5fee88537bcbb6c31256f1c7b4566182a56da934d03bb5f AS build
 COPY --chown=quarkus:quarkus mvnw /code/mvnw
 COPY --chown=quarkus:quarkus .mvn /code/.mvn
 COPY --chown=quarkus:quarkus pom.xml /code/
@@ -12,7 +12,7 @@ ARG APP_NAME
 
 RUN ./mvnw package -DskipTests=true -Dquarkus.application.name=$APP_NAME -Dquarkus.profile=$QUARKUS_PROFILE
 
-FROM registry.access.redhat.com/ubi8/openjdk-17:1.14
+FROM registry.access.redhat.com/ubi8/openjdk-17:1.14@sha256:79585ca02551ecff9d368905d7ce387232b9fd328256e7a715ae3c4ec7b086d3
 
 ENV LANGUAGE='en_US:en'
 

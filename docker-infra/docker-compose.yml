@@ -2,7 +2,7 @@ version: '3.8'
 
 services:
   elasticsearch:
-    image: docker.elastic.co/elasticsearch/elasticsearch:8.6.2
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.6.2@sha256:1c53c89d04f207beb99d56cc4a1cc23516bd9c386858843d5082a98257c04d1c
     ports:
       - "9200:9200"
       - "9300:9300"
@@ -15,7 +15,7 @@ services:
       - infra
 
   kibana:
-    image: docker.elastic.co/kibana/kibana:8.6.2
+    image: docker.elastic.co/kibana/kibana:8.6.2@sha256:7157c399f97acddf3297501d5af66097d57be67d27d62f810bcbdd11785a39b8
     ports:
       - "5601:5601"
     networks:
@@ -25,7 +25,7 @@ services:
 
   alertmanager:
     hostname: alertmanager
-    image: prom/alertmanager
+    image: prom/alertmanager@sha256:e13b6ed5cb929eeaee733479dce55e10eb3bc2e9c4586c705a4e8da41e5eacf5
     volumes:
       - ${PWD}/alertmanager/alertmanager.conf:/etc/alertmanager/alertmanager.conf
     command:
@@ -37,7 +37,7 @@ services:
 
   prometheus:
     hostname: prometheus
-    image: prom/prometheus
+    image: prom/prometheus@sha256:565ee86501224ebbb98fc10b332fa54440b100469924003359edf49cbce374bd
     volumes:
       - ${PWD}/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
       - ${PWD}/prometheus/alert_rules.yml:/etc/prometheus/alert_rules.yml
@@ -53,7 +53,7 @@ services:
 
   grafana:
     hostname: grafana
-    image: grafana/grafana
+    image: grafana/grafana@sha256:d8ea37798ccc41061a62ab080f2676dda6bf7815558499f901bdb0f533a456fb
     volumes:
       - ${PWD}/grafana/grafana_datasources.yml:/etc/grafana/provisioning/datasources/all.yaml
       - ${PWD}/grafana/grafana_config.ini:/etc/grafana/config.ini
@@ -64,7 +64,7 @@ services:
       - infra
 
   jaeger-all-in-one:
-    image: jaegertracing/all-in-one:latest
+    image: jaegertracing/all-in-one:latest@sha256:7e9591218e7ddd51e568ef892e3ea190ae420ecf97c4d718910a3f57e076c216
     ports:
       - "16686:16686"
       - "14268:14268"
@@ -73,7 +73,7 @@ services:
       - infra
 
   otel-collector:
-    image: otel/opentelemetry-collector:latest
+    image: otel/opentelemetry-collector:latest@sha256:f6842984eafb35be5198d080e40ca3f6b3b45c6c2456318a41ce7f2fa71ba973
     command: [ "--config=/etc/otel-collector-config.yaml" ]
     volumes:
       - ${PWD}/otel-collector/otel-collector-config.yaml:/etc/otel-collector-config.yaml:Z
@@ -86,7 +86,7 @@ services:
       - infra
 
   azurite:
-    image: "mcr.microsoft.com/azure-storage/azurite"
+    image: "mcr.microsoft.com/azure-storage/azurite@sha256:2628ee10a72833cc344b9d194cd8b245543892b307d16cf26a2cf55a15b816af"
     restart: always
     ports:
       - 10000:10000
