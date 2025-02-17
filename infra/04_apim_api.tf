@@ -83,7 +83,7 @@ module "api_ndp_direct" { # direct API to NDP
 
   description  = "${local.description} direct"
   display_name = "${local.display_name} direct"
-  path         = "${local.path}/nodo" // technical-support/ndp/api
+  path         = "${local.path}/nodod" // technical-support/ndp/api where "d" stay for direct
   protocols    = ["https"]
 
   service_url = local.service_url
@@ -101,8 +101,10 @@ module "api_ndp_direct" { # direct API to NDP
 
 
   xml_content = templatestring(data.http.template_decoupler_policy.body, { # we consider decoupler ON 👀👇
-    address-range-from       = var.env_short == "p" ? "10.1.128.0" : "0.0.0.0"
-    address-range-to         = var.env_short == "p" ? "10.1.128.255" : "0.0.0.0"
+    # address-range-from       = var.env_short == "p" ? "10.1.128.0" : "0.0.0.0"
+    # address-range-to         = var.env_short == "p" ? "10.1.128.255" : "0.0.0.0"
+    address-range-from       = "0.0.0.0"
+    address-range-to         = "0.0.0.0"
     is-nodo-auth-pwd-replace = false
   })
 
