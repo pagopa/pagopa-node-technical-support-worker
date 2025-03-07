@@ -14,8 +14,6 @@ import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
 import org.eclipse.microprofile.openapi.annotations.responses.APIResponses;
 
 import java.io.Serializable;
-import java.time.LocalDate;
-import java.util.Optional;
 
 @Path("/events")
 @Produces(value = MediaType.APPLICATION_JSON)
