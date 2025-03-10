@@ -435,6 +435,33 @@ class SpTest {
     }
   }
 
+  @Test
+  @DisplayName("sp04 by ci,iuv,ccp with negative")
+  void getNegativeBizEvent_OK() {
+    String bizIdTest = "biz_id_test";
+    when(streamBizneg.findFirst()).thenReturn(Optional.of(
+            new NegativeBizEvent("", bizIdTest, "","",true,dp,creditor,psp,null,npi,null,null,10l,null)
+    ));
+
+    NegativeBizEvent negBizEvent = ws.getNegativeBizEventById(bizIdTest);
+    assertThat(negBizEvent.getId(), equalTo(bizIdTest));
+
+  }
+
+  @Test
+  @DisplayName("sp04 by ci,iuv,ccp with negative")
+  void getNegativeBizEvent_KO_404() {
+    String bizIdTest = "biz_id_test";
+    when(streamBizneg.findFirst()).thenReturn(Optional.empty());
+
+    try {
+      ws.getNegativeBizEventById(bizIdTest);
+    }catch (AppException e){
+      assertThat(e.getCodeMessage(),equalTo(AppErrorCodeMessageEnum.NOT_FOUND));
+    }
+
+  }
+
   private void setFieldValue(Object obj,String field,Object value) throws NoSuchFieldException, IllegalAccessException {
     Field f = obj.getClass().getDeclaredField(field);
     f.setAccessible(true);
