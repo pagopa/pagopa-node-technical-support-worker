@@ -88,12 +88,12 @@ public class CosmosNegBizEventClient {
   }
 
   public CosmosPagedIterable<NegativeBizEvent> getNegativeBizEventById(String id) {
-    SqlParameter param = new SqlParameter("@bizEventid", id);
+    SqlParameter param = new SqlParameter("@bizEventId", id);
     SqlQuerySpec q =
             new SqlQuerySpec(
                     "SELECT * FROM c where"
                             + " c.id = @bizEventId"
-                            + " LIMIT 1")
+                            + " offset 0 limit 1")
                     .setParameters(List.of(param));
     return query(q);
   }
