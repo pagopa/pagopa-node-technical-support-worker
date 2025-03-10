@@ -327,20 +327,10 @@ public class WorkerService {
     }
 
     public NegativeBizEvent getNegativeBizEventById(String bizEventId) {
-        /*
-        List<NegativeBizEvent> negativeBizEvents = negativeBizClient.getNegativeBizEventById(bizEventId).stream().toList();
-        if(negativeBizEvents.size() > 1) {
-            throw new AppException(AppErrorCodeMessageEnum.ERROR, "More than one negative biz event with id %s", bizEventId);
-        } else if (negativeBizEvents.isEmpty()) {
-            throw new AppException(AppErrorCodeMessageEnum.NOT_FOUND, "No negative biz event with id %s", bizEventId);
-        }
-        return negativeBizEvents.get(0);
-        */
         return negativeBizClient.getNegativeBizEventById(bizEventId).stream()
                 .findFirst()
                 .orElseThrow(
                         () -> new AppException(AppErrorCodeMessageEnum.NOT_FOUND, "No negative biz event with id %s", bizEventId)
                 );
     }
-
 }

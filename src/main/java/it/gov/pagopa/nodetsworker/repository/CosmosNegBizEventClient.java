@@ -92,7 +92,8 @@ public class CosmosNegBizEventClient {
     SqlQuerySpec q =
             new SqlQuerySpec(
                     "SELECT * FROM c where"
-                            + " c.id = @bizEventId")
+                            + " c.id = @bizEventId"
+                            + " LIMIT 1")
                     .setParameters(List.of(param));
     return query(q);
   }
