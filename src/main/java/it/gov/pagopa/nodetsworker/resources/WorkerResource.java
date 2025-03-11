@@ -22,7 +22,11 @@ import java.util.Optional;
 @Produces(value = MediaType.APPLICATION_JSON)
 public class WorkerResource implements Serializable {
 
-  @Inject WorkerService workerService;
+  private final WorkerService workerService;
+
+  public WorkerResource(WorkerService workerService) {
+      this.workerService = workerService;
+  }
 
   /** SP03 */
   @APIResponses(
