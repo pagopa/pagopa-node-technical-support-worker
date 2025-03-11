@@ -19,6 +19,8 @@ public class AppConstantTestHelper {
 
   public static final String POS_PAY_SS_INFO_PATH = "snapshot/organizations/%s";
 
+  public static final String NEG_BIZ_EVENT_ID_PATH = "/events/negative/%s";
+
   public static final String PA_CODE = "12345678900";
   public static final String PSP_CODE = "P_12345678900";
   public static final String CHANNEL_CODE = "C_12345678900";
