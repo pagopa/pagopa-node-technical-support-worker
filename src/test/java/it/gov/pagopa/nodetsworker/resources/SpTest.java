@@ -106,7 +106,7 @@ class SpTest {
 //    }
 
   @BeforeEach
-  public void setUp() throws NoSuchFieldException, IllegalAccessException {
+  void setUp() throws NoSuchFieldException, IllegalAccessException {
     CosmosDatabase cosmosDatabase = mock(CosmosDatabase.class);
     CosmosPagedIterable cosmosPagedIterableBiz = mock(CosmosPagedIterable.class);
     CosmosPagedIterable cosmosPagedIterableNegBiz = mock(CosmosPagedIterable.class);
