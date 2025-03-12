@@ -1,5 +1,7 @@
 package it.gov.pagopa.nodetsworker.service;
 
+import it.gov.pagopa.nodetsworker.exceptions.AppErrorCodeMessageEnum;
+import it.gov.pagopa.nodetsworker.exceptions.AppException;
 import it.gov.pagopa.nodetsworker.models.PaymentInfo;
 import it.gov.pagopa.nodetsworker.models.DateRequest;
 import it.gov.pagopa.nodetsworker.models.FaultBean;
@@ -324,4 +326,11 @@ public class WorkerService {
         return resp;
     }
 
+    public NegativeBizEvent getNegativeBizEventById(String bizEventId) {
+        return negativeBizClient.getNegativeBizEventById(bizEventId).stream()
+                .findFirst()
+                .orElseThrow(
+                        () -> new AppException(AppErrorCodeMessageEnum.NOT_FOUND, "No negative biz event with id %s", bizEventId)
+                );
+    }
 }
