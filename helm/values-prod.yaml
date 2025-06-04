@@ -17,6 +17,16 @@ microservice-chart:
     initialDelaySeconds: 8
     failureThreshold: 10
     periodSeconds: 2
+  serviceAccount:
+    name: "nodo-workload-identity"
+  azure:
+    workloadIdentityClientId: <workload-identity-client-id-set-automatically-by-gha>
+  securityContext:
+    allowPrivilegeEscalation: false
+    readOnlyRootFilesystem: true
+    capabilities:
+      drop:
+        - all
   envConfig:
     APP_ENVIRONMENT: "prod"
     TZ: "Europe/Rome"
