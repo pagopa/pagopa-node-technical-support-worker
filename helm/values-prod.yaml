@@ -2,7 +2,7 @@ microservice-chart:
   namespace: "nodo"
   image:
     repository: ghcr.io/pagopa/pagopa-node-technical-support-worker
-    tag: '1.2.12'
+    tag: '1.2.12-1-PIDM-492-workload-identity-helm-7'
   readinessProbe:
     httpGet:
       path: /q/health/ready
