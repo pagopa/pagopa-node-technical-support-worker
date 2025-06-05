@@ -31,7 +31,7 @@ microservice-chart:
   ingress:
     create: true
     host: "weuuat.nodo.internal.uat.platform.pagopa.it"
-    path: /pagopa-nodo-technical-support-service(/|$)(.*)
+    path: /pagopa-nodo-technical-support-service/(.*)
   serviceAccount:
     name: "nodo-workload-identity"
   azure:
