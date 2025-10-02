@@ -71,7 +71,7 @@ microservice-chart:
     COSMOS_BIZ_ENDPOINT: "https://pagopa-u-weu-bizevents-ds-cosmos-account.documents.azure.com:443/"
     COSMOS_NEG_BIZ_ENDPOINT: "https://pagopa-u-weu-bizevents-neg-ds-cosmos-account.documents.azure.com:443/"
     COSMOS_VERIFYKO_ENDPOINT: "https://pagopa-u-weu-nodo-verifyko-cosmos-account.documents.azure.com:443/"
-    DATASOURCE_USERNAME: "pp_nodo_offline"
+    DATASOURCE_USERNAME: "pagopa_reader"
     DATASOURCE_URL: "jdbc:postgresql://db-postgres-ndp-prf.u.db-nodo-pagamenti.com:5444/ndpspcq?prepareThreshold=0&currentSchema=NODO4_OFFLINE"
     DB_SERVICE_IDENTIFIER: "NDP004UAT"
     LOG_LEVEL: "INFO"
