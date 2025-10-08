@@ -10,6 +10,11 @@ microservice-chart:
     initialDelaySeconds: 8
     failureThreshold: 10
     periodSeconds: 2
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 0
+      maxSurge: 1
   livenessProbe:
     httpGet:
       path: /q/health/live
@@ -19,7 +24,7 @@ microservice-chart:
     periodSeconds: 2
   deployment:
     create: true
-    replicas: 1
+    replicas: 1 # same as HPA minReplica
   serviceMonitor:
     create: true
     endpoints:
