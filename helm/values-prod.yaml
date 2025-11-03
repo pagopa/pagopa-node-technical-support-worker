@@ -2,7 +2,7 @@ microservice-chart:
   namespace: "nodo"
   image:
     repository: ghcr.io/pagopa/pagopa-node-technical-support-worker
-    tag: '1.2.14'
+    tag: '1.2.15'
   readinessProbe:
     httpGet:
       path: /q/health/ready
