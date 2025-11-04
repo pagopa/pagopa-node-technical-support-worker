@@ -76,9 +76,8 @@ microservice-chart:
     COSMOS_BIZ_ENDPOINT: "https://pagopa-p-weu-bizevents-ds-cosmos-account.documents.azure.com:443/"
     COSMOS_NEG_BIZ_ENDPOINT: "https://pagopa-p-weu-bizevents-neg-ds-cosmos-account.documents.azure.com:443/"
     COSMOS_VERIFYKO_ENDPOINT: "https://pagopa-p-weu-nodo-verifyko-cosmos-account.documents.azure.com:443/"
-    DATASOURCE_URL: "jdbc:postgresql://db-postgres-ndp.p.db-nodo-pagamenti.com:5444/ndpspcp?prepareThreshold=0&currentSchema=NODO_OFFLINE"
-    DATASOURCE_USERNAME: "PP_NODO_OFFLINE"
-    DATASOURCE_SCHEMA: "ALTER SESSION SET CURRENT_SCHEMA=NODO_OFFLINE"
+    DATASOURCE_URL: "jdbc:postgresql://db-postgres-ndp.p.db-nodo-pagamenti.com:6432/ndpspcp_ro?prepareThreshold=0&currentSchema=NODO_OFFLINE"
+    DATASOURCE_USERNAME: "biz_pagopa_sv"
     DB_SERVICE_IDENTIFIER: "NDP004PROD"
     LOG_LEVEL: "INFO"
   envFieldRef:
@@ -89,7 +88,7 @@ microservice-chart:
     COSMOS_BIZ_KEY: "cosmos-biz-account-key"
     COSMOS_NEG_BIZ_KEY: "cosmos-neg-biz-account-key"
     COSMOS_VERIFYKO_KEY: "cosmos-verifyko-account-key"
-    DATASOURCE_PASSWORD: "pp-nodo-offline-oracle-password"
+    DATASOURCE_PASSWORD: "db-nexi-offline-password"
   keyvault:
     name: "pagopa-p-nodo-kv"
     tenantId: "7788edaf-0346-4068-9d79-c868aed15b3d"
