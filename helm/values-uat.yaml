@@ -2,7 +2,7 @@ microservice-chart:
   namespace: "nodo"
   image:
     repository: ghcr.io/pagopa/pagopa-node-technical-support-worker
-    tag: '1.2.15'
+    tag: '1.2.15-1-postgres-migration'
   readinessProbe:
     httpGet:
       path: /q/health/ready
@@ -76,8 +76,8 @@ microservice-chart:
     COSMOS_BIZ_ENDPOINT: "https://pagopa-u-weu-bizevents-ds-cosmos-account.documents.azure.com:443/"
     COSMOS_NEG_BIZ_ENDPOINT: "https://pagopa-u-weu-bizevents-neg-ds-cosmos-account.documents.azure.com:443/"
     COSMOS_VERIFYKO_ENDPOINT: "https://pagopa-u-weu-nodo-verifyko-cosmos-account.documents.azure.com:443/"
-    DATASOURCE_USERNAME: "NODO_OFFLINE"
-    DATASOURCE_URL: "jdbc:oracle:thin:@(DESCRIPTION=(ENABLE=BROKEN)(ADDRESS=(PROTOCOL=tcp)(PORT=1524)(HOST=db-nodo-pagamenti.u.db-nodo-pagamenti.com))(CONNECT_DATA=(SERVICE_NAME=NDPSPCA_SERVICE))(SO_KEEPALIVE=true)(TCP_KEEPIDLE=60)(TCP_KEEPINTVL=30)(TCP_KEEPCNT=15))"
+    DATASOURCE_USERNAME: "biz_pagopa_sv"
+    DATASOURCE_URL: "jdbc:postgresql://db-postgres-ndp-prf.u.db-nodo-pagamenti.com:6432/ndpspcq_ro?prepareThreshold=0&currentSchema=NODO_OFFLINE"
     DB_SERVICE_IDENTIFIER: "NDP004UAT"
     LOG_LEVEL: "INFO"
   envFieldRef:
