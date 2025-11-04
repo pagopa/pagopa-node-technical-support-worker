@@ -2,7 +2,7 @@ microservice-chart:
   namespace: "nodo"
   image:
     repository: ghcr.io/pagopa/pagopa-node-technical-support-worker
-    tag: '1.2.15-1-postgres-migration'
+    tag: '1.2.16'
   readinessProbe:
     httpGet:
       path: /q/health/ready
