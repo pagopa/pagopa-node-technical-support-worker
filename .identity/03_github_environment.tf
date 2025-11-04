@@ -75,7 +75,7 @@ resource "github_actions_secret" "secret_bot_token" {
 
   repository       = local.github.repository
   secret_name      = "BOT_TOKEN_GITHUB"
-  plaintext_value  = data.azurerm_key_vault_secret.key_vault_bot_token.value
+  plaintext_value  = data.azurerm_key_vault_secret.key_vault_bot_cd_token.value
 }
 
 #tfsec:ignore:github-actions-no-plain-text-action-secrets # not real secret
@@ -92,6 +92,13 @@ resource "github_actions_secret" "secret_read_package_token" {
   repository       = local.github.repository
   secret_name      = "READ_PACKAGES_TOKEN"
   plaintext_value  = data.azurerm_key_vault_secret.key_vault_read_package_token.value
+}
+
+#tfsec:ignore:github-actions-no-plain-text-action-secrets # not real secret
+resource "github_actions_secret" "deploy_slack_webhook_url" {
+  repository       = local.github.repository
+  secret_name      = "SLACK_WEBHOOK_URL_DEPLOY"
+  plaintext_value  = data.azurerm_key_vault_secret.key_vault_deploy_slack_webhook_url.value
 }
 
 
