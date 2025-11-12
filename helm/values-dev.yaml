@@ -77,7 +77,8 @@ microservice-chart:
     COSMOS_NEG_BIZ_ENDPOINT: "https://pagopa-d-weu-bizevents-neg-ds-cosmos-account.documents.azure.com:443/"
     COSMOS_VERIFYKO_ENDPOINT: "https://pagopa-d-weu-nodo-verifyko-cosmos-account.documents.azure.com:443/"
     DATASOURCE_USERNAME: "offline"
-    DATASOURCE_URL: "jdbc:postgresql://nodo-db.d.internal.postgresql.pagopa.it:5432/nodo?sslmode=require&prepareThreshold=0&currentSchema=offline" # PAGOPA (Nexi not available)
+    DATASOURCE_URL: "jdbc:postgresql://nodo-db.d.internal.postgresql.pagopa.it:5432/nodo" # PAGOPA (Nexi not available)
+    DATASOURCE_SCHEMA: "offline"
     DB_SERVICE_IDENTIFIER: "NDP001DEV"
     LOG_LEVEL: "INFO"
   envFieldRef:
