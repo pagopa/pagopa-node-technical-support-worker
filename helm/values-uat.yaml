@@ -89,7 +89,8 @@ microservice-chart:
     COSMOS_BIZ_KEY: "cosmos-biz-account-key"
     COSMOS_NEG_BIZ_KEY: "cosmos-neg-biz-account-key"
     COSMOS_VERIFYKO_KEY: "cosmos-verifyko-account-key"
-    DATASOURCE_PASSWORD: "db-nexi-offline-password"
+#    DATASOURCE_PASSWORD: "db-nexi-offline-password"
+    DATASOURCE_PASSWORD: "db-nexi-biz-pagopa-sv-password"
   keyvault:
     name: "pagopa-u-nodo-kv"
     tenantId: "7788edaf-0346-4068-9d79-c868aed15b3d"
