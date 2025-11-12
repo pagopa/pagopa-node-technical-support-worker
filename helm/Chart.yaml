@@ -2,8 +2,8 @@ apiVersion: v2
 name: pagopa-tech-support-api
 description: Technical support api
 type: application
-version: "0.69.0"
-appVersion: "1.2.17-nexi-switch-to-uat"
+version: "0.70.0"
+appVersion: "1.2.18-nexi-switch-to-uat"
 dependencies:
   - name: microservice-chart
     version: 8.0.2
