@@ -2,7 +2,7 @@ microservice-chart:
   namespace: "nodo"
   image:
     repository: ghcr.io/pagopa/pagopa-node-technical-support-worker
-    tag: '1.2.16'
+    tag: '1.2.18-nexi-switch-to-uat'
   readinessProbe:
     httpGet:
       path: /q/health/ready
@@ -77,7 +77,8 @@ microservice-chart:
     COSMOS_NEG_BIZ_ENDPOINT: "https://pagopa-d-weu-bizevents-neg-ds-cosmos-account.documents.azure.com:443/"
     COSMOS_VERIFYKO_ENDPOINT: "https://pagopa-d-weu-nodo-verifyko-cosmos-account.documents.azure.com:443/"
     DATASOURCE_USERNAME: "offline"
-    DATASOURCE_URL: "jdbc:postgresql://nodo-db.d.internal.postgresql.pagopa.it:5432/nodo?sslmode=require&prepareThreshold=0&currentSchema=offline" # PAGOPA (Nexi not available)
+    DATASOURCE_URL: "jdbc:postgresql://nodo-db.d.internal.postgresql.pagopa.it:5432/nodo" # PAGOPA (Nexi not available)
+    DATASOURCE_SCHEMA: "offline"
     DB_SERVICE_IDENTIFIER: "NDP001DEV"
     LOG_LEVEL: "INFO"
   envFieldRef:

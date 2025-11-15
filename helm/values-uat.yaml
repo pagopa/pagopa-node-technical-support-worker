@@ -2,7 +2,7 @@ microservice-chart:
   namespace: "nodo"
   image:
     repository: ghcr.io/pagopa/pagopa-node-technical-support-worker
-    tag: '1.2.16'
+    tag: '1.2.18-nexi-switch-to-uat'
   readinessProbe:
     httpGet:
       path: /q/health/ready
@@ -77,7 +77,9 @@ microservice-chart:
     COSMOS_NEG_BIZ_ENDPOINT: "https://pagopa-u-weu-bizevents-neg-ds-cosmos-account.documents.azure.com:443/"
     COSMOS_VERIFYKO_ENDPOINT: "https://pagopa-u-weu-nodo-verifyko-cosmos-account.documents.azure.com:443/"
     DATASOURCE_USERNAME: "biz_pagopa_sv"
-    DATASOURCE_URL: "jdbc:postgresql://db-postgres-ndp-prf.u.db-nodo-pagamenti.com:6432/ndpspcq_ro?prepareThreshold=0&currentSchema=NODO_OFFLINE"
+    #    DATASOURCE_URL: "jdbc:postgresql://db-postgres-ndp-prf.u.db-nodo-pagamenti.com:6432/ndpspcq_ro?prepareThreshold=0&currentSchema=NODO_OFFLINE"
+    DATASOURCE_URL: "jdbc:postgresql://10.6.52.94:6432/ndpspca_ro"
+    DATASOURCE_SCHEMA: "nodo_offline"
     DB_SERVICE_IDENTIFIER: "NDP004UAT"
     LOG_LEVEL: "INFO"
   envFieldRef:
@@ -88,7 +90,8 @@ microservice-chart:
     COSMOS_BIZ_KEY: "cosmos-biz-account-key"
     COSMOS_NEG_BIZ_KEY: "cosmos-neg-biz-account-key"
     COSMOS_VERIFYKO_KEY: "cosmos-verifyko-account-key"
-    DATASOURCE_PASSWORD: "db-nexi-offline-password"
+    #    DATASOURCE_PASSWORD: "db-nexi-offline-password"
+    DATASOURCE_PASSWORD: "db-nexi-biz-pagopa-sv-password"
   keyvault:
     name: "pagopa-u-nodo-kv"
     tenantId: "7788edaf-0346-4068-9d79-c868aed15b3d"
