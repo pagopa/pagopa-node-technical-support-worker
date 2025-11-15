@@ -2,7 +2,7 @@ microservice-chart:
   namespace: "nodo"
   image:
     repository: ghcr.io/pagopa/pagopa-node-technical-support-worker
-    tag: '1.2.18-nexi-switch-to-uat'
+    tag: '1.2.19'
   readinessProbe:
     httpGet:
       path: /q/health/ready
