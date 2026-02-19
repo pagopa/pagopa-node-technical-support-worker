@@ -1,5 +1,6 @@
-package it.gov.pagopa.nodetsworker.exceptions;
+package it.gov.pagopa.nodetsworker.resources;
 
+import it.gov.pagopa.nodetsworker.exceptions.AppErrorCodeMessageEnum;
 import it.gov.pagopa.nodetsworker.resources.response.InfoResponse;
 import it.gov.pagopa.nodetsworker.util.AppMessageUtil;
 import jakarta.inject.Inject;
