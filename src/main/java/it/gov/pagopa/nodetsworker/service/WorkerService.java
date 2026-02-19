@@ -360,4 +360,17 @@ public class WorkerService {
                         () -> new AppException(AppErrorCodeMessageEnum.NOT_FOUND, "No negative biz event with id %s", bizEventId)
                 );
     }
+    
+    private PaymentStatus mapNegativeStatus(String businessProcess) {
+        if (businessProcess == null) {
+            return PaymentStatus.CANCELLED;
+        }
+        if (BP_FAILED.contains(businessProcess)) {
+            return PaymentStatus.FAILED;
+        }
+        if (BP_UNKNOWN.contains(businessProcess)) {
+            return PaymentStatus.UNKNOWN;
+        }
+        return PaymentStatus.CANCELLED;
+    }
 }
