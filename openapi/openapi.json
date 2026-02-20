@@ -3,7 +3,7 @@
   "info": {
     "title": "Node technical support - API (local) ${service}",
     "termsOfService": "https://www.pagopa.gov.it/",
-    "version": "1.2.22"
+    "version": "1.2.22-1-PIDM-1117-status-recovery"
   },
   "servers": [
     {
