@@ -2,7 +2,7 @@ microservice-chart:
   namespace: "nodo"
   image:
     repository: ghcr.io/pagopa/pagopa-node-technical-support-worker
-    tag: '1.2.22'
+    tag: '1.2.22-1-PIDM-1117-status-recovery'
   readinessProbe:
     httpGet:
       path: /q/health/ready
