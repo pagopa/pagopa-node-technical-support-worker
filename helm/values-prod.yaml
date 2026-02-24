@@ -76,6 +76,7 @@ microservice-chart:
     COSMOS_BIZ_ENDPOINT: "https://pagopa-p-weu-bizevents-ds-cosmos-account.documents.azure.com:443/"
     COSMOS_NEG_BIZ_ENDPOINT: "https://pagopa-p-weu-bizevents-neg-ds-cosmos-account.documents.azure.com:443/"
     COSMOS_VERIFYKO_ENDPOINT: "https://pagopa-p-weu-nodo-verifyko-cosmos-account.documents.azure.com:443/"
+    COSMOS_PREFERRED_REGION: "North Europe"
     DATASOURCE_URL: "jdbc:postgresql://db-postgres-ndp.p.db-nodo-pagamenti.com:6432/ndpspcp_ro"
     DATASOURCE_USERNAME: "biz_pagopa_sv"
     DB_SERVICE_IDENTIFIER: "NDP004PROD"
