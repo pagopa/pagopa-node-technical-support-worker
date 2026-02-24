@@ -1,64 +1,56 @@
 {
-  "openapi": "3.0.3",
-  "info": {
-    "title": "Node technical support - API (local) ${service}",
-    "termsOfService": "https://www.pagopa.gov.it/",
-    "version": "1.2.22-1-PIDM-1117-status-recovery"
+  "openapi" : "3.0.3",
+  "info" : {
+    "title" : "Node technical support - API (local) ${service}",
+    "termsOfService" : "https://www.pagopa.gov.it/",
+    "version" : "1.2.22-1-PIDM-1117-status-recovery"
   },
-  "servers": [
-    {
-      "url": "${host}/technical-support/nodo/api/v1"
-    }
-  ],
-  "tags": [
-    {
-      "name": "Info",
-      "description": "Info operations"
-    }
-  ],
-  "paths": {
-    "/events/negative/{bizEventId}": {
-      "get": {
-        "tags": [
-          "Events Resource"
-        ],
-        "parameters": [
-          {
-            "name": "bizEventId",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
+  "servers" : [ {
+    "url" : "${host}/technical-support/nodo/api/v1"
+  } ],
+  "tags" : [ {
+    "name" : "Info",
+    "description" : "Info operations"
+  } ],
+  "paths" : {
+    "/events/negative/{bizEventId}" : {
+      "get" : {
+        "tags" : [ "Events Resource" ],
+        "parameters" : [ {
+          "name" : "bizEventId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
           }
-        ],
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/PaymentsFullResponse"
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/PaymentsFullResponse"
                 }
               }
             }
           },
-          "404": {
-            "description": "Not found",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemJson"
+          "404" : {
+            "description" : "Not found",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemJson"
                 }
               }
             }
           },
-          "500": {
-            "description": "Service unavailable.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemJson"
+          "500" : {
+            "description" : "Service unavailable.",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemJson"
                 }
               }
             }
@@ -66,19 +58,17 @@
         }
       }
     },
-    "/info": {
-      "get": {
-        "tags": [
-          "Info"
-        ],
-        "summary": "Get info of Node tech support API",
-        "responses": {
-          "200": {
-            "description": "Success",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/InfoResponse"
+    "/info" : {
+      "get" : {
+        "tags" : [ "Info" ],
+        "summary" : "Get info of Node tech support API",
+        "responses" : {
+          "200" : {
+            "description" : "Success",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/InfoResponse"
                 }
               }
             }
@@ -86,70 +76,63 @@
         }
       }
     },
-    "/organizations/{organizationFiscalCode}/iuv/{iuv}": {
-      "get": {
-        "tags": [
-          "Worker Resource"
-        ],
-        "parameters": [
-          {
-            "name": "iuv",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "organizationFiscalCode",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "dateFrom",
-            "in": "query",
-            "schema": {
-              "$ref": "#/components/schemas/LocalDate"
-            }
-          },
-          {
-            "name": "dateTo",
-            "in": "query",
-            "schema": {
-              "$ref": "#/components/schemas/LocalDate"
-            }
+    "/organizations/{organizationFiscalCode}/iuv/{iuv}" : {
+      "get" : {
+        "tags" : [ "Worker Resource" ],
+        "parameters" : [ {
+          "name" : "iuv",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
           }
-        ],
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/PaymentsResponse"
+        }, {
+          "name" : "organizationFiscalCode",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "name" : "dateFrom",
+          "in" : "query",
+          "schema" : {
+            "$ref" : "#/components/schemas/LocalDate"
+          }
+        }, {
+          "name" : "dateTo",
+          "in" : "query",
+          "schema" : {
+            "$ref" : "#/components/schemas/LocalDate"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/PaymentsResponse"
                 }
               }
             }
           },
-          "400": {
-            "description": "Bad Request",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemJson"
+          "400" : {
+            "description" : "Bad Request",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemJson"
                 }
               }
             }
           },
-          "500": {
-            "description": "Service unavailable.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemJson"
+          "500" : {
+            "description" : "Service unavailable.",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemJson"
                 }
               }
             }
@@ -157,78 +140,70 @@
         }
       }
     },
-    "/organizations/{organizationFiscalCode}/iuv/{iuv}/ccp/{ccp}": {
-      "get": {
-        "tags": [
-          "Worker Resource"
-        ],
-        "parameters": [
-          {
-            "name": "ccp",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "iuv",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "organizationFiscalCode",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "dateFrom",
-            "in": "query",
-            "schema": {
-              "$ref": "#/components/schemas/LocalDate"
-            }
-          },
-          {
-            "name": "dateTo",
-            "in": "query",
-            "schema": {
-              "$ref": "#/components/schemas/LocalDate"
-            }
+    "/organizations/{organizationFiscalCode}/iuv/{iuv}/ccp/{ccp}" : {
+      "get" : {
+        "tags" : [ "Worker Resource" ],
+        "parameters" : [ {
+          "name" : "ccp",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
           }
-        ],
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/PaymentsFullResponse"
+        }, {
+          "name" : "iuv",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "name" : "organizationFiscalCode",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "name" : "dateFrom",
+          "in" : "query",
+          "schema" : {
+            "$ref" : "#/components/schemas/LocalDate"
+          }
+        }, {
+          "name" : "dateTo",
+          "in" : "query",
+          "schema" : {
+            "$ref" : "#/components/schemas/LocalDate"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/PaymentsFullResponse"
                 }
               }
             }
           },
-          "400": {
-            "description": "Bad Request",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemJson"
+          "400" : {
+            "description" : "Bad Request",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemJson"
                 }
               }
             }
           },
-          "500": {
-            "description": "Service unavailable.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemJson"
+          "500" : {
+            "description" : "Service unavailable.",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemJson"
                 }
               }
             }
@@ -236,70 +211,63 @@
         }
       }
     },
-    "/organizations/{organizationFiscalCode}/noticeNumber/{noticeNumber}": {
-      "get": {
-        "tags": [
-          "Worker Resource"
-        ],
-        "parameters": [
-          {
-            "name": "noticeNumber",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "organizationFiscalCode",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "dateFrom",
-            "in": "query",
-            "schema": {
-              "$ref": "#/components/schemas/LocalDate"
-            }
-          },
-          {
-            "name": "dateTo",
-            "in": "query",
-            "schema": {
-              "$ref": "#/components/schemas/LocalDate"
-            }
+    "/organizations/{organizationFiscalCode}/noticeNumber/{noticeNumber}" : {
+      "get" : {
+        "tags" : [ "Worker Resource" ],
+        "parameters" : [ {
+          "name" : "noticeNumber",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
           }
-        ],
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/PaymentsResponse"
+        }, {
+          "name" : "organizationFiscalCode",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "name" : "dateFrom",
+          "in" : "query",
+          "schema" : {
+            "$ref" : "#/components/schemas/LocalDate"
+          }
+        }, {
+          "name" : "dateTo",
+          "in" : "query",
+          "schema" : {
+            "$ref" : "#/components/schemas/LocalDate"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/PaymentsResponse"
                 }
               }
             }
           },
-          "400": {
-            "description": "Bad Request",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemJson"
+          "400" : {
+            "description" : "Bad Request",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemJson"
                 }
               }
             }
           },
-          "500": {
-            "description": "Service unavailable.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemJson"
+          "500" : {
+            "description" : "Service unavailable.",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemJson"
                 }
               }
             }
@@ -307,78 +275,70 @@
         }
       }
     },
-    "/organizations/{organizationFiscalCode}/noticeNumber/{noticeNumber}/paymentToken/{paymentToken}": {
-      "get": {
-        "tags": [
-          "Worker Resource"
-        ],
-        "parameters": [
-          {
-            "name": "noticeNumber",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "organizationFiscalCode",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "paymentToken",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "dateFrom",
-            "in": "query",
-            "schema": {
-              "$ref": "#/components/schemas/LocalDate"
-            }
-          },
-          {
-            "name": "dateTo",
-            "in": "query",
-            "schema": {
-              "$ref": "#/components/schemas/LocalDate"
-            }
+    "/organizations/{organizationFiscalCode}/noticeNumber/{noticeNumber}/paymentToken/{paymentToken}" : {
+      "get" : {
+        "tags" : [ "Worker Resource" ],
+        "parameters" : [ {
+          "name" : "noticeNumber",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
           }
-        ],
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/PaymentsFullResponse"
+        }, {
+          "name" : "organizationFiscalCode",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "name" : "paymentToken",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "name" : "dateFrom",
+          "in" : "query",
+          "schema" : {
+            "$ref" : "#/components/schemas/LocalDate"
+          }
+        }, {
+          "name" : "dateTo",
+          "in" : "query",
+          "schema" : {
+            "$ref" : "#/components/schemas/LocalDate"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/PaymentsFullResponse"
                 }
               }
             }
           },
-          "400": {
-            "description": "Bad Request",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemJson"
+          "400" : {
+            "description" : "Bad Request",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemJson"
                 }
               }
             }
           },
-          "500": {
-            "description": "Service unavailable.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemJson"
+          "500" : {
+            "description" : "Service unavailable.",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemJson"
                 }
               }
             }
@@ -386,96 +346,117 @@
         }
       }
     },
-    "/snapshot/organizations/{organizationFiscalCode}": {
-      "get": {
-        "tags": [
-          "Snapshot Resource"
-        ],
-        "parameters": [
-          {
-            "name": "organizationFiscalCode",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "dateFrom",
-            "in": "query",
-            "schema": {
-              "$ref": "#/components/schemas/LocalDate"
-            }
-          },
-          {
-            "name": "dateTo",
-            "in": "query",
-            "schema": {
-              "$ref": "#/components/schemas/LocalDate"
-            }
-          },
-          {
-            "name": "noticeNumber",
-            "in": "query",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "page",
-            "in": "query",
-            "schema": {
-              "format": "int64",
-              "default": 1,
-              "minimum": 1,
-              "type": "integer"
-            }
-          },
-          {
-            "name": "paymentToken",
-            "in": "query",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "size",
-            "in": "query",
-            "schema": {
-              "format": "int64",
-              "default": 1000,
-              "minimum": 1,
-              "type": "integer"
+    "/paymentToken/{paymentToken}" : {
+      "get" : {
+        "tags" : [ "Position Payment Snapshot Resource" ],
+        "parameters" : [ {
+          "name" : "paymentToken",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "name" : "serviceIdentifier",
+          "in" : "query",
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/PositionPaymentSnapshotDto"
+                }
+              }
             }
           }
-        ],
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/PaymentResponse"
+        }
+      }
+    },
+    "/snapshot/organizations/{organizationFiscalCode}" : {
+      "get" : {
+        "tags" : [ "Snapshot Resource" ],
+        "parameters" : [ {
+          "name" : "organizationFiscalCode",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "name" : "dateFrom",
+          "in" : "query",
+          "schema" : {
+            "$ref" : "#/components/schemas/LocalDate"
+          }
+        }, {
+          "name" : "dateTo",
+          "in" : "query",
+          "schema" : {
+            "$ref" : "#/components/schemas/LocalDate"
+          }
+        }, {
+          "name" : "noticeNumber",
+          "in" : "query",
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "name" : "page",
+          "in" : "query",
+          "schema" : {
+            "format" : "int64",
+            "default" : 1,
+            "minimum" : 1,
+            "type" : "integer"
+          }
+        }, {
+          "name" : "paymentToken",
+          "in" : "query",
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "name" : "size",
+          "in" : "query",
+          "schema" : {
+            "format" : "int64",
+            "default" : 1000,
+            "minimum" : 1,
+            "type" : "integer"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/PaymentResponse"
                 }
               }
             }
           },
-          "400": {
-            "description": "Bad Request",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemJson"
+          "400" : {
+            "description" : "Bad Request",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemJson"
                 }
               }
             }
           },
-          "500": {
-            "description": "Service unavailable.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemJson"
+          "500" : {
+            "description" : "Service unavailable.",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemJson"
                 }
               }
             }
@@ -484,363 +465,407 @@
       }
     }
   },
-  "components": {
-    "schemas": {
-      "ErrorCode": {
-        "type": "object",
-        "properties": {
-          "code": {
-            "type": "string",
-            "example": "0500"
+  "components" : {
+    "schemas" : {
+      "ErrorCode" : {
+        "type" : "object",
+        "properties" : {
+          "code" : {
+            "type" : "string",
+            "example" : "0500"
           },
-          "description": {
-            "type": "string",
-            "example": "An unexpected error has occurred. Please contact support."
+          "description" : {
+            "type" : "string",
+            "example" : "An unexpected error has occurred. Please contact support."
           },
-          "statusCode": {
-            "format": "int32",
-            "type": "integer",
-            "example": 500
+          "statusCode" : {
+            "format" : "int32",
+            "type" : "integer",
+            "example" : 500
           }
         }
       },
-      "FaultBean": {
-        "type": "object",
-        "properties": {
-          "faultCode": {
-            "type": "string"
+      "FaultBean" : {
+        "type" : "object",
+        "properties" : {
+          "faultCode" : {
+            "type" : "string"
           },
-          "description": {
-            "type": "string"
+          "description" : {
+            "type" : "string"
           },
-          "timestamp": {
-            "type": "string"
+          "timestamp" : {
+            "type" : "string"
           }
         }
       },
-      "InfoResponse": {
-        "type": "object",
-        "properties": {
-          "name": {
-            "type": "string",
-            "example": "pagopa-node-tech-support"
+      "InfoResponse" : {
+        "type" : "object",
+        "properties" : {
+          "name" : {
+            "type" : "string",
+            "example" : "pagopa-node-tech-support"
           },
-          "version": {
-            "type": "string",
-            "example": "1.2.3"
+          "version" : {
+            "type" : "string",
+            "example" : "1.2.3"
           },
-          "environment": {
-            "type": "string",
-            "example": "dev"
+          "environment" : {
+            "type" : "string",
+            "example" : "dev"
           },
-          "description": {
-            "type": "string",
-            "example": "Node tech support API"
+          "description" : {
+            "type" : "string",
+            "example" : "Node tech support API"
           },
-          "errorCodes": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/ErrorCode"
+          "errorCodes" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/ErrorCode"
             }
           }
         }
       },
-      "Instant": {
-        "format": "date-time",
-        "type": "string",
-        "example": "2022-03-10T16:15:50Z"
+      "Instant" : {
+        "format" : "date-time",
+        "type" : "string",
+        "example" : "2022-03-10T16:15:50Z"
       },
-      "LocalDate": {
-        "format": "date",
-        "type": "string",
-        "example": "2022-03-10"
+      "LocalDate" : {
+        "format" : "date",
+        "type" : "string",
+        "example" : "2022-03-10"
       },
-      "Metadata": {
-        "type": "object",
-        "properties": {
-          "pageSize": {
-            "format": "int32",
-            "type": "integer",
-            "example": 25
+      "Metadata" : {
+        "type" : "object",
+        "properties" : {
+          "pageSize" : {
+            "format" : "int32",
+            "type" : "integer",
+            "example" : 25
           },
-          "pageNumber": {
-            "format": "int32",
-            "type": "integer",
-            "example": 1
+          "pageNumber" : {
+            "format" : "int32",
+            "type" : "integer",
+            "example" : 1
           },
-          "totPage": {
-            "format": "int32",
-            "type": "integer",
-            "example": 3
+          "totPage" : {
+            "format" : "int32",
+            "type" : "integer",
+            "example" : 3
           }
         }
       },
-      "PaymentFullInfo": {
-        "type": "object",
-        "properties": {
-          "businessProcess": {
-            "type": "string"
+      "PaymentFullInfo" : {
+        "type" : "object",
+        "properties" : {
+          "businessProcess" : {
+            "type" : "string"
           },
-          "organizationFiscalCode": {
-            "type": "string"
+          "organizationFiscalCode" : {
+            "type" : "string"
           },
-          "noticeNumber": {
-            "type": "string"
+          "noticeNumber" : {
+            "type" : "string"
           },
-          "iuv": {
-            "type": "string"
+          "iuv" : {
+            "type" : "string"
           },
-          "pspId": {
-            "type": "string"
+          "pspId" : {
+            "type" : "string"
           },
-          "brokerPspId": {
-            "type": "string"
+          "brokerPspId" : {
+            "type" : "string"
           },
-          "channelId": {
-            "type": "string"
+          "channelId" : {
+            "type" : "string"
           },
-          "outcome": {
-            "type": "string"
+          "outcome" : {
+            "type" : "string"
           },
-          "status": {
-            "type": "string"
+          "status" : {
+            "$ref" : "#/components/schemas/PaymentStatus"
           },
-          "insertedTimestamp": {
-            "type": "string"
+          "insertedTimestamp" : {
+            "type" : "string"
           },
-          "serviceIdentifier": {
-            "type": "string"
+          "serviceIdentifier" : {
+            "type" : "string"
           },
-          "paymentToken": {
-            "type": "string"
+          "paymentToken" : {
+            "type" : "string"
           },
-          "ccp": {
-            "type": "string"
+          "ccp" : {
+            "type" : "string"
           },
-          "positiveBizEvtId": {
-            "type": "string"
+          "positiveBizEvtId" : {
+            "type" : "string"
           },
-          "verifyKoEvtId": {
-            "type": "string"
+          "verifyKoEvtId" : {
+            "type" : "string"
           },
-          "negativeBizEvtId": {
-            "type": "string"
+          "negativeBizEvtId" : {
+            "type" : "string"
           },
-          "faultBean": {
-            "$ref": "#/components/schemas/FaultBean"
+          "faultBean" : {
+            "$ref" : "#/components/schemas/FaultBean"
           },
-          "brokerOrganizationId": {
-            "type": "string"
+          "brokerOrganizationId" : {
+            "type" : "string"
           },
-          "stationId": {
-            "type": "string"
+          "stationId" : {
+            "type" : "string"
           },
-          "paymentMethod": {
-            "type": "string"
+          "paymentMethod" : {
+            "type" : "string"
           },
-          "amount": {
-            "type": "number"
+          "amount" : {
+            "type" : "number"
           },
-          "pmReceipt": {
-            "type": "string"
+          "pmReceipt" : {
+            "type" : "string"
           },
-          "touchPoint": {
-            "type": "string"
+          "touchPoint" : {
+            "type" : "string"
           },
-          "fee": {
-            "type": "number"
+          "fee" : {
+            "type" : "number"
           },
-          "feeOrganization": {
-            "type": "number"
+          "feeOrganization" : {
+            "type" : "number"
           }
         }
       },
-      "PaymentInfo": {
-        "type": "object",
-        "properties": {
-          "businessProcess": {
-            "type": "string"
+      "PaymentInfo" : {
+        "type" : "object",
+        "properties" : {
+          "businessProcess" : {
+            "type" : "string"
           },
-          "organizationFiscalCode": {
-            "type": "string"
+          "organizationFiscalCode" : {
+            "type" : "string"
           },
-          "noticeNumber": {
-            "type": "string"
+          "noticeNumber" : {
+            "type" : "string"
           },
-          "iuv": {
-            "type": "string"
+          "iuv" : {
+            "type" : "string"
           },
-          "pspId": {
-            "type": "string"
+          "pspId" : {
+            "type" : "string"
           },
-          "brokerPspId": {
-            "type": "string"
+          "brokerPspId" : {
+            "type" : "string"
           },
-          "channelId": {
-            "type": "string"
+          "channelId" : {
+            "type" : "string"
           },
-          "outcome": {
-            "type": "string"
+          "outcome" : {
+            "type" : "string"
           },
-          "status": {
-            "type": "string"
+          "status" : {
+            "$ref" : "#/components/schemas/PaymentStatus"
           },
-          "insertedTimestamp": {
-            "type": "string"
+          "insertedTimestamp" : {
+            "type" : "string"
           },
-          "serviceIdentifier": {
-            "type": "string"
+          "serviceIdentifier" : {
+            "type" : "string"
           },
-          "paymentToken": {
-            "type": "string"
+          "paymentToken" : {
+            "type" : "string"
           },
-          "ccp": {
-            "type": "string"
+          "ccp" : {
+            "type" : "string"
           },
-          "positiveBizEvtId": {
-            "type": "string"
+          "positiveBizEvtId" : {
+            "type" : "string"
           },
-          "verifyKoEvtId": {
-            "type": "string"
+          "verifyKoEvtId" : {
+            "type" : "string"
           },
-          "negativeBizEvtId": {
-            "type": "string"
+          "negativeBizEvtId" : {
+            "type" : "string"
           },
-          "faultBean": {
-            "$ref": "#/components/schemas/FaultBean"
+          "faultBean" : {
+            "$ref" : "#/components/schemas/FaultBean"
           }
         }
       },
-      "PaymentResponse": {
-        "type": "object",
-        "properties": {
-          "metadata": {
-            "$ref": "#/components/schemas/Metadata"
+      "PaymentResponse" : {
+        "type" : "object",
+        "properties" : {
+          "metadata" : {
+            "$ref" : "#/components/schemas/Metadata"
           },
-          "count": {
-            "format": "int64",
-            "type": "integer",
-            "example": 100
+          "count" : {
+            "format" : "int64",
+            "type" : "integer",
+            "example" : 100
           },
-          "data": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/PositionPaymentSSInfo"
+          "data" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/PositionPaymentSSInfo"
             }
           },
-          "dateFrom": {
-            "$ref": "#/components/schemas/LocalDate"
+          "dateFrom" : {
+            "$ref" : "#/components/schemas/LocalDate"
           },
-          "dateTo": {
-            "$ref": "#/components/schemas/LocalDate"
+          "dateTo" : {
+            "$ref" : "#/components/schemas/LocalDate"
           }
         }
       },
-      "PaymentsFullResponse": {
-        "type": "object",
-        "properties": {
-          "dateFrom": {
-            "$ref": "#/components/schemas/LocalDate"
-          },
-          "dateTo": {
-            "$ref": "#/components/schemas/LocalDate"
-          },
-          "count": {
-            "format": "int32",
-            "type": "integer"
-          },
-          "data": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/PaymentFullInfo"
-            }
-          }
-        }
+      "PaymentStatus" : {
+        "enum" : [ "completed", "failed", "cancelled", "unknown" ],
+        "type" : "string"
       },
-      "PaymentsResponse": {
-        "type": "object",
-        "properties": {
-          "dateFrom": {
-            "$ref": "#/components/schemas/LocalDate"
+      "PaymentsFullResponse" : {
+        "type" : "object",
+        "properties" : {
+          "dateFrom" : {
+            "$ref" : "#/components/schemas/LocalDate"
           },
-          "dateTo": {
-            "$ref": "#/components/schemas/LocalDate"
+          "dateTo" : {
+            "$ref" : "#/components/schemas/LocalDate"
           },
-          "count": {
-            "format": "int32",
-            "type": "integer"
+          "count" : {
+            "format" : "int32",
+            "type" : "integer"
           },
-          "data": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/PaymentInfo"
+          "data" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/PaymentFullInfo"
             }
           }
         }
       },
-      "PositionPaymentSSInfo": {
-        "type": "object",
-        "properties": {
-          "organizationFiscalCode": {
-            "type": "string"
+      "PaymentsResponse" : {
+        "type" : "object",
+        "properties" : {
+          "dateFrom" : {
+            "$ref" : "#/components/schemas/LocalDate"
           },
-          "noticeNumber": {
-            "type": "string"
+          "dateTo" : {
+            "$ref" : "#/components/schemas/LocalDate"
           },
-          "creditorReferenceId": {
-            "type": "string"
+          "count" : {
+            "format" : "int32",
+            "type" : "integer"
           },
-          "paymentToken": {
-            "type": "string"
-          },
-          "status": {
-            "type": "string"
-          },
-          "insertedTimestamp": {
-            "$ref": "#/components/schemas/Instant"
-          },
-          "updatedTimestamp": {
-            "$ref": "#/components/schemas/Instant"
-          },
-          "insertedBy": {
-            "type": "string"
-          },
-          "updatedBy": {
-            "type": "string"
-          },
-          "serviceIdentifier": {
-            "type": "string"
+          "data" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/PaymentInfo"
+            }
           }
         }
       },
-      "ProblemJson": {
-        "type": "object",
-        "properties": {
-          "title": {
-            "description": "A short, summary of the problem type. Written in english and readable for engineers (usually not suited for non technical stakeholders and not localized); example: Service Unavailable",
-            "type": "string"
+      "PositionPaymentSSInfo" : {
+        "type" : "object",
+        "properties" : {
+          "organizationFiscalCode" : {
+            "type" : "string"
           },
-          "status": {
-            "format": "int32",
-            "description": "The HTTP status code generated by the origin server for this occurrence of the problem.",
-            "maximum": 600,
-            "minimum": 100,
-            "type": "integer",
-            "example": 200
+          "noticeNumber" : {
+            "type" : "string"
           },
-          "details": {
-            "description": "A human readable explanation specific to this occurrence of the problem.",
-            "type": "string",
-            "example": "There was an error processing the request"
+          "creditorReferenceId" : {
+            "type" : "string"
+          },
+          "paymentToken" : {
+            "type" : "string"
+          },
+          "status" : {
+            "type" : "string"
+          },
+          "insertedTimestamp" : {
+            "$ref" : "#/components/schemas/Instant"
+          },
+          "updatedTimestamp" : {
+            "$ref" : "#/components/schemas/Instant"
+          },
+          "insertedBy" : {
+            "type" : "string"
+          },
+          "updatedBy" : {
+            "type" : "string"
+          },
+          "serviceIdentifier" : {
+            "type" : "string"
+          }
+        }
+      },
+      "PositionPaymentSnapshotDto" : {
+        "type" : "object",
+        "properties" : {
+          "id" : {
+            "format" : "int64",
+            "type" : "integer"
+          },
+          "pa_fiscal_code" : {
+            "type" : "string"
+          },
+          "notice_id" : {
+            "type" : "string"
+          },
+          "creditor_reference_id" : {
+            "type" : "string"
+          },
+          "payment_token" : {
+            "type" : "string"
+          },
+          "status" : {
+            "type" : "string"
+          },
+          "inserted_timestamp" : {
+            "$ref" : "#/components/schemas/Instant"
+          },
+          "updated_timestamp" : {
+            "$ref" : "#/components/schemas/Instant"
+          },
+          "fk_position_payment" : {
+            "format" : "int64",
+            "type" : "integer"
+          },
+          "inserted_by" : {
+            "type" : "string"
+          },
+          "updated_by" : {
+            "type" : "string"
+          }
+        }
+      },
+      "ProblemJson" : {
+        "type" : "object",
+        "properties" : {
+          "title" : {
+            "description" : "A short, summary of the problem type. Written in english and readable for engineers (usually not suited for non technical stakeholders and not localized); example: Service Unavailable",
+            "type" : "string"
+          },
+          "status" : {
+            "format" : "int32",
+            "description" : "The HTTP status code generated by the origin server for this occurrence of the problem.",
+            "maximum" : 600,
+            "minimum" : 100,
+            "type" : "integer",
+            "example" : 200
+          },
+          "details" : {
+            "description" : "A human readable explanation specific to this occurrence of the problem.",
+            "type" : "string",
+            "example" : "There was an error processing the request"
           }
         }
       }
     },
-    "securitySchemes": {
-      "SecurityScheme": {
-        "type": "http",
-        "description": "Authentication",
-        "scheme": "basic"
+    "securitySchemes" : {
+      "SecurityScheme" : {
+        "type" : "http",
+        "description" : "Authentication",
+        "scheme" : "basic"
       }
     }
   }
