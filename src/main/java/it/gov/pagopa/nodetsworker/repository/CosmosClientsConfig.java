@@ -31,7 +31,7 @@ class CosmosClientsConfig {
     /**
      * Preferred region for Cosmos DB client.
      * If set, the client will try this region first (read/write) and fallback to others if needed.
-     * Only for prod environment the property is expected to be set.
+     * For prod environment the property is expected to be set to replica region, to avoid performance issues on the primary region.
      */
     @ConfigProperty(name = "cosmos.preferred.region")
     Optional<String> preferredRegion;
