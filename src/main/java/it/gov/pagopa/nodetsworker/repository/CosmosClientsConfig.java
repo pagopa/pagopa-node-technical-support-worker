@@ -7,42 +7,66 @@ import jakarta.enterprise.inject.Produces;
 import jakarta.inject.Named;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 
+import java.util.Collections;
+import java.util.Optional;
+
 @ApplicationScoped
 class CosmosClientsConfig {
 
-
     @ConfigProperty(name = "biz.endpoint")
-    private String bizendpoint;
+    String bizendpoint;
     @ConfigProperty(name = "biz.key")
-    private String bizkey;
-    @ConfigProperty(name = "verifyko.endpoint")
-    private String verifykoendpoint;
-    @ConfigProperty(name = "verifyko.key")
-    private String verifykokey;
-    @ConfigProperty(name = "bizneg.endpoint")
-    private String biznegendpoint;
-    @ConfigProperty(name = "bizneg.key")
-    private String biznegkey;
+    String bizkey;
 
+    @ConfigProperty(name = "verifyko.endpoint")
+    String verifykoendpoint;
+    @ConfigProperty(name = "verifyko.key")
+    String verifykokey;
+
+    @ConfigProperty(name = "bizneg.endpoint")
+    String biznegendpoint;
+    @ConfigProperty(name = "bizneg.key")
+    String biznegkey;
+
+    /**
+     * Preferred region for Cosmos DB client.
+     * If set, the client will try this region first (read/write) and fallback to others if needed.
+     * Only for prod environment the property is expected to be set.
+     */
+    @ConfigProperty(name = "cosmos.preferred.region")
+    Optional<String> preferredRegion;
 
     @Produces
     @Named("biz")
     @ApplicationScoped
     CosmosClient bizClient() {
-        return new CosmosClientBuilder().endpoint(bizendpoint).key(bizkey).buildClient();
+        return baseBuilder(bizendpoint, bizkey).buildClient();
     }
 
     @Produces
     @Named("bizneg")
     @ApplicationScoped
     CosmosClient negbizClient() {
-        return new CosmosClientBuilder().endpoint(biznegendpoint).key(biznegkey).buildClient();
+        return baseBuilder(biznegendpoint, biznegkey).buildClient();
     }
 
     @Produces
     @Named("verifyKo")
     @ApplicationScoped
     CosmosClient verifyKoClient() {
-        return new CosmosClientBuilder().endpoint(verifykoendpoint).key(verifykokey).buildClient();
+        return baseBuilder(verifykoendpoint, verifykokey).buildClient();
+    }
+
+    private CosmosClientBuilder baseBuilder(String endpoint, String key) {
+        CosmosClientBuilder b = new CosmosClientBuilder()
+                .endpoint(endpoint)
+                .key(key);
+
+        preferredRegion
+                .map(String::trim)
+                .filter(s -> !s.isEmpty())
+                .ifPresent(r -> b.preferredRegions(Collections.singletonList(r)));
+
+        return b;
     }
 }
