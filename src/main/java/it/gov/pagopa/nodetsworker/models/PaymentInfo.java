@@ -1,6 +1,8 @@
 package it.gov.pagopa.nodetsworker.models;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
+
+import it.gov.pagopa.nodetsworker.models.enums.PaymentStatus;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -16,7 +18,6 @@ public class PaymentInfo {
 
   @JsonInclude(JsonInclude.Include.NON_NULL)
   private String businessProcess;
-//  private String paymentStatus;
 
   private String organizationFiscalCode;
   private String noticeNumber;
@@ -25,9 +26,8 @@ public class PaymentInfo {
   private String brokerPspId;
   private String channelId;
   private String outcome;
-  private String status;
+  private PaymentStatus status;
   private String insertedTimestamp;
-//  private String updatedTimestamp;
   private String serviceIdentifier;
 
   private String paymentToken;

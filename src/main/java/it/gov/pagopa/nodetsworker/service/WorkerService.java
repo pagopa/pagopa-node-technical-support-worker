@@ -25,15 +25,25 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 import static it.gov.pagopa.nodetsworker.util.AppConstant.SERVICE_ID;
-import static it.gov.pagopa.nodetsworker.util.AppConstant.STATUS_COMPLETED;
+import it.gov.pagopa.nodetsworker.models.enums.PaymentStatus;
 
 @ApplicationScoped
 public class WorkerService {
 
     private static final String OUTCOME_OK = "OK";
     private static final String OUTCOME_KO = "KO";
+    private static final Set<String> BP_FAILED = Set.of(
+            "sendPaymentOutcome",
+            "sendPaymentOutcomeV2"
+    );
+
+    private static final Set<String> BP_UNKNOWN = Set.of(
+            "nodoInviaRT",
+            "rtPullRecoveryPush"
+    );
 
     @Inject
     Logger log;
@@ -51,6 +61,7 @@ public class WorkerService {
 
         return PaymentInfo.builder()
                 .businessProcess("VerifyPaymentNotice")
+                .status(PaymentStatus.FAILED)
                 .serviceIdentifier(evt.getServiceIdentifier())
                 .pspId(evt.getPsp().getIdPsp())
                 .verifyKoEvtId(evt.getId())
@@ -67,7 +78,7 @@ public class WorkerService {
 
     private PaymentInfo eventToPaymentInfo(PositiveBizEvent evt) {
         return PaymentInfo.builder()
-                .status(STATUS_COMPLETED)
+                .status(PaymentStatus.COMPLETED)
                 .serviceIdentifier(evt.getProperties()!=null?evt.getProperties().get(SERVICE_ID):"n/a")
                 .pspId(evt.getPsp().getIdPsp())
                 .positiveBizEvtId(evt.getId())
@@ -85,7 +96,7 @@ public class WorkerService {
 
     private PaymentFullInfo eventToPaymentFullInfo(PositiveBizEvent evt) {
         return PaymentFullInfo.builder()
-                .status(STATUS_COMPLETED)
+        		.status(PaymentStatus.COMPLETED)
                 .serviceIdentifier(evt.getProperties()!=null?evt.getProperties().get(SERVICE_ID):"n/a")
                 .pspId(evt.getPsp().getIdPsp())
                 .positiveBizEvtId(evt.getId())
@@ -106,6 +117,7 @@ public class WorkerService {
     private PaymentInfo eventToPaymentInfo(NegativeBizEvent evt) {
         return PaymentInfo.builder()
                 .businessProcess(evt.getBusinessProcess())
+                .status(mapNegativeStatus(evt.getBusinessProcess()))
                 .serviceIdentifier(evt.getProperties()!=null?evt.getProperties().get(SERVICE_ID):"n/a")
                 .pspId(evt.getPsp().getIdPsp())
                 .negativeBizEvtId(evt.getId())
@@ -124,6 +136,7 @@ public class WorkerService {
     private PaymentFullInfo eventToPaymentFullInfo(NegativeBizEvent evt) {
         return PaymentFullInfo.builder()
                 .businessProcess(evt.getBusinessProcess())
+                .status(mapNegativeStatus(evt.getBusinessProcess()))
                 .serviceIdentifier(evt.getProperties()!=null?evt.getProperties().get(SERVICE_ID):"n/a")
                 .pspId(evt.getPsp().getIdPsp())
                 .negativeBizEvtId(evt.getId())
@@ -167,6 +180,20 @@ public class WorkerService {
         pai.setTouchPoint(nbe.getPaymentInfo().getTouchpoint());
         pai.setNegativeBizEvtId(nbe.getId());
         return pai;
+    }
+    
+    
+    private PaymentStatus mapNegativeStatus(String businessProcess) {
+        if (businessProcess == null) {
+            return PaymentStatus.CANCELLED;
+        }
+        if (BP_FAILED.contains(businessProcess)) {
+            return PaymentStatus.FAILED;
+        }
+        if (BP_UNKNOWN.contains(businessProcess)) {
+            return PaymentStatus.UNKNOWN;
+        }
+        return PaymentStatus.CANCELLED;
     }
 
     public PaymentsResponse getInfoByNoticeNumber(String organizationFiscalCode, String noticeNumber, Optional<String> paymentToken, LocalDate dateFrom, LocalDate dateTo) {

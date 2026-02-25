@@ -3,7 +3,7 @@
   "info": {
     "title": "Node technical support - API (local) ${service}",
     "termsOfService": "https://www.pagopa.gov.it/",
-    "version": "1.2.22"
+    "version": "1.2.22-2-PIDM-1117-status-recovery"
   },
   "servers": [
     {
@@ -386,6 +386,42 @@
         }
       }
     },
+    "/paymentToken/{paymentToken}": {
+      "get": {
+        "tags": [
+          "Position Payment Snapshot Resource"
+        ],
+        "parameters": [
+          {
+            "name": "paymentToken",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "serviceIdentifier",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PositionPaymentSnapshotDto"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/snapshot/organizations/{organizationFiscalCode}": {
       "get": {
         "tags": [
@@ -603,7 +639,7 @@
             "type": "string"
           },
           "status": {
-            "type": "string"
+            "$ref": "#/components/schemas/PaymentStatus"
           },
           "insertedTimestamp": {
             "type": "string"
@@ -683,7 +719,7 @@
             "type": "string"
           },
           "status": {
-            "type": "string"
+            "$ref": "#/components/schemas/PaymentStatus"
           },
           "insertedTimestamp": {
             "type": "string"
@@ -735,6 +771,15 @@
             "$ref": "#/components/schemas/LocalDate"
           }
         }
+      },
+      "PaymentStatus": {
+        "enum": [
+          "completed",
+          "failed",
+          "cancelled",
+          "unknown"
+        ],
+        "type": "string"
       },
       "PaymentsFullResponse": {
         "type": "object",
@@ -809,6 +854,46 @@
             "type": "string"
           },
           "serviceIdentifier": {
+            "type": "string"
+          }
+        }
+      },
+      "PositionPaymentSnapshotDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "pa_fiscal_code": {
+            "type": "string"
+          },
+          "notice_id": {
+            "type": "string"
+          },
+          "creditor_reference_id": {
+            "type": "string"
+          },
+          "payment_token": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          },
+          "inserted_timestamp": {
+            "$ref": "#/components/schemas/Instant"
+          },
+          "updated_timestamp": {
+            "$ref": "#/components/schemas/Instant"
+          },
+          "fk_position_payment": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "inserted_by": {
+            "type": "string"
+          },
+          "updated_by": {
             "type": "string"
           }
         }

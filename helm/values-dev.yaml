@@ -2,7 +2,7 @@ microservice-chart:
   namespace: "nodo"
   image:
     repository: ghcr.io/pagopa/pagopa-node-technical-support-worker
-    tag: '1.2.22'
+    tag: '1.2.22-2-PIDM-1117-status-recovery'
   readinessProbe:
     httpGet:
       path: /q/health/ready
@@ -76,6 +76,7 @@ microservice-chart:
     COSMOS_BIZ_ENDPOINT: "https://pagopa-d-weu-bizevents-ds-cosmos-account.documents.azure.com:443/"
     COSMOS_NEG_BIZ_ENDPOINT: "https://pagopa-d-weu-bizevents-neg-ds-cosmos-account.documents.azure.com:443/"
     COSMOS_VERIFYKO_ENDPOINT: "https://pagopa-d-weu-nodo-verifyko-cosmos-account.documents.azure.com:443/"
+    COSMOS_PREFERRED_REGION: "West Europe"
     DATASOURCE_USERNAME: "offline"
     DATASOURCE_URL: "jdbc:postgresql://nodo-db.d.internal.postgresql.pagopa.it:5432/nodo" # PAGOPA (Nexi not available)
     DATASOURCE_SCHEMA: "offline"
