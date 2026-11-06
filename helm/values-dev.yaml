@@ -82,6 +82,10 @@ microservice-chart:
     DATASOURCE_SCHEMA: "offline"
     DB_SERVICE_IDENTIFIER: "NDP001DEV"
     LOG_LEVEL: "INFO"
+    DATA_EXPLORER_URL: "https://pagopaddataexplorer.westeurope.kusto.windows.net"
+    DATA_EXPLORER_CLIENT_ID: "8677a3ca-8d05-453f-947c-0bdb1d15e512"
+    DATA_EXPLORER_TENANT_ID: "7788edaf-0346-4068-9d79-c868aed15b3d"
+    DATA_EXPLORER_DB_NAME: "re"
   envFieldRef:
     APP_NAME: "metadata.labels['app.kubernetes.io/instance']"
     APP_VERSION: "metadata.labels['app.kubernetes.io/version']"
@@ -91,6 +95,7 @@ microservice-chart:
     COSMOS_NEG_BIZ_KEY: "cosmos-neg-biz-account-key"
     COSMOS_VERIFYKO_KEY: "cosmos-verifyko-account-key"
     DATASOURCE_PASSWORD: "db-offline-password"
+    DATA_EXPLORER_CLIENT_SECRET: "dataexplorer-client-secret"
   keyvault:
     name: "pagopa-d-nodo-kv"
     tenantId: "7788edaf-0346-4068-9d79-c868aed15b3d"

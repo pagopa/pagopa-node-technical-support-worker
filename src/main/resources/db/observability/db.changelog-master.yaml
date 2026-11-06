@@ -1,0 +1,33 @@
+# Liquibase master changelog for the observability projection schema.
+# Run with the application role against the `observability` schema, e.g.:
+#   liquibase \
+#     --url="jdbc:postgresql://<host>:<port>/<db>?currentSchema=observability" \
+#     --username="observability" --password="***" \
+#     --changeLogFile=db/observability/db.changelog-master.yaml \
+#     --defaultSchemaName=observability \
+#     update
+databaseChangeLog:
+  - include:
+      file: db/observability/changes/0001-initial-observability-schema.sql
+      relativeToChangelogFile: false
+  - include:
+      file: db/observability/changes/0002-ingestion-metadata.sql
+      relativeToChangelogFile: false
+  - include:
+      file: db/observability/changes/0003-projection-meta-bootstrap.sql
+      relativeToChangelogFile: false
+  - include:
+      file: db/observability/changes/0004-transition-provenance-and-partial-payment.sql
+      relativeToChangelogFile: false
+  - include:
+      file: db/observability/changes/0005-receipt-recipient.sql
+      relativeToChangelogFile: false
+  - include:
+      file: db/observability/changes/0006-primitive-calls.sql
+      relativeToChangelogFile: false
+  - include:
+      file: db/observability/changes/0007-primitive-warnings.sql
+      relativeToChangelogFile: false
+  - include:
+      file: db/observability/changes/0008-primitive-direction.sql
+      relativeToChangelogFile: false
