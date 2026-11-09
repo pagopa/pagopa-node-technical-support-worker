@@ -1,11 +1,12 @@
 package it.gov.pagopa.nodetsworker.observability.dto;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
-import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
+
+import java.util.List;
 
 @Data
 @NoArgsConstructor
@@ -17,6 +18,8 @@ public class CacheVersionsDto {
   private String checkedAt;
   @Schema(required = true, description = "One entry per node, NDP001 first; a failing node does not hide the others")
   private List<Node> nodes;
+  @Schema(required = true, description = "Api Config Cache info")
+  private Cache cache;
 
   @Data
   @NoArgsConstructor
@@ -28,9 +31,9 @@ public class CacheVersionsDto {
     private String node;
     @Schema(required = true, description = "X-Ndp-Target sent to Nodo monitoring")
     private String target;
-    @Schema(required = true, enumeration = {"OK", "UNCONFIGURED", "UNAVAILABLE"},
+    @Schema(required = true,
         description = "UNCONFIGURED: no subscription key; UNAVAILABLE: call failed or timed out")
-    private String outcome;
+    private CacheVersionOutcome outcome;
     @Schema(required = true, nullable = true)
     private String dbStatus;
     @Schema(required = true, nullable = true)
@@ -41,5 +44,32 @@ public class CacheVersionsDto {
     private String environment;
     @Schema(required = true, nullable = true)
     private String serviceIdentifier;
+  }
+
+  @Data
+  @NoArgsConstructor
+  @AllArgsConstructor
+  @JsonInclude(JsonInclude.Include.ALWAYS)
+  @Schema(name = "ApiConfigCacheVersion")
+  public static class Cache {
+    @Schema(required = true,
+        description = "UNCONFIGURED: no subscription key; UNAVAILABLE: call failed or timed out")
+    private CacheVersionOutcome outcome;
+    @Schema(required = true, nullable = true, description = "X-CACHE-ID returned by apiconfig-cache")
+    private String cacheId;
+    @Schema(required = true, nullable = true, description = "X-CACHE-VERSION returned by apiconfig-cache")
+    private String version;
+    @Schema(required = true, nullable = true, description = "X-CACHE-TIMESTAMP returned by apiconfig-cache")
+    private String timestamp;
+    @Schema(required = true)
+    private String environment;
+    @Schema(required = true, enumeration = {"CACHE"})
+    private String serviceIdentifier;
+  }
+
+  public enum CacheVersionOutcome {
+    OK,
+    UNCONFIGURED,
+    UNAVAILABLE
   }
 }
