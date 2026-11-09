@@ -8,9 +8,9 @@ on:
         description: The name of the environment where to run DB migration
         type: string
     secrets:
-      OBSERVABILITY_DATASOURCE_URL: { required: true }
-      OBSERVABILITY_DATASOURCE_USERNAME: { required: true }
-      OBSERVABILITY_DATASOURCE_PASSWORD: { required: true }
+      OBSERVABILITY_DATASOURCE_URL: { required: false }
+      OBSERVABILITY_DATASOURCE_USERNAME: { required: false }
+      OBSERVABILITY_DATASOURCE_PASSWORD: { required: false }
 
   workflow_dispatch:
     inputs:
