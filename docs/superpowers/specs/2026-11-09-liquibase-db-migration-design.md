@@ -7,6 +7,7 @@ Aggiornare `.github/workflows/05_db_migration_with_github_runner.yml` per applic
 ## Comportamento
 
 - Conservare `workflow_dispatch` con scelta obbligatoria dell'ambiente (`dev`, `uat`, `prod`) e `workflow_call` per l'uso riutilizzabile.
+- Validare l'input stringa di `workflow_call` prima di avviare il job di migrazione: solo `dev`, `uat` e `prod` sono ammessi. Il job di migrazione deve usare l'output convalidato per selezionare runner ed Environment GitHub; input non supportati devono fallire prima di selezionare un ambiente dinamico.
 - Rimuovere l'input schema e tutti i passaggi Flyway: nel repository è presente un solo changelog pertinente, `src/main/resources/db/observability/db.changelog-master.yaml`.
 - Eseguire Liquibase `update` sullo schema `observability`, usando le credenziali specifiche `OBSERVABILITY_DATASOURCE_URL`, `OBSERVABILITY_DATASOURCE_USERNAME` e `OBSERVABILITY_DATASOURCE_PASSWORD`, fornite come secrets dell'environment GitHub selezionato.
 - Non eseguire `00-create-schema-and-user.sql`: schema e ruolo sono prerequisiti già predisposti.
