@@ -1,17 +1,6 @@
 name: DB migration
 
 on:
-  workflow_call:
-    inputs:
-      environment:
-        required: true
-        description: The name of the environment where to run DB migration
-        type: string
-    secrets:
-      OBSERVABILITY_DATASOURCE_URL: { required: false }
-      OBSERVABILITY_DATASOURCE_USERNAME: { required: false }
-      OBSERVABILITY_DATASOURCE_PASSWORD: { required: false }
-
   workflow_dispatch:
     inputs:
       environment:
