@@ -25,10 +25,31 @@ permissions:
   contents: read
 
 jobs:
+  validate_environment:
+    runs-on: ubuntu-latest
+    outputs:
+      environment: ${{ steps.validate.outputs.environment }}
+    steps:
+      - name: Validate environment
+        id: validate
+        env:
+          ENVIRONMENT: ${{ inputs.environment }}
+        run: |
+          case "$ENVIRONMENT" in
+            dev|uat|prod)
+              printf 'environment=%s\n' "$ENVIRONMENT" >> "$GITHUB_OUTPUT"
+              ;;
+            *)
+              echo "::error::Unsupported environment. Allowed values: dev, uat, prod."
+              exit 1
+              ;;
+          esac
+
   db_migration:
-    runs-on: [ self-hosted-job, "${{ inputs.environment }}" ]
+    needs: validate_environment
+    runs-on: [ self-hosted-job, "${{ needs.validate_environment.outputs.environment }}" ]
     name: DB migration
-    environment: ${{ inputs.environment }}
+    environment: ${{ needs.validate_environment.outputs.environment }}
     steps:
       - name: Checkout
         uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # v3
