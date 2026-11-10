@@ -14,9 +14,10 @@ Quarkus does not initialize their connections when they are not needed.
   and
   `quarkus.datasource.online-ndp004.active=${ONLINE_NDP004_DATASOURCE_ENABLED:false}`.
 - Keep the two datasource lifecycles independent.
-- Set both flags explicitly to `true` in the existing dev, UAT, and production
-  Helm values, preserving the behavior of deployments that already configure
-  these datasources.
+- Set both flags explicitly to `true` in dev and UAT Helm values, which already
+  configure these datasources. Leave production unset so it uses the `false`
+  defaults; its current Helm values do not configure the Online datasource URLs
+  or credentials.
 - A request or synchronization that requires a disabled datasource must fail
   with HTTP 422 and the stable code `DB_SERVICE_DISABLED`; it must not attempt
   to open a connection or report a successful empty result. Preserve each API's
@@ -43,8 +44,9 @@ documentation.
 ## Documentation and tests
 
 Update the README runtime configuration table with both flags and their
-`false` defaults. Add explicit `true` values to the dev, UAT, and production
-Helm configurations.
+`false` defaults. Add explicit `true` values to the dev and UAT Helm
+configurations; production remains disabled until its Online datasource settings
+are configured.
 
 Add focused coverage for independent enablement, startup with a disabled
 datasource and no datasource credentials/URL, and explicit rejection when a
