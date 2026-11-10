@@ -7,16 +7,16 @@ microservice-chart:
     httpGet:
       path: /q/health/ready
       port: 8080
-    initialDelaySeconds: 8
-    failureThreshold: 10
-    periodSeconds: 2
+    initialDelaySeconds: 30
+    failureThreshold: 30
+    periodSeconds: 5
   livenessProbe:
     httpGet:
       path: /q/health/live
       port: 8080
-    initialDelaySeconds: 8
-    failureThreshold: 10
-    periodSeconds: 2
+    initialDelaySeconds: 90
+    failureThreshold: 6
+    periodSeconds: 10
   deployment:
     create: true
     replicas: 1 # same as HPA minReplica
@@ -49,11 +49,11 @@ microservice-chart:
         - all
   resources:
     requests:
-      memory: "400M"
-      cpu: "200m"
+      memory: "768Mi"
+      cpu: "250m"
     limits:
       memory: "3Gi"
-      cpu: "400m"
+      cpu: "1000m"
   autoscaling:
     enable: true
     minReplica: 1
@@ -83,10 +83,10 @@ microservice-chart:
     DB_SERVICE_IDENTIFIER: "NDP004UAT"
     LOG_LEVEL: "INFO"
     ONLINE_NDP001_IDENTIFIER: "NDP001UAT"
-    ONLINE_NDP001_DATASOURCE_USERNAME: "cfgr"
+    ONLINE_NDP001_DATASOURCE_USERNAME: "onliner"
     ONLINE_NDP001_DATASOURCE_URL: "jdbc:postgresql://nodo-db.u.internal.postgresql.pagopa.it:5432/nodo?sslmode=require&prepareThreshold=0&currentSchema=cfg"
     ONLINE_NDP004_IDENTIFIER: "NDP004UAT"
-    ONLINE_NDP004_DATASOURCE_USERNAME: "pp_nodo4_cfg"
+    ONLINE_NDP004_DATASOURCE_USERNAME: "NODO_ONLINE"
     ONLINE_NDP004_DATASOURCE_URL: "jdbc:postgresql://db-postgres-ndp.u.db-nodo-pagamenti.com:5444/ndpspct?prepareThreshold=0&currentSchema=NODO_ONLINE"
     OBSERVABILITY_DATASOURCE_USERNAME: "observability"
     OBSERVABILITY_DATASOURCE_URL: "jdbc:postgresql://nodo-db.u.internal.postgresql.pagopa.it:5432/nodo?sslmode=require&prepareThreshold=0&currentSchema=observability"
