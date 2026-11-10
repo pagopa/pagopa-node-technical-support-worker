@@ -315,9 +315,9 @@ retention, timezone, source uniqueness or personal-data review was performed her
    `.row-id-column` and the **actual** `.retention-days`; no retention is assumed
    (default `0` blocks activation). Endpoint must be an HTTPS cluster root; database,
    table and column identifiers match `[A-Za-z_][A-Za-z0-9_]{0,127}`.
-   Connection environment variables are `DATA_EXPLORER_URL`,
-   `DATA_EXPLORER_CLIENT_ID`, `DATA_EXPLORER_CLIENT_SECRET`,
-   `DATA_EXPLORER_TENANT_ID` and `DATA_EXPLORER_DB_NAME` (default `re`).
+   Connection environment variables are `RE_DATA_EXPLORER_URL`,
+   `RE_DATA_EXPLORER_CLIENT_ID`, `RE_DATA_EXPLORER_CLIENT_SECRET`,
+   `RE_DATA_EXPLORER_TENANT_ID` and `RE_DATA_EXPLORER_DB_NAME` (default `re`).
    Credentials bind to `observability.re.client-id`, `.client-secret` and
    `.tenant-id`; missing or blank credentials block activation with 503.
    Legacy `OBSERVABILITY_RE_ENDPOINT` and `OBSERVABILITY_RE_DATABASE` remain
