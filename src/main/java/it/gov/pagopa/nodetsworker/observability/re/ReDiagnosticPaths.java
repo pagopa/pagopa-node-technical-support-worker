@@ -44,8 +44,21 @@ public final class ReDiagnosticPaths {
 
   private static boolean diagnosticPath(String path) {
     // RESTEasy removes per-segment matrix parameters before selecting a resource.
-    String routed = path.replaceAll(";[^/]*", "").replaceAll("/+$", "");
-    return routed.contains("/attempts/") && routed.endsWith("/re-events");
+    StringBuilder routed = new StringBuilder(path.length());
+    for (int i = 0; i < path.length(); i++) {
+      char current = path.charAt(i);
+      if (current == ';') {
+        while (i + 1 < path.length() && path.charAt(i + 1) != '/') {
+          i++;
+        }
+      } else {
+        routed.append(current);
+      }
+    }
+    while (routed.length() > 0 && routed.charAt(routed.length() - 1) == '/') {
+      routed.setLength(routed.length() - 1);
+    }
+    return routed.indexOf("/attempts/") >= 0 && routed.toString().endsWith("/re-events");
   }
 
   private static String withoutQueryOrFragment(String target) {

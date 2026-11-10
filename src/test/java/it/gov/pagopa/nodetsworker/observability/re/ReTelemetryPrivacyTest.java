@@ -10,12 +10,21 @@ import io.opentelemetry.sdk.autoconfigure.AutoConfiguredOpenTelemetrySdk;
 import io.opentelemetry.sdk.autoconfigure.spi.AutoConfigurationCustomizerProvider;
 import io.opentelemetry.sdk.trace.samplers.SamplingDecision;
 import io.opentelemetry.sdk.trace.samplers.Sampler;
+import java.time.Duration;
 import java.util.List;
 import java.util.Map;
 import java.util.ServiceLoader;
 import org.junit.jupiter.api.Test;
 
 class ReTelemetryPrivacyTest {
+  @Test
+  void checksPathsWithRepeatedSlashesInLinearTime() {
+    String path = "/api/attempts/synthetic/re-events/" + "/".repeat(50_000) + "x";
+
+    assertTimeoutPreemptively(Duration.ofSeconds(2),
+        () -> assertFalse(ReDiagnosticPaths.suppressDecodedPath(path)));
+  }
+
   @Test
   void dropsDiagnosticHttpTargetsEvenWhenTheyContainRejectedSecretQueryParameters() {
     var sampler = new ReTelemetryPrivacy.PrivateSampler(Sampler.alwaysOn());
