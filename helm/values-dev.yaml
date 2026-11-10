@@ -7,16 +7,17 @@ microservice-chart:
     httpGet:
       path: /q/health/ready
       port: 8080
-    initialDelaySeconds: 8
-    failureThreshold: 10
-    periodSeconds: 2
+    initialDelaySeconds: 30
+    failureThreshold: 30
+    periodSeconds: 5
   livenessProbe:
     httpGet:
       path: /q/health/live
       port: 8080
-    initialDelaySeconds: 8
-    failureThreshold: 10
-    periodSeconds: 2
+    # startup (4 datasources + 2 Hibernate PUs + Cosmos/Kusto/EventHub) takes > 30s
+    initialDelaySeconds: 90
+    failureThreshold: 6
+    periodSeconds: 10
   deployment:
     create: true
     replicas: 1 # same as HPA minReplica
@@ -49,11 +50,11 @@ microservice-chart:
         - all
   resources:
     requests:
-      memory: "400M"
-      cpu: "200m"
+      memory: "768Mi"
+      cpu: "250m"
     limits:
       memory: "3Gi"
-      cpu: "400m"
+      cpu: "1000m"
   autoscaling:
     enable: true
     minReplica: 1
