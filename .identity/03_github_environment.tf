@@ -53,6 +53,14 @@ resource "github_actions_environment_secret" "github_environment_runner_secrets"
   plaintext_value = each.value
 }
 
+resource "github_actions_environment_secret" "github_environment_runner_variables" {
+  for_each        = local.repo_secrets
+  repository      = local.github.repository
+  environment     = var.env
+  secret_name     = each.key
+  plaintext_value = each.value
+}
+
 #################
 # ENV Variables #
 #################
@@ -63,14 +71,6 @@ resource "github_actions_environment_variable" "github_environment_runner_variab
   environment   = var.env
   variable_name = each.key
   value         = each.value
-}
-
-resource "github_actions_environment_secret" "github_environment_runner_variables" {
-  for_each        = local.repo_secrets
-  repository      = local.github.repository
-  environment     = var.env
-  secret_name     = each.key
-  plaintext_value = each.value
 }
 
 #tfsec:ignore:github-actions-no-plain-text-action-secrets # not real secret
