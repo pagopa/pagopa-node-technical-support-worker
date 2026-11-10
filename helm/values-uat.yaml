@@ -73,6 +73,7 @@ microservice-chart:
     APP_ENVIRONMENT: "uat"
     TZ: "Europe/Rome"
     OTEL_ENDPOINT: "http://otel-collector.elastic-system.svc.cluster.local:4317"
+    CORS_ORIGINS: "https://observability.uat.platform.pagopa.it"
     COSMOS_BIZ_ENDPOINT: "https://pagopa-u-weu-bizevents-ds-cosmos-account.documents.azure.com:443/"
     COSMOS_NEG_BIZ_ENDPOINT: "https://pagopa-u-weu-bizevents-neg-ds-cosmos-account.documents.azure.com:443/"
     COSMOS_VERIFYKO_ENDPOINT: "https://pagopa-u-weu-nodo-verifyko-cosmos-account.documents.azure.com:443/"
