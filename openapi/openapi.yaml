@@ -3,7 +3,7 @@ openapi: 3.0.3
 info:
   title: "Node technical support - API (local) ${service}"
   termsOfService: https://www.pagopa.gov.it/
-  version: 1.3.0-3-nodo-observability
+  version: 1.3.0-4-nodo-observability
 servers:
   - url: "${host}/technical-support/nodo/api/v1"
 tags:
