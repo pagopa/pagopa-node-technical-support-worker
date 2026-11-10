@@ -34,3 +34,4 @@ replay_pid*
 /env.dev
 /env.uat
 /docs/superpowers/
+/.worktrees/
