@@ -9,14 +9,19 @@ Quarkus does not initialize their connections when they are not needed.
 
 - Add `ONLINE_NDP001_DATASOURCE_ENABLED` and
   `ONLINE_NDP004_DATASOURCE_ENABLED`, each defaulting to `false`.
-- Map each flag to the corresponding named Quarkus datasource activation setting.
+- Map the flags directly to
+  `quarkus.datasource.online-ndp001.active=${ONLINE_NDP001_DATASOURCE_ENABLED:false}`
+  and
+  `quarkus.datasource.online-ndp004.active=${ONLINE_NDP004_DATASOURCE_ENABLED:false}`.
 - Keep the two datasource lifecycles independent.
 - Set both flags explicitly to `true` in the existing dev, UAT, and production
   Helm values, preserving the behavior of deployments that already configure
   these datasources.
 - A request or synchronization that requires a disabled datasource must fail
-  explicitly with a datasource-disabled error; it must not attempt to open a
-  connection or report a successful empty result.
+  with HTTP 422 and the stable code `DB_SERVICE_DISABLED`; it must not attempt
+  to open a connection or report a successful empty result. Preserve each API's
+  existing error body shape (`ProblemJson` for the legacy source-reader API and
+  the observability error envelope for observability APIs).
 - When enabled, datasource routing, read-only behavior, and query semantics
   remain unchanged.
 
@@ -24,15 +29,16 @@ Quarkus does not initialize their connections when they are not needed.
 
 The named datasource injections in `NodeSnapshotRouter` and the NDP001
 `OnlineStatusRepository` must tolerate datasource beans being unavailable when
-their datasource is disabled. Guard access using the corresponding enablement
-configuration, and only resolve/use the datasource on enabled paths. Preserve
-the current configured service-identifier routing and ensure a disabled node
-does not prevent application startup.
+their datasource is disabled. Use optional CDI injection and guard access using
+the corresponding enablement configuration, and only resolve/use the datasource
+on enabled paths. Preserve the current configured service-identifier routing
+and ensure a disabled node does not prevent application startup.
 
-The disabled error must be consistent across source-reader and Check DB paths.
-It should be distinguishable from an unknown service identifier and from a
-database connectivity failure. The implementation should use the existing
-error-response conventions and document the new response code where applicable.
+The disabled error must be consistent across the legacy source-reader API,
+Check DB, and NDP001 synchronization paths, and distinct from an unknown service
+identifier (`DB_SERVICE_UNCONFIGURED`) and database connectivity failure
+(`DB_UNAVAILABLE`). Add the response code to the relevant OpenAPI error
+documentation.
 
 ## Documentation and tests
 
