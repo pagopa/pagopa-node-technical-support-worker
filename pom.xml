@@ -4,7 +4,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>it.gov.pagopa</groupId>
   <artifactId>node-techical-support-worker</artifactId>
-  <version>1.3.0</version>
+  <version>1.3.0-4-nodo-observability</version>
   <properties>
     <compiler-plugin.version>3.11.0</compiler-plugin.version>
     <lombok.version>1.18.26</lombok.version>
@@ -22,6 +22,17 @@
   </properties>
   <dependencyManagement>
     <dependencies>
+      <!-- Align Netty up to 4.1.108 (declared first so it wins over the Quarkus BOM's 4.1.90).
+           azure-sdk-bom raises azure-core-http-netty -> reactor-netty 1.0.48, which references
+           io.netty.handler.codec.http.HttpDecoderConfig (added in Netty 4.1.107). Keeping the
+           Quarkus-pinned 4.1.90 causes a runtime NoClassDefFoundError: HttpDecoderConfig. -->
+      <dependency>
+        <groupId>io.netty</groupId>
+        <artifactId>netty-bom</artifactId>
+        <version>4.1.108.Final</version>
+        <type>pom</type>
+        <scope>import</scope>
+      </dependency>
       <dependency>
         <groupId>${quarkus.platform.group-id}</groupId>
         <artifactId>${quarkus.platform.artifact-id}</artifactId>
@@ -29,9 +40,30 @@
         <type>pom</type>
         <scope>import</scope>
       </dependency>
+      <!-- Aligns the Azure client versions (Event Hubs + Blob checkpoint store) used by the
+           observability RE ingestion so their compatible versions are chosen consistently. -->
+      <dependency>
+        <groupId>com.azure</groupId>
+        <artifactId>azure-sdk-bom</artifactId>
+        <version>1.2.31</version>
+        <type>pom</type>
+        <scope>import</scope>
+      </dependency>
     </dependencies>
   </dependencyManagement>
   <dependencies>
+    <!-- Dedicated read-only RE diagnostics client; same SDK family as stand-in-manager. -->
+    <dependency>
+      <groupId>com.microsoft.azure.kusto</groupId>
+      <artifactId>kusto-data</artifactId>
+      <version>5.0.2</version>
+      <exclusions>
+        <exclusion>
+          <groupId>org.slf4j</groupId>
+          <artifactId>slf4j-simple</artifactId>
+        </exclusion>
+      </exclusions>
+    </dependency>
     <dependency>
       <groupId>io.quarkus</groupId>
       <artifactId>quarkus-arc</artifactId>
@@ -95,11 +127,20 @@
     </dependency>
     <dependency>
       <groupId>io.quarkus</groupId>
+      <artifactId>quarkus-liquibase</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>io.quarkus</groupId>
       <artifactId>quarkus-jdbc-oracle</artifactId>
     </dependency>
     <dependency>
       <groupId>io.quarkus</groupId>
       <artifactId>quarkus-junit5</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>io.quarkus</groupId>
+      <artifactId>quarkus-junit5-internal</artifactId>
       <scope>test</scope>
     </dependency>
     <dependency>
@@ -141,6 +182,15 @@
       <artifactId>azure-data-tables</artifactId>
       <version>12.3.12</version>
     </dependency>
+    <!-- Observability RE ingestion: Event Hubs consumer + Blob checkpoint store (versions from azure-sdk-bom). -->
+    <dependency>
+      <groupId>com.azure</groupId>
+      <artifactId>azure-messaging-eventhubs</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>com.azure</groupId>
+      <artifactId>azure-messaging-eventhubs-checkpointstore-blob</artifactId>
+    </dependency>
     <dependency>
       <groupId>org.testcontainers</groupId>
       <artifactId>junit-jupiter</artifactId>
@@ -176,6 +226,26 @@
             </goals>
           </execution>
         </executions>
+      </plugin>
+      <plugin>
+        <groupId>org.liquibase</groupId>
+        <artifactId>liquibase-maven-plugin</artifactId>
+        <version>4.20.0</version>
+        <configuration>
+          <changeLogFile>db/observability/db.changelog-master.yaml</changeLogFile>
+          <url>${env.OBSERVABILITY_DATASOURCE_URL}</url>
+          <username>${env.OBSERVABILITY_DATASOURCE_USERNAME}</username>
+          <password>${env.OBSERVABILITY_DATASOURCE_PASSWORD}</password>
+          <driver>org.postgresql.Driver</driver>
+          <defaultSchemaName>observability</defaultSchemaName>
+        </configuration>
+        <dependencies>
+          <dependency>
+            <groupId>org.postgresql</groupId>
+            <artifactId>postgresql</artifactId>
+            <version>42.6.0</version>
+          </dependency>
+        </dependencies>
       </plugin>
       <plugin>
         <artifactId>maven-compiler-plugin</artifactId>

@@ -1,0 +1,61 @@
+# Online datasource enablement design
+
+## Goal
+
+Allow NDP001 and NDP004 Online JDBC datasources to be independently disabled so
+Quarkus does not initialize their connections when they are not needed.
+
+## Configuration and runtime behavior
+
+- Add `ONLINE_NDP001_DATASOURCE_ENABLED` and
+  `ONLINE_NDP004_DATASOURCE_ENABLED`, each defaulting to `false`.
+- Map the flags directly to
+  `quarkus.datasource.online-ndp001.active=${ONLINE_NDP001_DATASOURCE_ENABLED:false}`
+  and
+  `quarkus.datasource.online-ndp004.active=${ONLINE_NDP004_DATASOURCE_ENABLED:false}`.
+- Keep the two datasource lifecycles independent.
+- Set both flags explicitly to `true` in dev and UAT Helm values, which already
+  configure these datasources. Leave production unset so it uses the `false`
+  defaults; its current Helm values do not configure the Online datasource URLs
+  or credentials.
+- A request or synchronization that requires a disabled datasource must fail
+  with HTTP 422 and the stable code `DB_SERVICE_DISABLED`; it must not attempt
+  to open a connection or report a successful empty result. Preserve each API's
+  existing error body shape (`ProblemJson` for the legacy source-reader API and
+  the observability error envelope for observability APIs).
+- When enabled, datasource routing, read-only behavior, and query semantics
+  remain unchanged.
+
+## Application integration
+
+The named datasource injections in `NodeSnapshotRouter` and the NDP001
+`OnlineStatusRepository` must tolerate datasource beans being unavailable when
+their datasource is disabled. Use optional CDI injection and guard access using
+the corresponding enablement configuration, and only resolve/use the datasource
+on enabled paths. Preserve the current configured service-identifier routing
+and ensure a disabled node does not prevent application startup.
+
+The disabled error must be consistent across the legacy source-reader API,
+Check DB, and NDP001 synchronization paths, and distinct from an unknown service
+identifier (`DB_SERVICE_UNCONFIGURED`) and database connectivity failure
+(`DB_UNAVAILABLE`). Add the response code to the relevant OpenAPI error
+documentation.
+
+## Documentation and tests
+
+Update the README runtime configuration table with both flags and their
+`false` defaults. Add explicit `true` values to the dev and UAT Helm
+configurations; production remains disabled until its Online datasource settings
+are configured.
+
+Add focused coverage for independent enablement, startup with a disabled
+datasource and no datasource credentials/URL, and explicit rejection when a
+disabled datasource is requested. Keep existing H2 test-profile datasource
+behavior enabled where existing tests depend on it. Run the focused tests and
+the relevant Maven verification command after implementation.
+
+## Scope
+
+This change applies only to the two Online source datasources. The offline
+datasource and observability projection datasource, their initialization, and
+their runtime behavior are unchanged.

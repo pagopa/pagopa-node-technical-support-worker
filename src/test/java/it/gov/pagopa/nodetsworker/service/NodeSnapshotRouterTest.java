@@ -1,40 +1,81 @@
 package it.gov.pagopa.nodetsworker.service;
 
+import it.gov.pagopa.nodetsworker.exceptions.AppErrorCodeMessageEnum;
+import it.gov.pagopa.nodetsworker.exceptions.AppException;
 import it.gov.pagopa.nodetsworker.repository.PositionPaymentSnapshotReader;
-import it.gov.pagopa.nodetsworker.repository.qualifiers.DefaultNode;
-import io.quarkus.test.junit.QuarkusTest;
-import io.quarkus.test.junit.mockito.InjectMock;
-import jakarta.inject.Inject;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.NullAndEmptySource;
-import org.junit.jupiter.params.provider.ValueSource;
+import org.junit.jupiter.api.Test;
 
-import java.util.Optional;
+import javax.sql.DataSource;
 
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
-@QuarkusTest
 class NodeSnapshotRouterTest {
 
-    @Inject
-    NodeSnapshotRouter router;
+    private final DataSource onlineDataSource = mock(DataSource.class);
+    private final DataSource ndp004prodDataSource = mock(DataSource.class);
 
-    @InjectMock
-    @DefaultNode
-    PositionPaymentSnapshotReader defaultReader;
+    @Test
+    void resolve_shouldSelectReaderByTrimmedCaseInsensitiveIdentifier() {
+        NodeSnapshotRouter router = router("ndp001", "ndp004prod");
 
-    @ParameterizedTest
-    @NullAndEmptySource
-    @ValueSource(strings = {"   ", "NDP003PROD", "NDP999PROD"})
-    void resolve_shouldUseDefaultReader_forAnyServiceIdentifier(String serviceIdentifier) {
+        PositionPaymentSnapshotReader ndp001 = router.resolve(" NDP001 ");
+        PositionPaymentSnapshotReader ndp004prod = router.resolve("ndp004prod");
 
-        when(defaultReader.findByPaymentToken("t")).thenReturn(Optional.empty());
+        assertSame(ndp001, router.resolve("ndp001"));
+        assertSame(ndp004prod, router.resolve(" NDP004PROD "));
+        assertNotSame(ndp001, ndp004prod);
+    }
 
-        PositionPaymentSnapshotReader resolved = router.resolve(serviceIdentifier);
-        resolved.findByPaymentToken("t");
+    @Test
+    void resolve_shouldUseConfiguredIdentifiers() {
+        NodeSnapshotRouter router = router(" NDP001UAT ", "NDP004UAT");
 
-        // assert: if resolved is the default reader, then the call to findByPaymentToken should be executed by the default reader mock
-        verify(defaultReader, times(1)).findByPaymentToken("t");
-        verifyNoMoreInteractions(defaultReader);
+        PositionPaymentSnapshotReader ndp001 = router.resolve("ndp001uat");
+        PositionPaymentSnapshotReader ndp004 = router.resolve(" ndp004uat ");
+
+        assertSame(ndp001, router.resolve("NDP001UAT"));
+        assertSame(ndp004, router.resolve("NDP004UAT"));
+        assertNotSame(ndp001, ndp004);
+    }
+
+    @Test
+    void resolve_shouldRejectMissingBlankAndUnknownIdentifiersWithoutAcquiringConnections() {
+        NodeSnapshotRouter router = router("ndp001", "ndp004prod");
+
+        for (String serviceIdentifier : new String[]{null, "", "   ", "NDP999"}) {
+            AppException exception = assertThrows(
+                    AppException.class, () -> router.resolve(serviceIdentifier));
+            assertEquals(AppErrorCodeMessageEnum.BAD_REQUEST, exception.getCodeMessage());
+        }
+
+        verifyNoInteractions(onlineDataSource, ndp004prodDataSource);
+    }
+
+    @Test
+    void resolveDataSource_shouldReuseConfiguredRoutingWithoutOpeningConnections() {
+        NodeSnapshotRouter router = router(" NDP001UAT ", "NDP004UAT");
+
+        assertSame(onlineDataSource, router.resolveDataSource("ndp001uat"));
+        assertSame(ndp004prodDataSource, router.resolveDataSource(" NDP004UAT "));
+        for (String identifier : new String[]{null, "", "unknown"}) {
+            assertThrows(AppException.class, () -> router.resolveDataSource(identifier));
+        }
+        verifyNoInteractions(onlineDataSource, ndp004prodDataSource);
+    }
+
+    @Test
+    void constructor_shouldRejectMissingAssociations() {
+        assertThrows(IllegalStateException.class, () -> router("", "ndp004prod"));
+        assertThrows(IllegalStateException.class, () -> router("ndp001", ""));
+    }
+
+    @Test
+    void constructor_shouldRejectIdentifiersThatNormalizeToDuplicates() {
+        assertThrows(IllegalStateException.class, () -> router("NDP001", " ndp001 "));
+    }
+
+    private NodeSnapshotRouter router(String onlineId, String ndp004prodId) {
+        return new NodeSnapshotRouter(onlineId, ndp004prodId, onlineDataSource, ndp004prodDataSource);
     }
 }

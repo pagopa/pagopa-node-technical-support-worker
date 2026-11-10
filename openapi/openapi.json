@@ -3,7 +3,7 @@
   "info": {
     "title": "Node technical support - API (local) ${service}",
     "termsOfService": "https://www.pagopa.gov.it/",
-    "version": "1.3.0"
+    "version": "1.3.0-4-nodo-observability"
   },
   "servers": [
     {
@@ -17,6 +17,606 @@
     }
   ],
   "paths": {
+    "/api/attempts": {
+      "get": {
+        "tags": [
+          "Observability Resource"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PageDtoAttemptDto"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/attempts/{attemptId}/check-db": {
+      "get": {
+        "tags": [
+          "Check Db Resource"
+        ],
+        "summary": "Compare attempt and payment states with Nodo Online",
+        "description": "Read-only. Resolves token, PA/NAV and datasource from the retained attempt, using the existing serviceIdentifier routing. No query parameters or projection writes. Missing Online snapshots are independent null values; duplicate or unsupported snapshots fail explicitly. projectionRevision identifies the captured observation, not a distributed transaction across both databases.",
+        "operationId": "checkAttemptDatabase",
+        "parameters": [
+          {
+            "name": "attemptId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Real Nodo Online comparison, including absent snapshots",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DbCheck"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Query parameters are not accepted",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Attempt absent, outside caller visibility or expired",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "DB_SERVICE_MISSING or DB_SERVICE_UNCONFIGURED",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Incomplete projection, duplicate or invalid snapshot, or server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "DB_UNAVAILABLE: database failure or timeout, no partial result",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/attempts/{attemptId}/re-events": {
+      "post": {
+        "tags": [
+          "Re Events Resource"
+        ],
+        "summary": "Consult a bounded RE diagnostic window",
+        "description": "Read-only; disabled until deployment verification and personal-data approval. Explicit UTC [from,to), maximum 24h. Resolves PA/NAV/token and expiry server-side. All RE events matching the AND keys are included, without FSM/primitive filters. With scope POSITION the paymentToken key is dropped: events of the whole PA + NAV pair, including token-less calls such as verifyPaymentNotice, are returned. Coverage never means full history; retained windows may be clipped. Signed opaque seek cursors freeze the ingestion watermark and expire after at most 300s. Maximum 100 events/page, 1000 events/consultation, 5MiB JSON/response. Decoded payload is untrusted plain text; no interpretation or decompression. All responses, including errors, are no-store.",
+        "operationId": "readAttemptReEvents",
+        "parameters": [
+          {
+            "name": "attemptId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ReRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Window-only diagnostic result; never full history",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid explicit UTC window, body, query or cursor",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Attempt not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            }
+          },
+          "410": {
+            "description": "Attempt expired (if its projection row is still present)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate, concurrency or consultation admission limit",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            }
+          },
+          "502": {
+            "description": "ADX/schema/ordering or correlation failure",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Disabled or missing/unverified deployment configuration",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            }
+          },
+          "504": {
+            "description": "RE query timeout or cancellation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/attempts/{attemptId}/reveal": {
+      "post": {
+        "tags": [
+          "Token Resource"
+        ],
+        "parameters": [
+          {
+            "name": "attemptId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": {}
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RevealResponseDto"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/catalog": {
+      "get": {
+        "tags": [
+          "Observability Resource"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CatalogDto"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/creditors": {
+      "get": {
+        "tags": [
+          "Observability Resource"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PageDtoCreditorRowDto"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/creditors/{paFiscalCode}": {
+      "get": {
+        "tags": [
+          "Observability Resource"
+        ],
+        "parameters": [
+          {
+            "name": "paFiscalCode",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CreditorDetailDto"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/creditors/{paFiscalCode}/stations": {
+      "get": {
+        "tags": [
+          "Observability Resource"
+        ],
+        "parameters": [
+          {
+            "name": "paFiscalCode",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PageDtoObject"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/events": {
+      "get": {
+        "tags": [
+          "Events Resource"
+        ],
+        "parameters": [
+          {
+            "name": "Last-Event-ID",
+            "in": "header",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "SSE frames: event type in event:, JSON envelope in data:. Heartbeats are comments.",
+            "content": {
+              "text/event-stream": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "$ref": "#/components/schemas/ReadyEvent"
+                    },
+                    {
+                      "$ref": "#/components/schemas/PaymentDelta"
+                    },
+                    {
+                      "$ref": "#/components/schemas/AggregateDelta"
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/freshness": {
+      "get": {
+        "tags": [
+          "Observability Resource"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FreshnessDto"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/me": {
+      "get": {
+        "tags": [
+          "Observability Resource"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MeDto"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/nodo-monitoring/cache/version": {
+      "get": {
+        "tags": [
+          "Nodo Monitoring Resource"
+        ],
+        "summary": "Cache version of NDP001 and NDP004",
+        "description": "Read-only. Calls Nodo monitoring once per node (X-Ndp-Target) in parallel and aggregates the results. A node that is unconfigured or unreachable is reported with its outcome and null cache fields, without failing the whole response.",
+        "operationId": "getCacheVersions",
+        "responses": {
+          "200": {
+            "description": "One entry per node, including failed ones",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CacheVersions"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Query parameters are not accepted",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/overview": {
+      "get": {
+        "tags": [
+          "Observability Resource"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OverviewDto"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/overview/primitive-warnings": {
+      "get": {
+        "tags": [
+          "Observability Resource"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PageDtoPrimitiveWarningDto"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/payments": {
+      "get": {
+        "tags": [
+          "Observability Resource"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PageDtoPaymentSummaryDto"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/payments/{paFiscalCode}/{noticeNumber}": {
+      "get": {
+        "tags": [
+          "Observability Resource"
+        ],
+        "parameters": [
+          {
+            "name": "noticeNumber",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "paFiscalCode",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PaymentDetailDto"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/serviceIdentifiers": {
+      "get": {
+        "tags": [
+          "Observability Resource"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/token-lookup": {
+      "post": {
+        "tags": [
+          "Token Resource"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TokenLookupRequestDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TokenLookupResponseDto"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/events/negative/{bizEventId}": {
       "get": {
         "tags": [
@@ -82,6 +682,169 @@
                 }
               }
             }
+          }
+        }
+      }
+    },
+    "/internal/cache/{key}": {
+      "get": {
+        "tags": [
+          "Internal Resource"
+        ],
+        "parameters": [
+          {
+            "name": "key",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {}
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Internal Resource"
+        ],
+        "parameters": [
+          {
+            "name": "key",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {}
+            }
+          }
+        }
+      }
+    },
+    "/internal/cache/{key}/{value}": {
+      "put": {
+        "tags": [
+          "Internal Resource"
+        ],
+        "parameters": [
+          {
+            "name": "key",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "value",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/internal/observability/sync/attempt": {
+      "post": {
+        "tags": [
+          "Online Status Sync Resource"
+        ],
+        "requestBody": {
+          "description": "Payment key and attempt token",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AttemptSyncRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Synchronization outcome",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StatusSyncResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request"
+          },
+          "500": {
+            "description": "Database or server error"
+          },
+          "502": {
+            "description": "Unsupported state returned by Nodo Online"
+          }
+        }
+      }
+    },
+    "/internal/observability/sync/payment": {
+      "post": {
+        "tags": [
+          "Online Status Sync Resource"
+        ],
+        "requestBody": {
+          "description": "Payment key",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PaymentSyncRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Synchronization outcome",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StatusSyncResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request"
+          },
+          "500": {
+            "description": "Database or server error"
+          },
+          "502": {
+            "description": "Unsupported state returned by Nodo Online"
           }
         }
       }
@@ -522,6 +1285,904 @@
   },
   "components": {
     "schemas": {
+      "AggregateChanges": {
+        "description": "Signed additive differences; durationSnapshot is the authoritative replacement, including an empty array.",
+        "required": [
+          "counts",
+          "logicalStates",
+          "attemptStates",
+          "recipientStates",
+          "traffic",
+          "transitions",
+          "matrices",
+          "anomalies",
+          "durations",
+          "durationSnapshot",
+          "primitives"
+        ],
+        "type": "object",
+        "properties": {
+          "counts": {
+            "$ref": "#/components/schemas/DeltaCounts"
+          },
+          "logicalStates": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/StateCountDto"
+            }
+          },
+          "attemptStates": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/StateCountDto"
+            }
+          },
+          "recipientStates": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/StateCountDto"
+            }
+          },
+          "traffic": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TrafficBucketDto"
+            }
+          },
+          "transitions": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TransitionTrendDto"
+            }
+          },
+          "matrices": {
+            "$ref": "#/components/schemas/DeltaMatrices"
+          },
+          "anomalies": {
+            "$ref": "#/components/schemas/AnomaliesDto"
+          },
+          "durations": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/DurationDelta"
+            }
+          },
+          "durationSnapshot": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/DurationRowDto"
+            }
+          },
+          "primitives": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PrimitiveCount"
+            }
+          }
+        },
+        "additionalProperties": false
+      },
+      "AggregateDelta": {
+        "required": [
+          "type",
+          "scope",
+          "projectionRevision",
+          "changes",
+          "freshness"
+        ],
+        "type": "object",
+        "properties": {
+          "type": {
+            "enum": [
+              "aggregate.delta"
+            ],
+            "type": "string"
+          },
+          "scope": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string"
+            }
+          },
+          "projectionRevision": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "changes": {
+            "$ref": "#/components/schemas/AggregateChanges"
+          },
+          "freshness": {
+            "$ref": "#/components/schemas/FreshnessDto"
+          }
+        },
+        "additionalProperties": false
+      },
+      "AnomaliesDto": {
+        "type": "object",
+        "properties": {
+          "transitions": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "payments": {
+            "format": "int64",
+            "type": "integer"
+          }
+        }
+      },
+      "AttemptChange": {
+        "required": [
+          "attemptId",
+          "warning"
+        ],
+        "type": "object",
+        "properties": {
+          "attemptId": {
+            "type": "string"
+          },
+          "warning": {
+            "type": "boolean"
+          },
+          "transitions": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TimelineItemDto"
+            }
+          },
+          "upsert": {
+            "$ref": "#/components/schemas/AttemptDto"
+          },
+          "patch": {
+            "$ref": "#/components/schemas/AttemptPatch"
+          },
+          "transitionCorrections": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TransitionCorrection"
+            }
+          }
+        },
+        "additionalProperties": false
+      },
+      "AttemptDto": {
+        "required": [
+          "attemptId",
+          "serviceIdentifier",
+          "psp",
+          "stazione",
+          "canale",
+          "attemptStartedAt",
+          "startTimestampBasis",
+          "timelineIncomplete",
+          "timeline",
+          "paFiscalCode",
+          "noticeNumber",
+          "state",
+          "warning",
+          "hasAnomaly",
+          "tokenDisplay",
+          "projectionRevision"
+        ],
+        "type": "object",
+        "properties": {
+          "attemptId": {
+            "type": "string"
+          },
+          "serviceIdentifier": {
+            "type": "string",
+            "nullable": true
+          },
+          "psp": {
+            "type": "string",
+            "nullable": true
+          },
+          "stazione": {
+            "type": "string",
+            "nullable": true
+          },
+          "canale": {
+            "type": "string",
+            "nullable": true
+          },
+          "attemptStartedAt": {
+            "format": "date-time",
+            "type": "string",
+            "nullable": true
+          },
+          "startTimestampBasis": {
+            "$ref": "#/components/schemas/TimestampBasis"
+          },
+          "timelineIncomplete": {
+            "type": "boolean"
+          },
+          "timeline": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TimelineItemDto"
+            }
+          },
+          "paFiscalCode": {
+            "type": "string"
+          },
+          "noticeNumber": {
+            "type": "string"
+          },
+          "state": {
+            "enum": [
+              "PAYING",
+              "PAYING_RPT",
+              "PAID_NORPT",
+              "PAID",
+              "FAILED_NORPT",
+              "FAILED",
+              "CANCELLED",
+              "CANCELLED_NORPT",
+              "NOTICE_GENERATED",
+              "NOTICE_STORED",
+              "NOTICE_SENT",
+              "NOTIFIED",
+              "PAYMENT_RESERVED",
+              "PAYMENT_SENT",
+              "PAYMENT_ACCEPTED",
+              "PAYMENT_REFUSED",
+              "PAYMENT_UNKNOWN",
+              "PAYMENT_SEND_ERROR"
+            ],
+            "type": "string"
+          },
+          "warning": {
+            "type": "boolean"
+          },
+          "hasAnomaly": {
+            "type": "boolean"
+          },
+          "tokenDisplay": {
+            "type": "string"
+          },
+          "projectionRevision": {
+            "format": "int64",
+            "type": "integer"
+          }
+        },
+        "additionalProperties": false
+      },
+      "AttemptPatch": {
+        "type": "object",
+        "properties": {
+          "serviceIdentifier": {
+            "type": "string"
+          },
+          "psp": {
+            "type": "string"
+          },
+          "canale": {
+            "type": "string"
+          },
+          "stazione": {
+            "type": "string"
+          },
+          "attemptStartedAt": {
+            "format": "date-time",
+            "type": "string",
+            "nullable": true
+          },
+          "startTimestampBasis": {
+            "$ref": "#/components/schemas/TimestampBasis"
+          },
+          "timelineIncomplete": {
+            "type": "boolean"
+          }
+        },
+        "additionalProperties": false
+      },
+      "AttemptState": {
+        "enum": [
+          "PAYING",
+          "PAYING_RPT",
+          "PAID_NORPT",
+          "PAID",
+          "FAILED_NORPT",
+          "FAILED",
+          "CANCELLED",
+          "CANCELLED_NORPT",
+          "NOTICE_GENERATED",
+          "NOTICE_STORED",
+          "NOTICE_SENT",
+          "NOTIFIED",
+          "PAYMENT_RESERVED",
+          "PAYMENT_SENT",
+          "PAYMENT_ACCEPTED",
+          "PAYMENT_REFUSED",
+          "PAYMENT_UNKNOWN",
+          "PAYMENT_SEND_ERROR"
+        ],
+        "type": "string"
+      },
+      "AttemptSyncRequest": {
+        "required": [
+          "paFiscalCode",
+          "noticeNumber",
+          "paymentToken"
+        ],
+        "type": "object",
+        "properties": {
+          "paFiscalCode": {
+            "description": "Ente creditore fiscal code",
+            "maxLength": 11,
+            "minLength": 11,
+            "pattern": "\\d{11}",
+            "type": "string",
+            "example": "90000000001"
+          },
+          "noticeNumber": {
+            "description": "Notice number",
+            "maxLength": 18,
+            "minLength": 18,
+            "pattern": "\\d{18}",
+            "type": "string",
+            "example": "790000000000000001"
+          },
+          "paymentToken": {
+            "description": "Payment token as stored by Nodo Online",
+            "maxLength": 50,
+            "minLength": 1,
+            "pattern": "\\S",
+            "type": "string"
+          }
+        }
+      },
+      "CacheVersionNode": {
+        "required": [
+          "node",
+          "target",
+          "outcome",
+          "dbStatus",
+          "cacheId",
+          "version",
+          "environment",
+          "serviceIdentifier"
+        ],
+        "type": "object",
+        "properties": {
+          "node": {
+            "enum": [
+              "NDP001",
+              "NDP004"
+            ],
+            "type": "string"
+          },
+          "target": {
+            "description": "X-Ndp-Target sent to Nodo monitoring",
+            "type": "string"
+          },
+          "outcome": {
+            "description": "UNCONFIGURED: no subscription key; UNAVAILABLE: call failed or timed out",
+            "enum": [
+              "OK",
+              "UNCONFIGURED",
+              "UNAVAILABLE"
+            ],
+            "type": "string"
+          },
+          "dbStatus": {
+            "type": "string",
+            "nullable": true
+          },
+          "cacheId": {
+            "type": "string",
+            "nullable": true
+          },
+          "version": {
+            "type": "string",
+            "nullable": true
+          },
+          "environment": {
+            "type": "string",
+            "nullable": true
+          },
+          "serviceIdentifier": {
+            "type": "string",
+            "nullable": true
+          }
+        }
+      },
+      "CacheVersions": {
+        "description": "Cache version of NDP001 and NDP004 read from Nodo monitoring",
+        "required": [
+          "checkedAt",
+          "nodes"
+        ],
+        "type": "object",
+        "properties": {
+          "checkedAt": {
+            "format": "date-time",
+            "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}\\.\\d{3}Z$",
+            "type": "string"
+          },
+          "nodes": {
+            "description": "One entry per node, NDP001 first; a failing node does not hide the others",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CacheVersionNode"
+            }
+          }
+        }
+      },
+      "CapabilitiesDto": {
+        "type": "object",
+        "properties": {
+          "lookupToken": {
+            "type": "boolean"
+          },
+          "revealToken": {
+            "type": "boolean"
+          },
+          "mockControls": {
+            "type": "boolean"
+          }
+        }
+      },
+      "CatalogDto": {
+        "type": "object",
+        "properties": {
+          "logicalStates": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "attemptStates": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "warningStates": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "unknownFilterValue": {
+            "type": "string"
+          },
+          "serviceIdentifiers": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "psps": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "canali": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "stazioni": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "aggregateFilterPolicy": {
+            "type": "string"
+          }
+        }
+      },
+      "CountsDto": {
+        "type": "object",
+        "properties": {
+          "payments": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "attempts": {
+            "format": "int64",
+            "type": "integer"
+          }
+        }
+      },
+      "CreditorDetailDto": {
+        "required": [
+          "paFiscalCode",
+          "snapshotAt",
+          "projectionRevision",
+          "window",
+          "counts",
+          "logicalStates",
+          "attemptStates",
+          "recipientStates",
+          "unresolved",
+          "matrices",
+          "traffic",
+          "transitions",
+          "durations",
+          "anomalies",
+          "freshness"
+        ],
+        "type": "object",
+        "properties": {
+          "paFiscalCode": {
+            "type": "string"
+          },
+          "snapshotAt": {
+            "type": "string"
+          },
+          "projectionRevision": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "window": {
+            "$ref": "#/components/schemas/WindowDto"
+          },
+          "counts": {
+            "$ref": "#/components/schemas/CountsDto"
+          },
+          "logicalStates": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/StateCountDto"
+            }
+          },
+          "attemptStates": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/StateCountDto"
+            }
+          },
+          "recipientStates": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/StateCountDto"
+            }
+          },
+          "unresolved": {
+            "$ref": "#/components/schemas/CountsDto"
+          },
+          "matrices": {
+            "$ref": "#/components/schemas/MatricesDto"
+          },
+          "traffic": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TrafficBucketDto"
+            }
+          },
+          "transitions": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TransitionTrendDto"
+            }
+          },
+          "durations": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/DurationRowDto"
+            }
+          },
+          "anomalies": {
+            "$ref": "#/components/schemas/AnomaliesDto"
+          },
+          "freshness": {
+            "$ref": "#/components/schemas/FreshnessDto"
+          }
+        },
+        "additionalProperties": false
+      },
+      "CreditorRowDto": {
+        "type": "object",
+        "properties": {
+          "paFiscalCode": {
+            "type": "string"
+          },
+          "startedAttempts": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "counts": {
+            "$ref": "#/components/schemas/CountsDto"
+          },
+          "logicalStates": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/StateCountDto"
+            }
+          },
+          "unresolved": {
+            "$ref": "#/components/schemas/CountsDto"
+          }
+        }
+      },
+      "DbCheck": {
+        "description": "Read-only comparison with the routed Nodo Online database",
+        "required": [
+          "attemptId",
+          "paFiscalCode",
+          "noticeNumber",
+          "serviceIdentifier",
+          "projectionRevision",
+          "source",
+          "checkedAt",
+          "observed",
+          "database"
+        ],
+        "type": "object",
+        "properties": {
+          "attemptId": {
+            "type": "string"
+          },
+          "paFiscalCode": {
+            "pattern": "^\\d{11}$",
+            "type": "string"
+          },
+          "noticeNumber": {
+            "pattern": "^\\d{18}$",
+            "type": "string"
+          },
+          "serviceIdentifier": {
+            "type": "string"
+          },
+          "projectionRevision": {
+            "format": "int64",
+            "minimum": 1,
+            "type": "integer"
+          },
+          "source": {
+            "enum": [
+              "NODO_ONLINE"
+            ],
+            "type": "string"
+          },
+          "checkedAt": {
+            "format": "date-time",
+            "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}\\.\\d{3}Z$",
+            "type": "string"
+          },
+          "observed": {
+            "$ref": "#/components/schemas/DbCheckObservedStates"
+          },
+          "database": {
+            "$ref": "#/components/schemas/DbCheckDatabaseStates"
+          }
+        }
+      },
+      "DbCheckDatabaseStates": {
+        "required": [
+          "logicalState",
+          "attemptState"
+        ],
+        "type": "object",
+        "properties": {
+          "logicalState": {
+            "description": "null when the logical snapshot is absent",
+            "type": "string",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/LogicalState"
+              }
+            ],
+            "nullable": true
+          },
+          "attemptState": {
+            "description": "null when the attempt snapshot is absent",
+            "type": "string",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/AttemptState"
+              }
+            ],
+            "nullable": true
+          }
+        }
+      },
+      "DbCheckObservedStates": {
+        "required": [
+          "logicalState",
+          "attemptState"
+        ],
+        "type": "object",
+        "properties": {
+          "logicalState": {
+            "$ref": "#/components/schemas/LogicalState"
+          },
+          "attemptState": {
+            "$ref": "#/components/schemas/AttemptState"
+          }
+        }
+      },
+      "DeltaCounts": {
+        "required": [
+          "payments",
+          "attempts",
+          "unresolvedPayments",
+          "unresolvedAttempts",
+          "anomalyTransitions"
+        ],
+        "type": "object",
+        "properties": {
+          "payments": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "attempts": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "unresolvedPayments": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "unresolvedAttempts": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "anomalyTransitions": {
+            "format": "int64",
+            "type": "integer"
+          }
+        },
+        "additionalProperties": false
+      },
+      "DeltaMatrices": {
+        "required": [
+          "psp",
+          "canale",
+          "recipient"
+        ],
+        "type": "object",
+        "properties": {
+          "psp": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/DimensionDelta"
+            }
+          },
+          "canale": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/DimensionDelta"
+            }
+          },
+          "recipient": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/DimensionDelta"
+            }
+          }
+        },
+        "additionalProperties": false
+      },
+      "DimensionDelta": {
+        "required": [
+          "value",
+          "state",
+          "count"
+        ],
+        "type": "object",
+        "properties": {
+          "value": {
+            "type": "string",
+            "nullable": true
+          },
+          "state": {
+            "type": "string"
+          },
+          "count": {
+            "format": "int64",
+            "type": "integer"
+          }
+        },
+        "additionalProperties": false
+      },
+      "DimensionRowDto": {
+        "type": "object",
+        "properties": {
+          "value": {
+            "type": "string",
+            "nullable": true
+          },
+          "states": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/StateCountDto"
+            }
+          }
+        }
+      },
+      "DurationDelta": {
+        "required": [
+          "entity",
+          "fromState",
+          "toState",
+          "timestampBasis",
+          "samples",
+          "totalMs"
+        ],
+        "type": "object",
+        "properties": {
+          "entity": {
+            "enum": [
+              "logical",
+              "attempt",
+              "recipient"
+            ],
+            "type": "string"
+          },
+          "fromState": {
+            "type": "string"
+          },
+          "toState": {
+            "type": "string"
+          },
+          "timestampBasis": {
+            "$ref": "#/components/schemas/TimestampBasis"
+          },
+          "samples": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "totalMs": {
+            "format": "double",
+            "type": "number"
+          }
+        },
+        "additionalProperties": false
+      },
+      "DurationRowDto": {
+        "required": [
+          "entity",
+          "fromState",
+          "toState",
+          "timestampBasis",
+          "samples",
+          "averageMs",
+          "medianMs",
+          "p95Ms"
+        ],
+        "type": "object",
+        "properties": {
+          "entity": {
+            "enum": [
+              "logical",
+              "attempt",
+              "recipient"
+            ],
+            "type": "string"
+          },
+          "fromState": {
+            "type": "string"
+          },
+          "toState": {
+            "type": "string"
+          },
+          "timestampBasis": {
+            "$ref": "#/components/schemas/TimestampBasis"
+          },
+          "samples": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "averageMs": {
+            "format": "double",
+            "type": "number"
+          },
+          "medianMs": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "p95Ms": {
+            "format": "int64",
+            "type": "integer"
+          }
+        },
+        "additionalProperties": false
+      },
       "ErrorCode": {
         "type": "object",
         "properties": {
@@ -540,6 +2201,23 @@
           }
         }
       },
+      "ErrorDto": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string"
+          },
+          "message": {
+            "type": "string"
+          },
+          "resync": {
+            "type": "boolean"
+          },
+          "fallback": {
+            "type": "string"
+          }
+        }
+      },
       "FaultBean": {
         "type": "object",
         "properties": {
@@ -550,6 +2228,30 @@
             "type": "string"
           },
           "timestamp": {
+            "type": "string"
+          }
+        }
+      },
+      "FreshnessDto": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "string"
+          },
+          "lagSeconds": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "gapsDetected": {
+            "type": "boolean"
+          },
+          "lastProcessedAt": {
+            "type": "string"
+          },
+          "lastPublishedAt": {
+            "type": "string"
+          },
+          "observedAt": {
             "type": "string"
           }
         }
@@ -591,6 +2293,68 @@
         "type": "string",
         "example": "2022-03-10"
       },
+      "LogicalState": {
+        "enum": [
+          "INSERTED",
+          "PAYING",
+          "PAID",
+          "NOTICE_STORED",
+          "NOTIFIED"
+        ],
+        "type": "string"
+      },
+      "MatricesDto": {
+        "required": [
+          "psp",
+          "canale",
+          "recipient"
+        ],
+        "type": "object",
+        "properties": {
+          "psp": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/DimensionRowDto"
+            }
+          },
+          "canale": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/DimensionRowDto"
+            }
+          },
+          "recipient": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/DimensionRowDto"
+            }
+          }
+        },
+        "additionalProperties": false
+      },
+      "MeDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "role": {
+            "type": "string"
+          },
+          "visiblePaFiscalCodes": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "capabilities": {
+            "$ref": "#/components/schemas/CapabilitiesDto"
+          },
+          "authentication": {
+            "type": "string"
+          }
+        }
+      },
       "Metadata": {
         "type": "object",
         "properties": {
@@ -610,6 +2374,344 @@
             "example": 3
           }
         }
+      },
+      "OverviewDto": {
+        "required": [
+          "snapshotAt",
+          "projectionRevision",
+          "window",
+          "counts",
+          "logicalStates",
+          "attemptStates",
+          "recipientStates",
+          "unresolved",
+          "matrices",
+          "traffic",
+          "transitions",
+          "durations",
+          "anomalies",
+          "freshness",
+          "primitives"
+        ],
+        "type": "object",
+        "properties": {
+          "snapshotAt": {
+            "type": "string"
+          },
+          "projectionRevision": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "window": {
+            "$ref": "#/components/schemas/WindowDto"
+          },
+          "counts": {
+            "$ref": "#/components/schemas/CountsDto"
+          },
+          "logicalStates": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/StateCountDto"
+            }
+          },
+          "attemptStates": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/StateCountDto"
+            }
+          },
+          "recipientStates": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/StateCountDto"
+            }
+          },
+          "unresolved": {
+            "$ref": "#/components/schemas/CountsDto"
+          },
+          "matrices": {
+            "$ref": "#/components/schemas/MatricesDto"
+          },
+          "traffic": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TrafficBucketDto"
+            }
+          },
+          "transitions": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TransitionTrendDto"
+            }
+          },
+          "durations": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/DurationRowDto"
+            }
+          },
+          "anomalies": {
+            "$ref": "#/components/schemas/AnomaliesDto"
+          },
+          "freshness": {
+            "$ref": "#/components/schemas/FreshnessDto"
+          },
+          "primitives": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PrimitiveCount"
+            }
+          }
+        },
+        "additionalProperties": false
+      },
+      "PageDtoAttemptDto": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AttemptDto"
+            }
+          },
+          "nextCursor": {
+            "type": "string"
+          },
+          "snapshotRevision": {
+            "format": "int64",
+            "type": "integer"
+          }
+        }
+      },
+      "PageDtoCreditorRowDto": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CreditorRowDto"
+            }
+          },
+          "nextCursor": {
+            "type": "string"
+          },
+          "snapshotRevision": {
+            "format": "int64",
+            "type": "integer"
+          }
+        }
+      },
+      "PageDtoObject": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {}
+          },
+          "nextCursor": {
+            "type": "string"
+          },
+          "snapshotRevision": {
+            "format": "int64",
+            "type": "integer"
+          }
+        }
+      },
+      "PageDtoPaymentSummaryDto": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PaymentSummaryDto"
+            }
+          },
+          "nextCursor": {
+            "type": "string"
+          },
+          "snapshotRevision": {
+            "format": "int64",
+            "type": "integer"
+          }
+        }
+      },
+      "PageDtoPrimitiveWarningDto": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PrimitiveWarning"
+            }
+          },
+          "nextCursor": {
+            "type": "string"
+          },
+          "snapshotRevision": {
+            "format": "int64",
+            "type": "integer"
+          }
+        }
+      },
+      "PaymentChanges": {
+        "description": "Recipient changes/removals are independent of attempts. Omitted optional arrays mean no change, not unsupported recipients.",
+        "required": [
+          "logicalTransitions",
+          "attemptChanges",
+          "removedAttemptIds",
+          "deleted"
+        ],
+        "type": "object",
+        "properties": {
+          "logicalTransitions": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TimelineItemDto"
+            }
+          },
+          "attemptChanges": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AttemptChange"
+            }
+          },
+          "removedAttemptIds": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "recipientChanges": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/RecipientChange"
+            }
+          },
+          "removedRecipientIds": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "deleted": {
+            "type": "boolean"
+          },
+          "timelineIncomplete": {
+            "type": "boolean"
+          }
+        },
+        "additionalProperties": false
+      },
+      "PaymentDelta": {
+        "required": [
+          "type",
+          "scope",
+          "paFiscalCode",
+          "noticeNumber",
+          "projectionRevision",
+          "changes"
+        ],
+        "type": "object",
+        "properties": {
+          "type": {
+            "enum": [
+              "payment.delta"
+            ],
+            "type": "string"
+          },
+          "scope": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string"
+            }
+          },
+          "paFiscalCode": {
+            "type": "string"
+          },
+          "noticeNumber": {
+            "type": "string"
+          },
+          "projectionRevision": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "changes": {
+            "$ref": "#/components/schemas/PaymentChanges"
+          }
+        },
+        "additionalProperties": false
+      },
+      "PaymentDetailDto": {
+        "required": [
+          "paFiscalCode",
+          "noticeNumber",
+          "state",
+          "projectionRevision",
+          "timelineIncomplete",
+          "hasAnomaly",
+          "warning",
+          "attemptCount",
+          "timeline",
+          "attempts",
+          "recipients"
+        ],
+        "type": "object",
+        "properties": {
+          "paFiscalCode": {
+            "type": "string"
+          },
+          "noticeNumber": {
+            "type": "string"
+          },
+          "state": {
+            "description": "Logical position state; null while no position event or logical source snapshot has been observed. Never derived from attempts or recipients.",
+            "enum": [
+              "INSERTED",
+              "PAYING",
+              "PAID",
+              "NOTICE_STORED",
+              "NOTIFIED"
+            ],
+            "type": "string",
+            "nullable": true
+          },
+          "projectionRevision": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "timelineIncomplete": {
+            "type": "boolean"
+          },
+          "hasAnomaly": {
+            "type": "boolean"
+          },
+          "warning": {
+            "type": "boolean"
+          },
+          "attemptCount": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "timeline": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TimelineItemDto"
+            }
+          },
+          "attempts": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AttemptDto"
+            }
+          },
+          "recipients": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/RecipientDto"
+            }
+          }
+        },
+        "additionalProperties": false
       },
       "PaymentFullInfo": {
         "type": "object",
@@ -781,6 +2883,71 @@
         ],
         "type": "string"
       },
+      "PaymentSummaryDto": {
+        "type": "object",
+        "properties": {
+          "paFiscalCode": {
+            "type": "string"
+          },
+          "noticeNumber": {
+            "type": "string"
+          },
+          "state": {
+            "description": "Logical position state; null while no position event or logical source snapshot has been observed. Never derived from attempts or recipients.",
+            "enum": [
+              "INSERTED",
+              "PAYING",
+              "PAID",
+              "NOTICE_STORED",
+              "NOTIFIED"
+            ],
+            "type": "string",
+            "nullable": true
+          },
+          "projectionRevision": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "timelineIncomplete": {
+            "type": "boolean"
+          },
+          "hasAnomaly": {
+            "type": "boolean"
+          },
+          "warning": {
+            "type": "boolean"
+          },
+          "attemptCount": {
+            "format": "int32",
+            "type": "integer"
+          }
+        }
+      },
+      "PaymentSyncRequest": {
+        "required": [
+          "paFiscalCode",
+          "noticeNumber"
+        ],
+        "type": "object",
+        "properties": {
+          "paFiscalCode": {
+            "description": "Ente creditore fiscal code",
+            "maxLength": 11,
+            "minLength": 11,
+            "pattern": "\\d{11}",
+            "type": "string",
+            "example": "90000000001"
+          },
+          "noticeNumber": {
+            "description": "Notice number",
+            "maxLength": 18,
+            "minLength": 18,
+            "pattern": "\\d{18}",
+            "type": "string",
+            "example": "790000000000000001"
+          }
+        }
+      },
       "PaymentsFullResponse": {
         "type": "object",
         "properties": {
@@ -898,6 +3065,90 @@
           }
         }
       },
+      "PrimitiveCount": {
+        "required": [
+          "serviceIdentifier",
+          "primitive",
+          "direction",
+          "requests",
+          "responses",
+          "warnings"
+        ],
+        "type": "object",
+        "properties": {
+          "serviceIdentifier": {
+            "description": "Identificativo di servizio; null se non disponibile.",
+            "type": "string",
+            "nullable": true
+          },
+          "primitive": {
+            "description": "Nome originale della primitiva (tipoEvento RE), senza normalizzazione.",
+            "type": "string"
+          },
+          "direction": {
+            "description": "Direzione rispetto al Nodo dai campi RE fruitore/erogatore dell'evento REQ: INBOUND se il Nodo è l'erogatore, OUTBOUND se è il fruitore, UNKNOWN altrimenti. Mai dedotta dal nome della primitiva.",
+            "enum": [
+              "INBOUND",
+              "OUTBOUND",
+              "UNKNOWN"
+            ],
+            "type": "string"
+          },
+          "requests": {
+            "format": "int64",
+            "description": "Richieste di primitiva nella finestra.",
+            "type": "integer"
+          },
+          "responses": {
+            "format": "int64",
+            "description": "Richieste con risposta ricevuta.",
+            "type": "integer"
+          },
+          "warnings": {
+            "format": "int64",
+            "description": "Richieste senza risposta entro 10 secondi (tardiva o assente).",
+            "type": "integer"
+          }
+        },
+        "additionalProperties": false
+      },
+      "PrimitiveWarning": {
+        "required": [
+          "calledAt",
+          "psp",
+          "canale",
+          "paFiscalCode",
+          "stazione"
+        ],
+        "type": "object",
+        "properties": {
+          "calledAt": {
+            "description": "Data-ora (UTC) della richiesta rimasta senza risposta entro 10 secondi.",
+            "type": "string"
+          },
+          "psp": {
+            "description": "PSP della richiesta; null se non disponibile.",
+            "type": "string",
+            "nullable": true
+          },
+          "canale": {
+            "description": "Canale della richiesta; null se non disponibile.",
+            "type": "string",
+            "nullable": true
+          },
+          "paFiscalCode": {
+            "description": "Ente creditore (idDominio) della richiesta; null se non disponibile.",
+            "type": "string",
+            "nullable": true
+          },
+          "stazione": {
+            "description": "Stazione della richiesta; null se non disponibile.",
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
       "ProblemJson": {
         "type": "object",
         "properties": {
@@ -917,6 +3168,1042 @@
             "description": "A human readable explanation specific to this occurrence of the problem.",
             "type": "string",
             "example": "There was an error processing the request"
+          }
+        }
+      },
+      "ReEvent": {
+        "required": [
+          "insertedTimestamp",
+          "componente",
+          "categoriaEvento",
+          "sottoTipoEvento",
+          "idDominio",
+          "iuv",
+          "ccp",
+          "psp",
+          "tipoVersamento",
+          "tipoEvento",
+          "fruitore",
+          "erogatore",
+          "stazione",
+          "canale",
+          "parametriSpecificiInterfaccia",
+          "esito",
+          "sessionId",
+          "status",
+          "payload",
+          "info",
+          "businessProcess",
+          "fruitoreDescr",
+          "erogatoreDescr",
+          "pspDescr",
+          "noticeNumber",
+          "creditorReferenceId",
+          "paymentToken",
+          "sessionIdOriginal",
+          "standIn",
+          "serviceIdentifier",
+          "dataOraEvento",
+          "uniqueId",
+          "version",
+          "payloadDecoded",
+          "payloadOmitted",
+          "payloadSourceBytes"
+        ],
+        "type": "object",
+        "properties": {
+          "insertedTimestamp": {
+            "oneOf": [
+              {
+                "type": "string",
+                "nullable": true
+              },
+              {
+                "format": "double",
+                "type": "number"
+              },
+              {
+                "type": "boolean"
+              }
+            ],
+            "nullable": true
+          },
+          "componente": {
+            "oneOf": [
+              {
+                "type": "string",
+                "nullable": true
+              },
+              {
+                "format": "double",
+                "type": "number"
+              },
+              {
+                "type": "boolean"
+              }
+            ],
+            "nullable": true
+          },
+          "categoriaEvento": {
+            "oneOf": [
+              {
+                "type": "string",
+                "nullable": true
+              },
+              {
+                "format": "double",
+                "type": "number"
+              },
+              {
+                "type": "boolean"
+              }
+            ],
+            "nullable": true
+          },
+          "sottoTipoEvento": {
+            "oneOf": [
+              {
+                "type": "string",
+                "nullable": true
+              },
+              {
+                "format": "double",
+                "type": "number"
+              },
+              {
+                "type": "boolean"
+              }
+            ],
+            "nullable": true
+          },
+          "idDominio": {
+            "oneOf": [
+              {
+                "type": "string",
+                "nullable": true
+              },
+              {
+                "format": "double",
+                "type": "number"
+              },
+              {
+                "type": "boolean"
+              }
+            ],
+            "nullable": true
+          },
+          "iuv": {
+            "oneOf": [
+              {
+                "type": "string",
+                "nullable": true
+              },
+              {
+                "format": "double",
+                "type": "number"
+              },
+              {
+                "type": "boolean"
+              }
+            ],
+            "nullable": true
+          },
+          "ccp": {
+            "oneOf": [
+              {
+                "type": "string",
+                "nullable": true
+              },
+              {
+                "format": "double",
+                "type": "number"
+              },
+              {
+                "type": "boolean"
+              }
+            ],
+            "nullable": true
+          },
+          "psp": {
+            "oneOf": [
+              {
+                "type": "string",
+                "nullable": true
+              },
+              {
+                "format": "double",
+                "type": "number"
+              },
+              {
+                "type": "boolean"
+              }
+            ],
+            "nullable": true
+          },
+          "tipoVersamento": {
+            "oneOf": [
+              {
+                "type": "string",
+                "nullable": true
+              },
+              {
+                "format": "double",
+                "type": "number"
+              },
+              {
+                "type": "boolean"
+              }
+            ],
+            "nullable": true
+          },
+          "tipoEvento": {
+            "oneOf": [
+              {
+                "type": "string",
+                "nullable": true
+              },
+              {
+                "format": "double",
+                "type": "number"
+              },
+              {
+                "type": "boolean"
+              }
+            ],
+            "nullable": true
+          },
+          "fruitore": {
+            "oneOf": [
+              {
+                "type": "string",
+                "nullable": true
+              },
+              {
+                "format": "double",
+                "type": "number"
+              },
+              {
+                "type": "boolean"
+              }
+            ],
+            "nullable": true
+          },
+          "erogatore": {
+            "oneOf": [
+              {
+                "type": "string",
+                "nullable": true
+              },
+              {
+                "format": "double",
+                "type": "number"
+              },
+              {
+                "type": "boolean"
+              }
+            ],
+            "nullable": true
+          },
+          "stazione": {
+            "oneOf": [
+              {
+                "type": "string",
+                "nullable": true
+              },
+              {
+                "format": "double",
+                "type": "number"
+              },
+              {
+                "type": "boolean"
+              }
+            ],
+            "nullable": true
+          },
+          "canale": {
+            "oneOf": [
+              {
+                "type": "string",
+                "nullable": true
+              },
+              {
+                "format": "double",
+                "type": "number"
+              },
+              {
+                "type": "boolean"
+              }
+            ],
+            "nullable": true
+          },
+          "parametriSpecificiInterfaccia": {
+            "oneOf": [
+              {
+                "type": "string",
+                "nullable": true
+              },
+              {
+                "format": "double",
+                "type": "number"
+              },
+              {
+                "type": "boolean"
+              }
+            ],
+            "nullable": true
+          },
+          "esito": {
+            "oneOf": [
+              {
+                "type": "string",
+                "nullable": true
+              },
+              {
+                "format": "double",
+                "type": "number"
+              },
+              {
+                "type": "boolean"
+              }
+            ],
+            "nullable": true
+          },
+          "sessionId": {
+            "oneOf": [
+              {
+                "type": "string",
+                "nullable": true
+              },
+              {
+                "format": "double",
+                "type": "number"
+              },
+              {
+                "type": "boolean"
+              }
+            ],
+            "nullable": true
+          },
+          "status": {
+            "oneOf": [
+              {
+                "type": "string",
+                "nullable": true
+              },
+              {
+                "format": "double",
+                "type": "number"
+              },
+              {
+                "type": "boolean"
+              }
+            ],
+            "nullable": true
+          },
+          "payload": {
+            "type": "string",
+            "nullable": true
+          },
+          "info": {
+            "oneOf": [
+              {
+                "type": "string",
+                "nullable": true
+              },
+              {
+                "format": "double",
+                "type": "number"
+              },
+              {
+                "type": "boolean"
+              }
+            ],
+            "nullable": true
+          },
+          "businessProcess": {
+            "oneOf": [
+              {
+                "type": "string",
+                "nullable": true
+              },
+              {
+                "format": "double",
+                "type": "number"
+              },
+              {
+                "type": "boolean"
+              }
+            ],
+            "nullable": true
+          },
+          "fruitoreDescr": {
+            "oneOf": [
+              {
+                "type": "string",
+                "nullable": true
+              },
+              {
+                "format": "double",
+                "type": "number"
+              },
+              {
+                "type": "boolean"
+              }
+            ],
+            "nullable": true
+          },
+          "erogatoreDescr": {
+            "oneOf": [
+              {
+                "type": "string",
+                "nullable": true
+              },
+              {
+                "format": "double",
+                "type": "number"
+              },
+              {
+                "type": "boolean"
+              }
+            ],
+            "nullable": true
+          },
+          "pspDescr": {
+            "oneOf": [
+              {
+                "type": "string",
+                "nullable": true
+              },
+              {
+                "format": "double",
+                "type": "number"
+              },
+              {
+                "type": "boolean"
+              }
+            ],
+            "nullable": true
+          },
+          "noticeNumber": {
+            "oneOf": [
+              {
+                "type": "string",
+                "nullable": true
+              },
+              {
+                "format": "double",
+                "type": "number"
+              },
+              {
+                "type": "boolean"
+              }
+            ],
+            "nullable": true
+          },
+          "creditorReferenceId": {
+            "oneOf": [
+              {
+                "type": "string",
+                "nullable": true
+              },
+              {
+                "format": "double",
+                "type": "number"
+              },
+              {
+                "type": "boolean"
+              }
+            ],
+            "nullable": true
+          },
+          "paymentToken": {
+            "oneOf": [
+              {
+                "type": "string",
+                "nullable": true
+              },
+              {
+                "format": "double",
+                "type": "number"
+              },
+              {
+                "type": "boolean"
+              }
+            ],
+            "nullable": true
+          },
+          "sessionIdOriginal": {
+            "oneOf": [
+              {
+                "type": "string",
+                "nullable": true
+              },
+              {
+                "format": "double",
+                "type": "number"
+              },
+              {
+                "type": "boolean"
+              }
+            ],
+            "nullable": true
+          },
+          "standIn": {
+            "oneOf": [
+              {
+                "type": "string",
+                "nullable": true
+              },
+              {
+                "format": "double",
+                "type": "number"
+              },
+              {
+                "type": "boolean"
+              }
+            ],
+            "nullable": true
+          },
+          "serviceIdentifier": {
+            "oneOf": [
+              {
+                "type": "string",
+                "nullable": true
+              },
+              {
+                "format": "double",
+                "type": "number"
+              },
+              {
+                "type": "boolean"
+              }
+            ],
+            "nullable": true
+          },
+          "dataOraEvento": {
+            "oneOf": [
+              {
+                "type": "string",
+                "nullable": true
+              },
+              {
+                "format": "double",
+                "type": "number"
+              },
+              {
+                "type": "boolean"
+              }
+            ],
+            "nullable": true
+          },
+          "uniqueId": {
+            "oneOf": [
+              {
+                "type": "string",
+                "nullable": true
+              },
+              {
+                "format": "double",
+                "type": "number"
+              },
+              {
+                "type": "boolean"
+              }
+            ],
+            "nullable": true
+          },
+          "version": {
+            "oneOf": [
+              {
+                "type": "string",
+                "nullable": true
+              },
+              {
+                "format": "double",
+                "type": "number"
+              },
+              {
+                "type": "boolean"
+              }
+            ],
+            "nullable": true
+          },
+          "payloadDecoded": {
+            "$ref": "#/components/schemas/RePayloadDecoded"
+          },
+          "payloadOmitted": {
+            "type": "boolean"
+          },
+          "payloadSourceBytes": {
+            "format": "int64",
+            "type": "integer",
+            "nullable": true
+          }
+        }
+      },
+      "RePayloadDecoded": {
+        "required": [
+          "status",
+          "text",
+          "reason"
+        ],
+        "type": "object",
+        "properties": {
+          "status": {
+            "enum": [
+              "ABSENT",
+              "DECODED",
+              "INVALID_BASE64",
+              "INVALID_UTF8",
+              "TOO_LARGE"
+            ],
+            "type": "string"
+          },
+          "text": {
+            "type": "string",
+            "nullable": true
+          },
+          "reason": {
+            "type": "string",
+            "nullable": true
+          }
+        }
+      },
+      "ReRequest": {
+        "required": [
+          "from",
+          "to"
+        ],
+        "type": "object",
+        "properties": {
+          "from": {
+            "format": "date-time",
+            "description": "Inclusive UTC instant ending in Z",
+            "type": "string"
+          },
+          "to": {
+            "format": "date-time",
+            "description": "Exclusive UTC instant; from < to <= from + 24h",
+            "type": "string"
+          },
+          "cursor": {
+            "description": "Opaque signed seek cursor; repeat the original window",
+            "maxLength": 76,
+            "type": "string",
+            "nullable": true
+          },
+          "scope": {
+            "description": "ATTEMPT (default): PA + NAV + token of the attempt. POSITION: PA + NAV only, so events without a paymentToken (verifyPaymentNotice) are included, together with those of every token.",
+            "enum": [
+              "ATTEMPT",
+              "POSITION"
+            ],
+            "type": "string",
+            "nullable": true
+          }
+        }
+      },
+      "ReResponse": {
+        "required": [
+          "attemptId",
+          "source",
+          "retrievedAt",
+          "window",
+          "coverage",
+          "events",
+          "nextCursor",
+          "truncated",
+          "warnings"
+        ],
+        "type": "object",
+        "properties": {
+          "attemptId": {
+            "type": "string"
+          },
+          "source": {
+            "enum": [
+              "RE"
+            ],
+            "type": "string"
+          },
+          "retrievedAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "window": {
+            "$ref": "#/components/schemas/ReWindow"
+          },
+          "coverage": {
+            "enum": [
+              "WINDOW_ONLY",
+              "RETENTION_CLIPPED",
+              "LIMIT_REACHED"
+            ],
+            "type": "string"
+          },
+          "events": {
+            "maxItems": 100,
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ReEvent"
+            }
+          },
+          "nextCursor": {
+            "type": "string",
+            "nullable": true
+          },
+          "truncated": {
+            "type": "boolean"
+          },
+          "warnings": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "ReScalar": {
+        "oneOf": [
+          {
+            "type": "string",
+            "nullable": true
+          },
+          {
+            "format": "double",
+            "type": "number"
+          },
+          {
+            "type": "boolean"
+          }
+        ],
+        "nullable": true
+      },
+      "ReWindow": {
+        "required": [
+          "from",
+          "to"
+        ],
+        "type": "object",
+        "properties": {
+          "from": {
+            "type": "string"
+          },
+          "to": {
+            "type": "string"
+          }
+        }
+      },
+      "ReadyEvent": {
+        "required": [
+          "type",
+          "scope",
+          "projectionRevision"
+        ],
+        "type": "object",
+        "properties": {
+          "type": {
+            "enum": [
+              "ready"
+            ],
+            "type": "string"
+          },
+          "scope": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string"
+            }
+          },
+          "projectionRevision": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "window": {
+            "$ref": "#/components/schemas/WindowDto"
+          }
+        },
+        "additionalProperties": false
+      },
+      "RecipientChange": {
+        "required": [
+          "recipientId"
+        ],
+        "type": "object",
+        "properties": {
+          "recipientId": {
+            "type": "string"
+          },
+          "transitions": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TimelineItemDto"
+            }
+          },
+          "upsert": {
+            "$ref": "#/components/schemas/RecipientDto"
+          },
+          "patch": {
+            "$ref": "#/components/schemas/RecipientPatch"
+          }
+        },
+        "additionalProperties": false
+      },
+      "RecipientDto": {
+        "description": "Receipt recipient keyed by PA/NAV/stazioneRecipient. No token association or primary role.",
+        "required": [
+          "recipientId",
+          "stazioneRecipient",
+          "paFiscalCode",
+          "noticeNumber",
+          "state",
+          "timelineIncomplete",
+          "hasAnomaly",
+          "timeline",
+          "projectionRevision"
+        ],
+        "type": "object",
+        "properties": {
+          "recipientId": {
+            "type": "string"
+          },
+          "stazioneRecipient": {
+            "description": "Null denotes the single unidentified recipient of this logical pair.",
+            "type": "string",
+            "nullable": true
+          },
+          "paFiscalCode": {
+            "type": "string"
+          },
+          "noticeNumber": {
+            "type": "string"
+          },
+          "state": {
+            "enum": [
+              "NOTICE_GENERATED",
+              "NOTICE_SENT",
+              "NOTICE_PENDING",
+              "NOTIFIED"
+            ],
+            "type": "string"
+          },
+          "timelineIncomplete": {
+            "type": "boolean"
+          },
+          "hasAnomaly": {
+            "type": "boolean"
+          },
+          "timeline": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TimelineItemDto"
+            }
+          },
+          "projectionRevision": {
+            "format": "int64",
+            "type": "integer"
+          }
+        },
+        "additionalProperties": false
+      },
+      "RecipientPatch": {
+        "type": "object",
+        "properties": {
+          "timelineIncomplete": {
+            "type": "boolean"
+          }
+        },
+        "additionalProperties": false
+      },
+      "RevealResponseDto": {
+        "type": "object",
+        "properties": {
+          "attemptId": {
+            "type": "string"
+          },
+          "paymentToken": {
+            "type": "string"
+          }
+        }
+      },
+      "StateCountDto": {
+        "type": "object",
+        "properties": {
+          "state": {
+            "type": "string"
+          },
+          "count": {
+            "format": "int64",
+            "type": "integer"
+          }
+        }
+      },
+      "StatusSyncResponse": {
+        "required": [
+          "outcome"
+        ],
+        "type": "object",
+        "properties": {
+          "outcome": {
+            "description": "SYNCED when the projection changed, otherwise NOOP",
+            "enum": [
+              "SYNCED",
+              "NOOP"
+            ],
+            "type": "string"
+          },
+          "state": {
+            "description": "State returned by Nodo Online, or null when the source snapshot is missing",
+            "type": "string",
+            "nullable": true
+          }
+        }
+      },
+      "TimelineItemDto": {
+        "description": "Server transition order is authoritative, including repeated states and null or nonmonotonic dates.",
+        "required": [
+          "state",
+          "transitionAt",
+          "timestampBasis",
+          "trigger"
+        ],
+        "type": "object",
+        "properties": {
+          "state": {
+            "type": "string"
+          },
+          "transitionAt": {
+            "format": "date-time",
+            "type": "string",
+            "nullable": true
+          },
+          "timestampBasis": {
+            "$ref": "#/components/schemas/TimestampBasis"
+          },
+          "trigger": {
+            "description": "Original application trigger from the admitted RE event, when available.",
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "TimestampBasis": {
+        "enum": [
+          "SOURCE_EVENT",
+          "SOURCE_SYNC",
+          "INFERRED",
+          "ANOMALY"
+        ],
+        "type": "string"
+      },
+      "TokenLookupRequestDto": {
+        "type": "object",
+        "properties": {
+          "paymentToken": {
+            "type": "string"
+          },
+          "paFiscalCode": {
+            "type": "string"
+          },
+          "noticeNumber": {
+            "type": "string"
+          }
+        }
+      },
+      "TokenLookupResponseDto": {
+        "type": "object",
+        "properties": {
+          "paFiscalCode": {
+            "type": "string"
+          },
+          "noticeNumber": {
+            "type": "string"
+          },
+          "attemptId": {
+            "type": "string"
+          },
+          "projectionRevision": {
+            "format": "int64",
+            "type": "integer"
+          }
+        }
+      },
+      "TrafficBucketDto": {
+        "type": "object",
+        "properties": {
+          "bucketStart": {
+            "type": "string"
+          },
+          "startedAttempts": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "estimatedStarts": {
+            "format": "int64",
+            "type": "integer"
+          }
+        }
+      },
+      "TransitionCorrection": {
+        "required": [
+          "index",
+          "transition"
+        ],
+        "type": "object",
+        "properties": {
+          "index": {
+            "format": "int32",
+            "minimum": 0,
+            "type": "integer"
+          },
+          "transition": {
+            "$ref": "#/components/schemas/TimelineItemDto"
+          }
+        },
+        "additionalProperties": false
+      },
+      "TransitionTrendDto": {
+        "required": [
+          "bucketStart",
+          "entity",
+          "state",
+          "timestampBasis",
+          "count"
+        ],
+        "type": "object",
+        "properties": {
+          "bucketStart": {
+            "type": "string"
+          },
+          "entity": {
+            "enum": [
+              "logical",
+              "attempt",
+              "recipient"
+            ],
+            "type": "string"
+          },
+          "state": {
+            "type": "string"
+          },
+          "timestampBasis": {
+            "$ref": "#/components/schemas/TimestampBasis"
+          },
+          "count": {
+            "format": "int64",
+            "type": "integer"
+          }
+        },
+        "additionalProperties": false
+      },
+      "WindowDto": {
+        "type": "object",
+        "properties": {
+          "from": {
+            "type": "string"
+          },
+          "to": {
+            "type": "string"
           }
         }
       }

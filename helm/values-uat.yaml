@@ -2,21 +2,21 @@ microservice-chart:
   namespace: "nodo"
   image:
     repository: ghcr.io/pagopa/pagopa-node-technical-support-worker
-    tag: '1.3.0'
+    tag: '1.3.0-4-nodo-observability'
   readinessProbe:
     httpGet:
       path: /q/health/ready
       port: 8080
-    initialDelaySeconds: 8
-    failureThreshold: 10
-    periodSeconds: 2
+    initialDelaySeconds: 30
+    failureThreshold: 30
+    periodSeconds: 5
   livenessProbe:
     httpGet:
       path: /q/health/live
       port: 8080
-    initialDelaySeconds: 8
-    failureThreshold: 10
-    periodSeconds: 2
+    initialDelaySeconds: 90
+    failureThreshold: 6
+    periodSeconds: 10
   deployment:
     create: true
     replicas: 1 # same as HPA minReplica
@@ -49,11 +49,11 @@ microservice-chart:
         - all
   resources:
     requests:
-      memory: "400M"
-      cpu: "200m"
+      memory: "768Mi"
+      cpu: "250m"
     limits:
       memory: "3Gi"
-      cpu: "400m"
+      cpu: "1000m"
   autoscaling:
     enable: true
     minReplica: 1
@@ -62,27 +62,52 @@ microservice-chart:
     cooldownPeriod: 50 # seconds
     triggers:
       - type: cpu
+        metricType: Utilization
         metadata:
-          type: Utilization
           value: "75"
       - type: memory
+        metricType: Utilization
         metadata:
-          type: Utilization
           value: "75"
   envConfig:
     APP_ENVIRONMENT: "uat"
     TZ: "Europe/Rome"
     OTEL_ENDPOINT: "http://otel-collector.elastic-system.svc.cluster.local:4317"
+    CORS_ORIGINS: "https://observability.uat.platform.pagopa.it"
     COSMOS_BIZ_ENDPOINT: "https://pagopa-u-weu-bizevents-ds-cosmos-account.documents.azure.com:443/"
     COSMOS_NEG_BIZ_ENDPOINT: "https://pagopa-u-weu-bizevents-neg-ds-cosmos-account.documents.azure.com:443/"
     COSMOS_VERIFYKO_ENDPOINT: "https://pagopa-u-weu-nodo-verifyko-cosmos-account.documents.azure.com:443/"
     COSMOS_PREFERRED_REGION: "West Europe"
     DATASOURCE_USERNAME: "biz_pagopa_sv"
-    #    DATASOURCE_URL: "jdbc:postgresql://db-postgres-ndp-prf.u.db-nodo-pagamenti.com:6432/ndpspcq_ro?prepareThreshold=0&currentSchema=NODO_OFFLINE"
-    DATASOURCE_URL: "jdbc:postgresql://10.6.52.94:6432/ndpspca_ro"
+    DATASOURCE_URL: "jdbc:postgresql://db-postgres-ndp.u.db-nodo-pagamenti.com:6432/ndpspcp_ro"
     DATASOURCE_SCHEMA: "nodo_offline"
     DB_SERVICE_IDENTIFIER: "NDP004UAT"
     LOG_LEVEL: "INFO"
+    ONLINE_NDP001_IDENTIFIER: "NDP001UAT"
+    ONLINE_NDP001_DATASOURCE_USERNAME: "onliner"
+    ONLINE_NDP001_DATASOURCE_URL: "jdbc:postgresql://nodo-db.u.internal.postgresql.pagopa.it:5432/nodo?sslmode=require&prepareThreshold=0&currentSchema=cfg"
+    ONLINE_NDP004_IDENTIFIER: "NDP004UAT"
+    ONLINE_NDP004_DATASOURCE_USERNAME: "NODO_ONLINE"
+    ONLINE_NDP004_DATASOURCE_URL: "jdbc:postgresql://db-postgres-ndp.u.db-nodo-pagamenti.com:6432/ndpspct?prepareThreshold=0&currentSchema=NODO_ONLINE"
+    OBSERVABILITY_DATASOURCE_USERNAME: "observability"
+    OBSERVABILITY_DATASOURCE_URL: "jdbc:postgresql://nodo-db.u.internal.postgresql.pagopa.it:5432/nodo?sslmode=require&prepareThreshold=0&currentSchema=observability"
+    OBSERVABILITY_DATASOURCE_SCHEMA: "observability"
+    OBSERVABILITY_RE_DIAGNOSTICS_ENABLED: "true"
+    RE_DATA_EXPLORER_URL: "https://pagopaudataexplorer.westeurope.kusto.windows.net"
+    RE_DATA_EXPLORER_CLIENT_ID: "74ae19a9-1309-4751-888e-48f85935622e"
+    RE_DATA_EXPLORER_TENANT_ID: "7788edaf-0346-4068-9d79-c868aed15b3d"
+    RE_DATA_EXPLORER_DB_NAME: "re"
+    RE_DATA_EXPLORER_TABLE: "ReEvent"
+    RE_DATA_EXPLORER_ROW_ID_COLUMN: "uniqueId"
+    RE_DATA_EXPLORER_RETENTION_DAYS: "90"
+    NODO_MONITORING_NDP001_TARGET: "NDP001UAT"
+    NODO_MONITORING_NDP004_TARGET: "NDP004UAT"
+    OBSERVABILITY_RE_INGESTION: "true"
+    OBSERVABILITY_EVENTHUB_NAME: "nodo-dei-pagamenti-re"
+    OBSERVABILITY_EVENTHUB_CONSUMER_GROUP: "nodo-dei-pagamenti-observability"
+    OBSERVABILITY_CHECKPOINT_CONTAINER: "observability-checkpoint-storage"
+    APICONFIG_URL: "https://api.uat.platform.pagopa.it/apiconfig/auth/api/v1"
+    APICONFIG_CACHE_URL: "https://api.uat.platform.pagopa.it/api-config-cache/p/v1"
   envFieldRef:
     APP_NAME: "metadata.labels['app.kubernetes.io/instance']"
     APP_VERSION: "metadata.labels['app.kubernetes.io/version']"
@@ -93,6 +118,15 @@ microservice-chart:
     COSMOS_VERIFYKO_KEY: "cosmos-verifyko-account-key"
     #    DATASOURCE_PASSWORD: "db-nexi-offline-password"
     DATASOURCE_PASSWORD: "db-nexi-biz-pagopa-sv-password"
+    ONLINE_NDP001_DATASOURCE_PASSWORD: "db-online-password-read"
+    ONLINE_NDP004_DATASOURCE_PASSWORD: "db-nexi-online-password"
+    OBSERVABILITY_DATASOURCE_PASSWORD: "db-observability-password"
+    RE_DATA_EXPLORER_CLIENT_SECRET: "dataexplorer-client-secret"
+    NODO_MONITORING_SUBSCRIPTION_KEY: "nodo-monitoring-product-subscription-key"
+    OBSERVABILITY_EVENTHUB_CONNECTION_STRING: "evh-nodo-re-observability-connection-string"
+    OBSERVABILITY_CHECKPOINT_STORAGE_CONNECTION_STRING: "nodo-observability-storage-account-connection-string"
+    APICONFIG_SUBSCRIPTION_KEY: "apiconfig-auth-product-subscription-key"
+    APICONFIG_CACHE_SUBSCRIPTION_KEY: "cfg-for-node-subscription-key"
   keyvault:
     name: "pagopa-u-nodo-kv"
     tenantId: "7788edaf-0346-4068-9d79-c868aed15b3d"
