@@ -60,7 +60,7 @@ public class ObservabilityService {
         .visiblePaFiscalCodes(caller.allowedPa() == null ? null : List.of(caller.allowedPa()))
         .capabilities(new it.gov.pagopa.nodetsworker.observability.dto.CapabilitiesDto(
             caller.canReadTokens(), caller.canReadTokens(), caller.canMock()))
-        .authentication("LOCAL_DEMO_ONLY")
+        .authentication(caller.isImplicit() ? "LOCAL_DEMO_ONLY" : "ENTRA_ID")
         .build();
   }
 

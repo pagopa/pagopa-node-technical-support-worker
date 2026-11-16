@@ -1,5 +1,6 @@
 package it.gov.pagopa.nodetsworker.observability.resources;
 
+import org.eclipse.microprofile.openapi.annotations.security.SecurityRequirement;
 import it.gov.pagopa.nodetsworker.observability.dto.RevealResponseDto;
 import it.gov.pagopa.nodetsworker.observability.dto.TokenLookupRequestDto;
 import it.gov.pagopa.nodetsworker.observability.dto.TokenLookupResponseDto;
@@ -24,6 +25,7 @@ import java.util.Map;
 @Produces(MediaType.APPLICATION_JSON)
 @Consumes(MediaType.APPLICATION_JSON)
 @NoStore
+@SecurityRequirement(name = "SecurityScheme")
 public class TokenResource {
 
   @Inject

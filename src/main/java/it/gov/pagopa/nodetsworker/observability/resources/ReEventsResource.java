@@ -1,5 +1,6 @@
 package it.gov.pagopa.nodetsworker.observability.resources;
 
+import org.eclipse.microprofile.openapi.annotations.security.SecurityRequirement;
 import com.fasterxml.jackson.databind.JsonNode;
 import it.gov.pagopa.nodetsworker.observability.dto.ErrorDto;
 import it.gov.pagopa.nodetsworker.observability.exception.ObservabilityException;
@@ -28,6 +29,7 @@ import org.eclipse.microprofile.openapi.annotations.responses.APIResponses;
 @Produces(MediaType.APPLICATION_JSON)
 @Consumes(MediaType.APPLICATION_JSON)
 @NoStore
+@SecurityRequirement(name = "SecurityScheme")
 public class ReEventsResource {
   @Inject ReDiagnostics diagnostics;
   @Inject CallerResolver callers;

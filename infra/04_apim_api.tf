@@ -67,8 +67,9 @@ module "api_v1" {
 }
 
 data "http" "template_decoupler_policy" {
-  url = "https://raw.githubusercontent.com/pagopa/pagopa-infra/refs/heads/main/src/core/api_product/nodo_pagamenti_api/decoupler/base_policy.xml.tpl"
+  url = "https://raw.githubusercontent.com/pagopa/pagopa-infra/main/src/domains/nodo-app/api_product/legacy/nodo_pagamenti_api/decoupler/base_policy.xml.tpl"
 }
+
 module "api_ndp_direct" { # direct API to NDP
   source = "git::https://github.com/pagopa/terraform-azurerm-v3.git//api_management_api?ref=v6.7.0"
 
@@ -117,4 +118,3 @@ module "api_ndp_direct" { # direct API to NDP
   #   address-range-to   = var.env_short == "p" ? "10.1.128.255" : "0.0.0.0"
   # })  
 }
-

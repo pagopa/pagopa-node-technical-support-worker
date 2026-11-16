@@ -398,6 +398,34 @@ Synthetic validation (no credentials/connections to ADX):
 REST tests use isolated H2 projection data and a mocked SDK boundary; SDK tests use
 synthetic result tables, including nanoseconds/scalars, cancellation and failures.
 
+## Authentication (Microsoft Entra ID)
+
+Every `/api/*` operation, including the `/api/events` SSE stream, requires
+`Authorization: Bearer <token>`, where the token is the MSAL **ID token** that the observability frontend
+obtains from Microsoft Entra ID (same MSAL setup as `pagopa-shared-toolbox`: tenant authority, client id,
+redirect URI). The worker validates it directly, without sessions or a user store:
+
+- RS256 signature against the tenant keys (`https://login.microsoftonline.com/<tenant>/discovery/v2.0/keys`,
+  cached and refreshed on key rotation);
+- issuer `https://login.microsoftonline.com/<tenant>/v2.0`;
+- audience equal to the app client id;
+- `exp`/`nbf` (60 s clock skew) and a non-empty `oid`.
+
+Missing, expired or otherwise invalid tokens get `401` with an `ErrorDto` (`code=UNAUTHORIZED`) and
+`WWW-Authenticate: Bearer`. CORS preflight, `/info`, `/q/health` and `/q/openapi` are public. Every
+signed-in user is an operator (no role or group restriction yet); `/api/me` reports the email
+(`email`, else `preferred_username`/`upn`) as `id` and `authentication=ENTRA_ID`.
+
+| Variable | Required | Description |
+|---|---|---|
+| `ENTRA_TENANT_ID` | yes (when enabled) | Directory (tenant) id |
+| `ENTRA_CLIENT_ID` | yes (when enabled) | Application (client) id of the frontend app registration |
+| `AUTH_ENABLED` | no (default `true`) | `false` disables the check and uses the implicit demo identity (tests, local tooling) |
+
+The application fails at startup when authentication is enabled and the tenant or client id is missing.
+Because the browser `EventSource` cannot send headers, the frontend must consume the SSE stream with a
+`fetch`-based client.
+
 ## Develop Locally 💻
 
 ### Prerequisites

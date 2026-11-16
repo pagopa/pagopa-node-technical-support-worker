@@ -17,6 +17,53 @@
     }
   ],
   "paths": {
+    "/api/apiconfig/maintenances": {
+      "get": {
+        "tags": [
+          "Api Config Resource"
+        ],
+        "summary": "Scheduled station maintenances of the next 7 days",
+        "description": "Read-only. Served from a cache that is reloaded from apiconfig every midnight.",
+        "operationId": "getMaintenances",
+        "responses": {
+          "200": {
+            "description": "Cached maintenances",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Maintenances"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Query parameters are not accepted",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "apiconfig never answered: no data available",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "SecurityScheme": []
+          }
+        ]
+      }
+    },
     "/api/attempts": {
       "get": {
         "tags": [
@@ -33,7 +80,12 @@
               }
             }
           }
-        }
+        },
+        "security": [
+          {
+            "SecurityScheme": []
+          }
+        ]
       }
     },
     "/api/attempts/{attemptId}/check-db": {
@@ -115,7 +167,12 @@
               }
             }
           }
-        }
+        },
+        "security": [
+          {
+            "SecurityScheme": []
+          }
+        ]
       }
     },
     "/api/attempts/{attemptId}/re-events": {
@@ -227,7 +284,12 @@
               }
             }
           }
-        }
+        },
+        "security": [
+          {
+            "SecurityScheme": []
+          }
+        ]
       }
     },
     "/api/attempts/{attemptId}/reveal": {
@@ -266,7 +328,12 @@
               }
             }
           }
-        }
+        },
+        "security": [
+          {
+            "SecurityScheme": []
+          }
+        ]
       }
     },
     "/api/catalog": {
@@ -285,7 +352,12 @@
               }
             }
           }
-        }
+        },
+        "security": [
+          {
+            "SecurityScheme": []
+          }
+        ]
       }
     },
     "/api/creditors": {
@@ -304,7 +376,12 @@
               }
             }
           }
-        }
+        },
+        "security": [
+          {
+            "SecurityScheme": []
+          }
+        ]
       }
     },
     "/api/creditors/{paFiscalCode}": {
@@ -333,7 +410,12 @@
               }
             }
           }
-        }
+        },
+        "security": [
+          {
+            "SecurityScheme": []
+          }
+        ]
       }
     },
     "/api/creditors/{paFiscalCode}/stations": {
@@ -362,7 +444,12 @@
               }
             }
           }
-        }
+        },
+        "security": [
+          {
+            "SecurityScheme": []
+          }
+        ]
       }
     },
     "/api/events": {
@@ -400,7 +487,12 @@
               }
             }
           }
-        }
+        },
+        "security": [
+          {
+            "SecurityScheme": []
+          }
+        ]
       }
     },
     "/api/freshness": {
@@ -419,7 +511,12 @@
               }
             }
           }
-        }
+        },
+        "security": [
+          {
+            "SecurityScheme": []
+          }
+        ]
       }
     },
     "/api/me": {
@@ -438,7 +535,12 @@
               }
             }
           }
-        }
+        },
+        "security": [
+          {
+            "SecurityScheme": []
+          }
+        ]
       }
     },
     "/api/nodo-monitoring/cache/version": {
@@ -470,7 +572,12 @@
               }
             }
           }
-        }
+        },
+        "security": [
+          {
+            "SecurityScheme": []
+          }
+        ]
       }
     },
     "/api/overview": {
@@ -489,7 +596,12 @@
               }
             }
           }
-        }
+        },
+        "security": [
+          {
+            "SecurityScheme": []
+          }
+        ]
       }
     },
     "/api/overview/primitive-warnings": {
@@ -508,7 +620,12 @@
               }
             }
           }
-        }
+        },
+        "security": [
+          {
+            "SecurityScheme": []
+          }
+        ]
       }
     },
     "/api/payments": {
@@ -527,7 +644,12 @@
               }
             }
           }
-        }
+        },
+        "security": [
+          {
+            "SecurityScheme": []
+          }
+        ]
       }
     },
     "/api/payments/{paFiscalCode}/{noticeNumber}": {
@@ -564,7 +686,12 @@
               }
             }
           }
-        }
+        },
+        "security": [
+          {
+            "SecurityScheme": []
+          }
+        ]
       }
     },
     "/api/serviceIdentifiers": {
@@ -586,7 +713,12 @@
               }
             }
           }
-        }
+        },
+        "security": [
+          {
+            "SecurityScheme": []
+          }
+        ]
       }
     },
     "/api/token-lookup": {
@@ -614,7 +746,12 @@
               }
             }
           }
-        }
+        },
+        "security": [
+          {
+            "SecurityScheme": []
+          }
+        ]
       }
     },
     "/events/negative/{bizEventId}": {
@@ -1410,6 +1547,52 @@
           }
         }
       },
+      "ApiConfigCacheVersion": {
+        "required": [
+          "outcome",
+          "cacheId",
+          "version",
+          "timestamp",
+          "environment",
+          "serviceIdentifier"
+        ],
+        "type": "object",
+        "properties": {
+          "outcome": {
+            "description": "UNCONFIGURED: no subscription key; UNAVAILABLE: call failed or timed out",
+            "type": "string",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/CacheVersionOutcome"
+              }
+            ]
+          },
+          "cacheId": {
+            "description": "X-CACHE-ID returned by apiconfig-cache",
+            "type": "string",
+            "nullable": true
+          },
+          "version": {
+            "description": "X-CACHE-VERSION returned by apiconfig-cache",
+            "type": "string",
+            "nullable": true
+          },
+          "timestamp": {
+            "description": "X-CACHE-TIMESTAMP returned by apiconfig-cache",
+            "type": "string",
+            "nullable": true
+          },
+          "environment": {
+            "type": "string"
+          },
+          "serviceIdentifier": {
+            "enum": [
+              "CACHE"
+            ],
+            "type": "string"
+          }
+        }
+      },
       "AttemptChange": {
         "required": [
           "attemptId",
@@ -1657,12 +1840,12 @@
           },
           "outcome": {
             "description": "UNCONFIGURED: no subscription key; UNAVAILABLE: call failed or timed out",
-            "enum": [
-              "OK",
-              "UNCONFIGURED",
-              "UNAVAILABLE"
-            ],
-            "type": "string"
+            "type": "string",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/CacheVersionOutcome"
+              }
+            ]
           },
           "dbStatus": {
             "type": "string",
@@ -1686,11 +1869,20 @@
           }
         }
       },
+      "CacheVersionOutcome": {
+        "enum": [
+          "OK",
+          "UNCONFIGURED",
+          "UNAVAILABLE"
+        ],
+        "type": "string"
+      },
       "CacheVersions": {
         "description": "Cache version of NDP001 and NDP004 read from Nodo monitoring",
         "required": [
           "checkedAt",
-          "nodes"
+          "nodes",
+          "cache"
         ],
         "type": "object",
         "properties": {
@@ -1705,6 +1897,15 @@
             "items": {
               "$ref": "#/components/schemas/CacheVersionNode"
             }
+          },
+          "cache": {
+            "description": "Api Config Cache info",
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ApiConfigCacheVersion"
+              }
+            ]
           }
         }
       },
@@ -2302,6 +2503,98 @@
           "NOTIFIED"
         ],
         "type": "string"
+      },
+      "Maintenance": {
+        "required": [
+          "brokerCode",
+          "brokerName",
+          "startDateTime",
+          "endDateTime",
+          "stations",
+          "creditorInstitutions"
+        ],
+        "type": "object",
+        "properties": {
+          "brokerCode": {
+            "type": "string"
+          },
+          "brokerName": {
+            "type": "string"
+          },
+          "startDateTime": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "endDateTime": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "stations": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "creditorInstitutions": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/MaintenanceCreditor"
+            }
+          }
+        }
+      },
+      "MaintenanceCreditor": {
+        "required": [
+          "businessName",
+          "code"
+        ],
+        "type": "object",
+        "properties": {
+          "businessName": {
+            "type": "string"
+          },
+          "code": {
+            "type": "string"
+          }
+        }
+      },
+      "Maintenances": {
+        "description": "Scheduled station maintenances of the next 7 days, cached daily",
+        "required": [
+          "fetchedAt",
+          "windowFrom",
+          "windowTo",
+          "stale",
+          "items"
+        ],
+        "type": "object",
+        "properties": {
+          "fetchedAt": {
+            "format": "date-time",
+            "description": "Last successful load from apiconfig",
+            "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}\\.\\d{3}Z$",
+            "type": "string"
+          },
+          "windowFrom": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "windowTo": {
+            "format": "date-time",
+            "description": "windowFrom + 7 days",
+            "type": "string"
+          },
+          "stale": {
+            "description": "True when the last refresh failed and the previous data is served",
+            "type": "boolean"
+          },
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Maintenance"
+            }
+          }
+        }
       },
       "MatricesDto": {
         "required": [
@@ -4211,8 +4504,9 @@
     "securitySchemes": {
       "SecurityScheme": {
         "type": "http",
-        "description": "Authentication",
-        "scheme": "basic"
+        "description": "Microsoft Entra ID token (MSAL ID token, audience = ENTRA_CLIENT_ID)",
+        "scheme": "bearer",
+        "bearerFormat": "JWT"
       }
     }
   }

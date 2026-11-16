@@ -1,5 +1,6 @@
 package it.gov.pagopa.nodetsworker.observability.resources;
 
+import org.eclipse.microprofile.openapi.annotations.security.SecurityRequirement;
 import io.smallrye.common.annotation.Blocking;
 import io.smallrye.mutiny.Multi;
 import it.gov.pagopa.nodetsworker.observability.exception.Errors;
@@ -35,6 +36,7 @@ import java.util.UUID;
 
 /** The SSE stream {@code GET /api/events}: ready, payment/aggregate deltas, replay and heartbeats. */
 @Path("/api/events")
+@SecurityRequirement(name = "SecurityScheme")
 public class EventsResource {
 
   private static final Set<String> EVENT_PARAMS = eventParams();

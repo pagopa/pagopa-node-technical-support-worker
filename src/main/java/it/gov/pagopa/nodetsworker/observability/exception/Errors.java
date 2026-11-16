@@ -23,6 +23,10 @@ public final class Errors {
     return new ObservabilityException(403, "FORBIDDEN", message, null, null);
   }
 
+  public static ObservabilityException unauthorized(String message) {
+    return new ObservabilityException(401, "UNAUTHORIZED", message, null, null);
+  }
+
   public static ObservabilityException cursorExpired() {
     return new ObservabilityException(410, "CURSOR_EXPIRED", "Ricaricare la prima pagina.", null, null);
   }

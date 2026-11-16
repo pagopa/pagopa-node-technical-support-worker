@@ -1,5 +1,6 @@
 package it.gov.pagopa.nodetsworker.observability.resources;
 
+import org.eclipse.microprofile.openapi.annotations.security.SecurityRequirement;
 import it.gov.pagopa.nodetsworker.observability.dto.AttemptDto;
 import it.gov.pagopa.nodetsworker.observability.dto.CatalogDto;
 import it.gov.pagopa.nodetsworker.observability.dto.CreditorDetailDto;
@@ -34,6 +35,7 @@ import org.eclipse.microprofile.config.inject.ConfigProperty;
 @Path("/api")
 @Produces(MediaType.APPLICATION_JSON)
 @NoStore
+@SecurityRequirement(name = "SecurityScheme")
 public class ObservabilityResource {
 
   // Lists accept an optional [from, to) interval (both or none) with the same semantics as the overview.

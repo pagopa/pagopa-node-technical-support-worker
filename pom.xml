@@ -116,6 +116,12 @@
       <groupId>io.quarkus</groupId>
       <artifactId>quarkus-resteasy-reactive-jackson</artifactId>
     </dependency>
+    <!-- Microsoft Entra ID token verification (tenant JWKS) -->
+    <dependency>
+      <groupId>org.bitbucket.b_c</groupId>
+      <artifactId>jose4j</artifactId>
+      <version>0.9.6</version>
+    </dependency>
     <dependency>
       <groupId>io.quarkiverse.openapi.generator</groupId>
       <artifactId>quarkus-openapi-generator</artifactId>
