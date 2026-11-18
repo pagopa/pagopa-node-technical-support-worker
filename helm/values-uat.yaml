@@ -70,6 +70,7 @@ microservice-chart:
           type: Utilization
           value: "75"
   envConfig:
+    JAVA_OPTS: "-XX:-UseBASE64Intrinsics"
     APP_ENVIRONMENT: "uat"
     TZ: "Europe/Rome"
     OTEL_ENDPOINT: "http://otel-collector.elastic-system.svc.cluster.local:4317"
