@@ -1,154 +1,176 @@
 {
-  "openapi" : "3.0.1",
-  "info" : {
-    "title" : "PaymentStatus",
-    "version" : "0.8.1"
+  "openapi": "3.0.1",
+  "info": {
+    "title": "PaymentStatus",
+    "version": "1.3.1-1-nodo-observability"
   },
-  "paths" : {
-    "/paymentstatus" : {
-      "get" : {
-        "tags" : [ "PaymentStatus" ],
-        "summary" : "Get payment status by token",
-        "operationId" : "paymentStatus",
-        "parameters" : [ {
-          "name" : "paymenttoken",
-          "in" : "query",
-          "required" : true,
-          "schema" : {
-            "type" : "string"
-          }
-        }, {
-          "name" : "caller",
-          "in" : "query",
-          "required" : true,
-          "schema" : {
-            "type" : "string",
-            "maxLength" : 35
-          }
-        }, {
-          "name" : "daysToGoBack",
-          "in" : "query",
-          "required" : false,
-          "schema" : {
-            "type" : "integer",
-            "maximum" : 89
-          }
-        } ],
-        "responses" : {
-          "403" : {
-            "description" : "Forbidden"
+  "paths": {
+    "/paymentstatus": {
+      "get": {
+        "tags": [
+          "PaymentStatus"
+        ],
+        "summary": "Get payment status by token",
+        "operationId": "paymentStatus",
+        "parameters": [
+          {
+            "name": "paymenttoken",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
           },
-          "200" : {
-            "description" : "OK",
-            "content" : {
-              "application/json" : {
-                "schema" : {
-                  "$ref" : "#/components/schemas/PaymentDataResponse"
+          {
+            "name": "caller",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "maxLength": 35
+            }
+          },
+          {
+            "name": "daysToGoBack",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 89
+            }
+          }
+        ],
+        "responses": {
+          "403": {
+            "description": "Forbidden"
+          },
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PaymentDataResponse"
                 }
               }
             }
           },
-          "404" : {
-            "description" : "Not Found",
-            "content" : {
-              "application/json" : {
-                "schema" : {
-                  "$ref" : "#/components/schemas/ProblemJson"
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemJson"
                 }
               }
             }
           },
-          "400" : {
-            "description" : "Bad Request",
-            "content" : {
-              "application/json" : {
-                "schema" : {
-                  "$ref" : "#/components/schemas/ProblemJson"
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemJson"
                 }
               }
             }
           },
-          "401" : {
-            "description" : "Unauthorized"
+          "401": {
+            "description": "Unauthorized"
           },
-          "500" : {
-            "description" : "Service unavailable",
-            "content" : {
-              "application/json" : {
-                "schema" : {
-                  "$ref" : "#/components/schemas/ProblemJson"
+          "500": {
+            "description": "Service unavailable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemJson"
                 }
               }
             }
           }
         },
-        "security" : [ {
-          "ApiKey" : [ ]
-        } ]
+        "security": [
+          {
+            "ApiKey": []
+          }
+        ]
       }
     }
   },
-  "components" : {
-    "schemas" : {
-      "ProblemJson" : {
-        "type" : "object",
-        "properties" : {
-          "title" : {
-            "type" : "string",
-            "description" : "A short, summary of the problem type. Written in english and readable for engineers (usually not suited for non technical stakeholders and not localized); example: Service Unavailable"
+  "components": {
+    "schemas": {
+      "ProblemJson": {
+        "type": "object",
+        "properties": {
+          "title": {
+            "type": "string",
+            "description": "A short, summary of the problem type. Written in english and readable for engineers (usually not suited for non technical stakeholders and not localized); example: Service Unavailable"
           },
-          "status" : {
-            "maximum" : 600,
-            "minimum" : 100,
-            "type" : "integer",
-            "description" : "The HTTP status code generated by the origin server for this occurrence of the problem.",
-            "format" : "int32",
-            "example" : 200
+          "status": {
+            "maximum": 600,
+            "minimum": 100,
+            "type": "integer",
+            "description": "The HTTP status code generated by the origin server for this occurrence of the problem.",
+            "format": "int32",
+            "example": 200
           },
-          "detail" : {
-            "type" : "string",
-            "description" : "A human readable explanation specific to this occurrence of the problem.",
-            "example" : "There was an error processing the request"
+          "detail": {
+            "type": "string",
+            "description": "A human readable explanation specific to this occurrence of the problem.",
+            "example": "There was an error processing the request"
           }
         }
       },
-      "PaymentStatusRequest" : {
-        "required" : [ "caller" ],
-        "type" : "object",
-        "properties" : {
-          "caller" : {
-            "type" : "string"
+      "PaymentStatusRequest": {
+        "required": [
+          "caller"
+        ],
+        "type": "object",
+        "properties": {
+          "caller": {
+            "type": "string"
           },
-          "daysToGoBack" : {
-            "type" : "integer",
-            "format" : "int32"
+          "daysToGoBack": {
+            "type": "integer",
+            "format": "int32"
           }
         }
       },
-      "PaymentStatusData" : {
-        "required" : [ "id", "pa_fiscal_code", "notice_id", "creditor_reference_id", "payment_token", "status", "inserted_timestamp", "updated_timestamp", "fk_position_payment", "inserted_by", "updated_by" ],
-        "type" : "object",
-        "properties" : {
-          "id" : {
-            "type" : "integer",
-            "format" : "int64",
-            "description" : "Identificativo univoco del pagamento nel sistema"
+      "PaymentStatusData": {
+        "required": [
+          "id",
+          "pa_fiscal_code",
+          "notice_id",
+          "creditor_reference_id",
+          "payment_token",
+          "status",
+          "inserted_timestamp",
+          "updated_timestamp",
+          "fk_position_payment",
+          "inserted_by",
+          "updated_by"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int64",
+            "description": "Identificativo univoco del pagamento nel sistema"
           },
-          "pa_fiscal_code" : {
-            "type" : "string",
-            "description" : "Codice fiscale dell'ente creditore (PA) che ha ricevuto il pagamento"
+          "pa_fiscal_code": {
+            "type": "string",
+            "description": "Codice fiscale dell'ente creditore (PA) che ha ricevuto il pagamento"
           },
-          "notice_id" : {
-            "type" : "string",
-            "description" : "Numero dell'avviso di pagamento (IUV) formato esteso 18 caratteri"
+          "notice_id": {
+            "type": "string",
+            "description": "Numero dell'avviso di pagamento (IUV) formato esteso 18 caratteri"
           },
-          "creditor_reference_id" : {
-            "type" : "string",
-            "description" : "Identificativo del creditore dal sistema del PSP"
+          "creditor_reference_id": {
+            "type": "string",
+            "description": "Identificativo del creditore dal sistema del PSP"
           },
-          "payment_token" : {
-            "type" : "string",
-            "description" : "Token univoco a 32 caratteri che identifica il pagamento nel sistema nodo4"
+          "payment_token": {
+            "type": "string",
+            "description": "Token univoco a 32 caratteri che identifica il pagamento nel sistema nodo4"
           },
           "status": {
             "type": "string",
@@ -173,51 +195,52 @@
               "PAYMENT_UNKNOWN",
               "PAYMENT_RESERVED"
             ]
-          }
-        ,
-          "inserted_timestamp" : {
-            "type" : "string",
-            "format" : "date-time",
-            "description" : "Data e ora di creazione del pagamento nel formato ISO 8601 con fuso orario"
           },
-          "updated_timestamp" : {
-            "type" : "string",
-            "format" : "date-time",
-            "description" : "Data e ora dell'ultimo aggiornamento dello stato nel formato ISO 8601 con fuso orario"
+          "inserted_timestamp": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Data e ora di creazione del pagamento nel formato ISO 8601 con fuso orario"
           },
-          "fk_position_payment" : {
-            "type" : "integer",
-            "format" : "int64",
-            "description" : "Identificativo esterno della posizione di pagamento nel sistema dell'ente"
+          "updated_timestamp": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Data e ora dell'ultimo aggiornamento dello stato nel formato ISO 8601 con fuso orario"
           },
-          "inserted_by" : {
-            "type" : "string",
-            "description" : "Primitiva o attore che ha creato il pagamento (es. activatePaymentNoticeV2, closePayment-V2)"
+          "fk_position_payment": {
+            "type": "integer",
+            "format": "int64",
+            "description": "Identificativo esterno della posizione di pagamento nel sistema dell'ente"
           },
-          "updated_by" : {
-            "type" : "string",
-            "description" : "Primitiva o attore che ha aggiornato per ultimo lo stato del pagamento (es. nodoInviaRT, closePayment)"
+          "inserted_by": {
+            "type": "string",
+            "description": "Primitiva o attore che ha creato il pagamento (es. activatePaymentNoticeV2, closePayment-V2)"
+          },
+          "updated_by": {
+            "type": "string",
+            "description": "Primitiva o attore che ha aggiornato per ultimo lo stato del pagamento (es. nodoInviaRT, closePayment)"
           }
         }
       },
-      "PaymentDataResponse" : {
-        "required" : [ "payment_status" ],
-        "type" : "object",
-        "description" : "Response contenente lo stato di un pagamento",
-        "properties" : {
-          "payment_status" : {
-            "$ref" : "#/components/schemas/PaymentStatusData",
-            "description" : "Oggetto contenente i dettagli dello stato del pagamento"
+      "PaymentDataResponse": {
+        "required": [
+          "payment_status"
+        ],
+        "type": "object",
+        "description": "Response contenente lo stato di un pagamento",
+        "properties": {
+          "payment_status": {
+            "$ref": "#/components/schemas/PaymentStatusData",
+            "description": "Oggetto contenente i dettagli dello stato del pagamento"
           }
         }
       }
     },
-    "securitySchemes" : {
-      "ApiKey" : {
-        "type" : "apiKey",
-        "description" : "The API key to access this function app.",
-        "name" : "Ocp-Apim-Subscription-Key",
-        "in" : "header"
+    "securitySchemes": {
+      "ApiKey": {
+        "type": "apiKey",
+        "description": "The API key to access this function app.",
+        "name": "Ocp-Apim-Subscription-Key",
+        "in": "header"
       }
     }
   }

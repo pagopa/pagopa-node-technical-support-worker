@@ -3,7 +3,7 @@ openapi: 3.0.3
 info:
   title: "Node technical support - API (local) ${service}"
   termsOfService: https://www.pagopa.gov.it/
-  version: 1.3.0-4-nodo-observability
+  version: 1.3.1-1-nodo-observability
 servers:
   - url: "${host}/technical-support/nodo/api/v1"
 tags:
@@ -2226,9 +2226,7 @@ components:
           description: "Nome originale della primitiva (tipoEvento RE), senza normalizzazione."
           type: string
         direction:
-          description: "Direzione rispetto al Nodo dai campi RE fruitore/erogatore\
-            \ dell'evento REQ: INBOUND se il Nodo è l'erogatore, OUTBOUND se è il\
-            \ fruitore, UNKNOWN altrimenti. Mai dedotta dal nome della primitiva."
+          description: "Direzione rispetto al Nodo dai campi RE fruitore/erogatore dell'evento REQ: INBOUND se il Nodo è l'erogatore, OUTBOUND se è il fruitore, UNKNOWN altrimenti. Mai dedotta dal nome della primitiva."
           enum:
             - INBOUND
             - OUTBOUND
@@ -2280,8 +2278,7 @@ components:
       type: object
       properties:
         title:
-          description: "A short, summary of the problem type. Written in english and readable for engineers (usually not suited for non technical stakeholders\
-            \ and not localized); example: Service Unavailable"
+          description: "A short, summary of the problem type. Written in english and readable for engineers (usually not suited for non technical stakeholders and not localized); example: Service Unavailable"
           type: string
         status:
           format: int32
