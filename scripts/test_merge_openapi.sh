@@ -414,22 +414,44 @@ mkdir -p "$RACE_SHIM"
 for utility in bash dirname mv realpath readlink cat rm mkdir cp cmp find grep basename jq awk sed tr cut sort ln stat; do
   ln -s "$(command -v "$utility")" "$RACE_SHIM/$utility"
 done
-cat >"$RACE_SHIM/touch" <<'SH'
-#!/usr/bin/env bash
-rm -f "$1"
-ln -s "$RACE_SENTINEL" "$1"
+RACE_HOOK="$WORKSPACE/race-hook.sh"
+RACE_HOOK_LOG="$WORKSPACE/race-hook.log"
+cat >"$RACE_HOOK" <<'SH'
+race_inject_competing_symlink() {
+  if [[ "$BASH_COMMAND" == *candidate* ]]; then
+    trap - DEBUG
+    if [[ "$BASH_COMMAND" == *'exec 3>'* && -z "${RACE_HOOK_RAN:-}" ]]; then
+      if ln -s "$RACE_SENTINEL" "$candidate"; then
+        printf '%s\n' "$candidate" >"$RACE_HOOK_LOG"
+        RACE_HOOK_RAN=1
+        export RACE_HOOK_RAN
+      else
+        printf 'could not inject symlink at %s\n' "$candidate" >"$RACE_HOOK_LOG"
+      fi
+    fi
+    trap race_inject_competing_symlink DEBUG
+  fi
+}
+trap race_inject_competing_symlink DEBUG
 SH
-chmod +x "$RACE_SHIM/touch"
 printf 'symlink race sentinel bytes\n' >"$RACE_SENTINEL"
 cp "$RACE_SENTINEL" "$RACE_SENTINEL.expected"
-if ! env PATH="$RACE_SHIM" RACE_SENTINEL="$RACE_SENTINEL" bash "$MERGE_SCRIPT" \
+if ! env PATH="$RACE_SHIM" BASH_ENV="$RACE_HOOK" RACE_SENTINEL="$RACE_SENTINEL" \
+  RACE_HOOK_LOG="$RACE_HOOK_LOG" bash "$MERGE_SCRIPT" \
   "$SOURCE_ONE" "$SOURCE_TWO" "$RACE_OUTPUT" >"$WORKSPACE/stdout.log" 2>"$WORKSPACE/stderr.log"; then
   cat "$WORKSPACE/stderr.log" >&2
   fail "symlink race fixture: merge command failed"
 fi
+[[ -s "$RACE_HOOK_LOG" ]] || fail "symlink race fixture: competing-symlink hook did not run"
+RACE_CANDIDATE="$(cat "$RACE_HOOK_LOG")"
 cmp -s "$RACE_SENTINEL.expected" "$RACE_SENTINEL" ||
   fail "temporary-file creation followed a symlink and changed the sentinel"
+[[ -L "$RACE_CANDIDATE" ]] || fail "symlink race fixture: injected candidate was not retained for retry"
+[[ "$(readlink "$RACE_CANDIDATE")" == "$RACE_SENTINEL" ]] ||
+  fail "symlink race fixture: injected candidate did not target the sentinel"
+rm "$RACE_CANDIDATE"
 assert_success_output "$RACE_OUTPUT"
+assert_no_output_temps "$RACE_OUTPUT"
 pass "temporary-file creation does not follow a competing symlink"
 
 READONLY_DIR="$WORKSPACE/read-only-output"
@@ -492,5 +514,37 @@ ln -s "$SOURCE_ONE" "$WORKSPACE/source-one-symlink.json"
 ln "$SOURCE_TWO" "$WORKSPACE/source-two-hardlink.json"
 alias_failure "symlink source one output" "$WORKSPACE/source-one-symlink.json" "$SOURCE_ONE" "$WORKSPACE/source-one.expected"
 alias_failure "hard-link source two output" "$WORKSPACE/source-two-hardlink.json" "$SOURCE_TWO" "$WORKSPACE/source-two.expected"
+
+assert_check_position_openapi3() {
+  local document="$1"
+  local label="$2"
+  "$JQ" -e '
+    (.paths["/checkPosition"].post) as $operation |
+    .openapi == "3.0.1" and
+    $operation.requestBody.required == true and
+    $operation.requestBody.content["application/json"].schema["$ref"] == "#/components/schemas/CheckPosition" and
+    (($operation | has("produces")) | not) and
+    (all(($operation.parameters // [])[]; .in != "body")) and
+    (all(["200", "400", "404", "408", "422"][];
+      . as $status |
+      ($operation.responses[$status] | has("schema") | not) and
+      ($operation.responses[$status].content["application/json"].schema["$ref"] ==
+        (if $status == "200" then "#/components/schemas/CheckPositionResponse"
+         else "#/components/schemas/Error" end))
+    )) and
+    $operation.responses["200"].description == "successful operation" and
+    $operation.responses["400"].description == "Bad Request" and
+    $operation.responses["404"].description == "Not found" and
+    $operation.responses["408"].description == "Request Timeout" and
+    $operation.responses["422"].description == "Unprocessable entry"
+  ' "$document" >/dev/null || fail "$label does not use the expected OpenAPI 3 request/response shapes"
+  pass "$label uses OpenAPI 3 request/response shapes"
+}
+
+for document in \
+  "$SCRIPT_DIR/../openapi/checkPosition_openapi.json" \
+  "$SCRIPT_DIR/../openapi/nodoTechnicalSupport_direct_openapi.json"; do
+  assert_check_position_openapi3 "$document" "$(basename "$document")"
+done
 
 printf 'All merge OpenAPI regression tests passed.\n'

@@ -22,7 +22,10 @@ key must produce a non-zero exit.
 Use `checkPosition` as the base for other top-level and `info` fields, but
 replace its title with `Nodo Technical Support direct API`. Preserve the common
 `openapi` and `info.version` values; fail explicitly if either source disagrees
-on these version fields. The source documents remain unchanged. Missing or
+on these version fields. Both sources use OpenAPI 3.0.1; represent the
+`checkPosition` body with `requestBody` and JSON content schemas, and its
+response schemas with JSON `content`, without changing the API meaning. The
+source documents remain unchanged by the merge. Missing or
 invalid input files, an unavailable `jq`, and write failures must be reported
 to stderr with a non-zero exit. Write to a temporary file in the output
 directory and replace the output only after a successful merge, so failures
@@ -44,6 +47,8 @@ The selected approach is Bash and `jq`.
 - The output parses as JSON.
 - It has the unified title and retains the common `openapi` and
   `info.version` values.
+- Both source documents and the merged `checkPosition` operation use OpenAPI
+  3.0 request/response content shapes.
 - It contains both source paths and all source schemas/security schemes.
 - The identical `ApiKey` security scheme appears only once.
 - Fixture-based tests confirm conflicting duplicate paths/components and
