@@ -124,30 +124,36 @@ if ! jq -n --slurpfile one "$source_one_real" --slurpfile two "$source_two_real"
          .[$key] = $right[$key]
        end);
 
-  $one[0] as $source_one |
-  $two[0] as $source_two |
-  validate($source_one; "source one") |
-  validate($source_two; "source two") |
-  if $source_one.openapi != $source_two.openapi then
-    error("openapi versions do not match")
-  elif $source_one.info.version != $source_two.info.version then
-    error("info.version values do not match")
+  if ($one | length) != 1 then
+    error("source one must contain exactly one JSON document")
+  elif ($two | length) != 1 then
+    error("source two must contain exactly one JSON document")
   else
-    ($source_one.components // {}) as $components_one |
-    ($source_two.components // {}) as $components_two |
-    merge_named("path"; $source_one.paths; $source_two.paths) as $paths |
-    (reduce ((($components_one | keys) + ($components_two | keys)) | unique)[] as $category
-      ({};
-       .[$category] = merge_named(
-         "component category \"\($category)\"";
-         ($components_one[$category] // {});
-         ($components_two[$category] // {})
-       ))) as $components |
-    $source_one + {
-      info: ($source_one.info + {title: "Nodo Technical Support direct API"}),
-      paths: $paths,
-      components: $components
-    }
+    $one[0] as $source_one |
+    $two[0] as $source_two |
+    validate($source_one; "source one") |
+    validate($source_two; "source two") |
+    if $source_one.openapi != $source_two.openapi then
+      error("openapi versions do not match")
+    elif $source_one.info.version != $source_two.info.version then
+      error("info.version values do not match")
+    else
+      ($source_one.components // {}) as $components_one |
+      ($source_two.components // {}) as $components_two |
+      merge_named("path"; $source_one.paths; $source_two.paths) as $paths |
+      (reduce ((($components_one | keys) + ($components_two | keys)) | unique)[] as $category
+        ({};
+         .[$category] = merge_named(
+           "component category \"\($category)\"";
+           ($components_one[$category] // {});
+           ($components_two[$category] // {})
+         ))) as $components |
+      $source_one + {
+        info: ($source_one.info + {title: "Nodo Technical Support direct API"}),
+        paths: $paths,
+        components: $components
+      }
+    end
   end
 ' >"$temp_output"; then
   fail "could not validate or merge the OpenAPI inputs"

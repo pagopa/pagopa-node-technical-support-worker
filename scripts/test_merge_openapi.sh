@@ -374,6 +374,11 @@ for position in one two; do
   printf '{ malformed json\n' >"$CASE_DIR/$position.json"
   assert_failure_with_sources "malformed source $position" 'json|parse|valid|invalid' \
     "$CASE_DIR/one.json" "$CASE_DIR/two.json" "$WORKSPACE/output/malformed-source-$position.json"
+
+  make_case_sources "$CASE_DIR"
+  printf '\n{}\n' >>"$CASE_DIR/$position.json"
+  assert_failure_with_sources "multiple JSON documents in source $position" 'multiple|exactly one|document' \
+    "$CASE_DIR/one.json" "$CASE_DIR/two.json" "$WORKSPACE/output/multiple-documents-$position.json"
 done
 
 printf 'known directory sentinel\000bytes\n' >"$WORKSPACE/output-directory-sentinel"
