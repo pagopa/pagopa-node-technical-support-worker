@@ -8,9 +8,9 @@ import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 
 /**
- * Resolves the calling identity from the Entra ID token validated by the auth filter. Without role or
- * group restrictions every signed-in user is an operator; when authentication is disabled
- * (tests, local tooling) the implicit identity is returned.
+ * Resolves the calling identity from the Entra ID token read by the auth filter (the token is validated
+ * upstream by Azure APIM). Without role or group restrictions every signed-in user is an operator; when
+ * authentication is disabled (tests, local tooling) the implicit identity is returned.
  */
 @ApplicationScoped
 public class CallerResolver {

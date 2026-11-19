@@ -14,6 +14,19 @@
     </cors>
 
     <base />
+    <!-- Entra ID (MSAL ID) token of the observability frontend: the backend only decodes it to read the caller.
+         ID tokens carry no azp/appid claim, so validate-jwt is used instead of validate-azure-ad-token. -->
+    <validate-jwt header-name="Authorization" failed-validation-httpcode="401"
+                  failed-validation-error-message="Unauthorized"
+                  require-expiration-time="true" require-signed-tokens="true" clock-skew="60">
+      <openid-config url="https://login.microsoftonline.com/${entraTenantId}/v2.0/.well-known/openid-configuration" />
+      <audiences>
+        <audience>${entraClientId}</audience>
+      </audiences>
+      <issuers>
+        <issuer>https://login.microsoftonline.com/${entraTenantId}/v2.0</issuer>
+      </issuers>
+    </validate-jwt>
     <set-backend-service base-url="https://${hostname}/pagopa-nodo-technical-support-service" />
   </inbound>
   <outbound>

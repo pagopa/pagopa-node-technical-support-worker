@@ -1,6 +1,7 @@
 package it.gov.pagopa.nodetsworker.observability.resources;
 
 import org.eclipse.microprofile.openapi.annotations.security.SecurityRequirement;
+import org.eclipse.microprofile.openapi.annotations.tags.Tag;
 import it.gov.pagopa.nodetsworker.observability.dto.AttemptDto;
 import it.gov.pagopa.nodetsworker.observability.dto.CatalogDto;
 import it.gov.pagopa.nodetsworker.observability.dto.CreditorDetailDto;
@@ -66,6 +67,7 @@ public class ObservabilityResource {
   }
 
   @GET
+  @Tag(name = "Observability")
   @Path("/catalog")
   public CatalogDto catalog(@Context UriInfo uriInfo) {
     requireNoQuery(uriInfo);
@@ -73,6 +75,7 @@ public class ObservabilityResource {
   }
 
   @GET
+  @Tag(name = "Observability")
   @Path("/freshness")
   public FreshnessDto freshness(@Context UriInfo uriInfo) {
     requireNoQuery(uriInfo);
@@ -80,6 +83,7 @@ public class ObservabilityResource {
   }
 
   @GET
+  @Tag(name = "Observability")
   @Path("/serviceIdentifiers")
   public List<String> serviceIdentifiers(@Context UriInfo uriInfo) {
     requireNoQuery(uriInfo);
@@ -87,6 +91,7 @@ public class ObservabilityResource {
   }
 
   @GET
+  @Tag(name = "Observability")
   @Path("/payments")
   public PageDto<PaymentSummaryDto> payments(@Context UriInfo uriInfo) {
     Map<String, String> q = QuerySupport.validate(query(uriInfo), LIST_PARAMS);
@@ -94,6 +99,7 @@ public class ObservabilityResource {
   }
 
   @GET
+  @Tag(name = "Observability")
   @Path("/attempts")
   public PageDto<AttemptDto> attempts(@Context UriInfo uriInfo) {
     Map<String, String> q = QuerySupport.validate(query(uriInfo), LIST_PARAMS);
@@ -101,6 +107,7 @@ public class ObservabilityResource {
   }
 
   @GET
+  @Tag(name = "Observability")
   @Path("/payments/{paFiscalCode}/{noticeNumber}")
   public PaymentDetailDto paymentDetail(@PathParam("paFiscalCode") String paFiscalCode,
       @PathParam("noticeNumber") String noticeNumber, @Context UriInfo uriInfo) {
@@ -112,6 +119,7 @@ public class ObservabilityResource {
   }
 
   @GET
+  @Tag(name = "Observability")
   @Path("/overview")
   public OverviewDto overview(@Context UriInfo uriInfo) {
     Map<String, String> q = QuerySupport.validate(query(uriInfo), OVERVIEW_PARAMS);
@@ -121,6 +129,7 @@ public class ObservabilityResource {
 
   /** Calls counted in {@code Overview.primitives[].warnings}: PSP, channel, creditor, station and time. */
   @GET
+  @Tag(name = "Observability")
   @Path("/overview/primitive-warnings")
   public PageDto<PrimitiveWarningDto> primitiveWarnings(@Context UriInfo uriInfo) {
     Map<String, String> q = QuerySupport.validate(query(uriInfo), PRIMITIVE_WARNING_PARAMS);
@@ -131,6 +140,7 @@ public class ObservabilityResource {
   }
 
   @GET
+  @Tag(name = "Observability")
   @Path("/creditors")
   public PageDto<CreditorRowDto> creditors(@Context UriInfo uriInfo) {
     Map<String, String> q = QuerySupport.validate(query(uriInfo), CREDITOR_PARAMS);
@@ -143,6 +153,7 @@ public class ObservabilityResource {
   }
 
   @GET
+  @Tag(name = "Observability")
   @Path("/creditors/{paFiscalCode}")
   public CreditorDetailDto creditorDetail(@PathParam("paFiscalCode") String paFiscalCode,
       @Context UriInfo uriInfo) {
@@ -156,6 +167,7 @@ public class ObservabilityResource {
   }
 
   @GET
+  @Tag(name = "Observability")
   @Path("/creditors/{paFiscalCode}/stations")
   public PageDto<?> stations(@PathParam("paFiscalCode") String paFiscalCode, @Context UriInfo uriInfo) {
     Map<String, String> q = QuerySupport.validate(query(uriInfo), CREDITOR_PARAMS);

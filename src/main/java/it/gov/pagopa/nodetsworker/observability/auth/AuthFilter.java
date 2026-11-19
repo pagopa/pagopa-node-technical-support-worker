@@ -12,8 +12,9 @@ import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.ext.Provider;
 
 /**
- * Requires {@code Authorization: Bearer <Entra ID token>} on every {@code /api/*} operation (SSE included),
- * except CORS preflight. Health, info and OpenAPI live outside {@code /api}.
+ * Reads the caller identity from {@code Authorization: Bearer <Entra ID token>} on every {@code /api/*}
+ * operation (SSE included), except CORS preflight. Health, info and OpenAPI live outside {@code /api}.
+ * The token is validated by Azure API Management; here it is only decoded.
  */
 @Provider
 @Priority(Priorities.AUTHENTICATION)
@@ -25,7 +26,7 @@ public class AuthFilter implements ContainerRequestFilter {
   AuthConfig config;
 
   @Inject
-  EntraIdTokenVerifier tokenVerifier;
+  EntraIdTokenReader tokenReader;
 
   @Inject
   AuthenticatedUser authenticatedUser;
@@ -41,9 +42,9 @@ public class AuthFilter implements ContainerRequestFilter {
       request.abortWith(unauthorized("Autenticazione richiesta."));
       return;
     }
-    EntraUser user = tokenVerifier.verify(header.substring(BEARER.length()).trim());
+    EntraUser user = tokenReader.read(header.substring(BEARER.length()).trim());
     if (user == null) {
-      request.abortWith(unauthorized("Token non valido o scaduto."));
+      request.abortWith(unauthorized("Token non valido."));
       return;
     }
     authenticatedUser.set(user);

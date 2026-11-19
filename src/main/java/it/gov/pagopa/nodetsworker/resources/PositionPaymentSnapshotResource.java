@@ -5,9 +5,13 @@ import it.gov.pagopa.nodetsworker.service.PositionPaymentSnapshotService;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
+import org.eclipse.microprofile.openapi.annotations.security.SecurityRequirement;
+import org.eclipse.microprofile.openapi.annotations.tags.Tag;
 
 @Path("/paymentToken")
 @Produces(MediaType.APPLICATION_JSON)
+@SecurityRequirement(name = "SecurityScheme")
+@Tag(name = "Observability")
 public class PositionPaymentSnapshotResource {
 
     @Inject

@@ -5,17 +5,19 @@ info:
   termsOfService: https://www.pagopa.gov.it/
   version: 1.3.1-1-nodo-observability
 servers:
-  - url: "${host}/technical-support/nodo/api/v1"
+- url: "${host}/technical-support/nodo/api/v1"
 tags:
-  - name: Info
-    description: Info operations
+- name: Info
+  description: Info operations
+- name: Observability
 paths:
   /api/apiconfig/maintenances:
     get:
       tags:
-        - Api Config Resource
+      - Observability
       summary: Scheduled station maintenances of the next 7 days
-      description: Read-only. Served from a cache that is reloaded from apiconfig every midnight.
+      description: Read-only. Served from a cache that is reloaded from apiconfig
+        every midnight.
       operationId: getMaintenances
       responses:
         "200":
@@ -37,11 +39,11 @@ paths:
               schema:
                 $ref: '#/components/schemas/ErrorDto'
       security:
-        - SecurityScheme: []
+      - SecurityScheme: []
   /api/attempts:
     get:
       tags:
-        - Observability Resource
+      - Observability
       responses:
         "200":
           description: OK
@@ -50,20 +52,24 @@ paths:
               schema:
                 $ref: '#/components/schemas/PageDtoAttemptDto'
       security:
-        - SecurityScheme: []
+      - SecurityScheme: []
   /api/attempts/{attemptId}/check-db:
     get:
       tags:
-        - Check Db Resource
+      - Observability
       summary: Compare attempt and payment states with Nodo Online
-      description: "Read-only. Resolves token, PA/NAV and datasource from the retained attempt, using the existing serviceIdentifier routing. No query parameters or projection writes. Missing Online snapshots are independent null values; duplicate or unsupported snapshots fail explicitly. projectionRevision identifies the captured observation, not a distributed transaction across both databases."
+      description: "Read-only. Resolves token, PA/NAV and datasource from the retained\
+        \ attempt, using the existing serviceIdentifier routing. No query parameters\
+        \ or projection writes. Missing Online snapshots are independent null values;\
+        \ duplicate or unsupported snapshots fail explicitly. projectionRevision identifies\
+        \ the captured observation, not a distributed transaction across both databases."
       operationId: checkAttemptDatabase
       parameters:
-        - name: attemptId
-          in: path
-          required: true
-          schema:
-            type: string
+      - name: attemptId
+        in: path
+        required: true
+        schema:
+          type: string
       responses:
         "200":
           description: "Real Nodo Online comparison, including absent snapshots"
@@ -90,7 +96,8 @@ paths:
               schema:
                 $ref: '#/components/schemas/ErrorDto'
         "500":
-          description: "Incomplete projection, duplicate or invalid snapshot, or server error"
+          description: "Incomplete projection, duplicate or invalid snapshot, or server\
+            \ error"
           content:
             application/json:
               schema:
@@ -102,20 +109,29 @@ paths:
               schema:
                 $ref: '#/components/schemas/ErrorDto'
       security:
-        - SecurityScheme: []
+      - SecurityScheme: []
   /api/attempts/{attemptId}/re-events:
     post:
       tags:
-        - Re Events Resource
+      - Observability
       summary: Consult a bounded RE diagnostic window
-      description: "Read-only; disabled until deployment verification and personal-data approval. Explicit UTC [from,to), maximum 24h. Resolves PA/NAV/token and expiry server-side. All RE events matching the AND keys are included, without FSM/primitive filters. With scope POSITION the paymentToken key is dropped: events of the whole PA + NAV pair, including token-less calls such as verifyPaymentNotice, are returned. Coverage never means full history; retained windows may be clipped. Signed opaque seek cursors freeze the ingestion watermark and expire after at most 300s. Maximum 100 events/page, 1000 events/consultation, 5MiB JSON/response. Decoded payload is untrusted plain text; no interpretation or decompression. All responses, including errors, are no-store."
+      description: "Read-only; disabled until deployment verification and personal-data\
+        \ approval. Explicit UTC [from,to), maximum 24h. Resolves PA/NAV/token and\
+        \ expiry server-side. All RE events matching the AND keys are included, without\
+        \ FSM/primitive filters. With scope POSITION the paymentToken key is dropped:\
+        \ events of the whole PA + NAV pair, including token-less calls such as verifyPaymentNotice,\
+        \ are returned. Coverage never means full history; retained windows may be\
+        \ clipped. Signed opaque seek cursors freeze the ingestion watermark and expire\
+        \ after at most 300s. Maximum 100 events/page, 1000 events/consultation, 5MiB\
+        \ JSON/response. Decoded payload is untrusted plain text; no interpretation\
+        \ or decompression. All responses, including errors, are no-store."
       operationId: readAttemptReEvents
       parameters:
-        - name: attemptId
-          in: path
-          required: true
-          schema:
-            type: string
+      - name: attemptId
+        in: path
+        required: true
+        schema:
+          type: string
       requestBody:
         content:
           application/json:
@@ -172,17 +188,17 @@ paths:
               schema:
                 $ref: '#/components/schemas/ErrorDto'
       security:
-        - SecurityScheme: []
+      - SecurityScheme: []
   /api/attempts/{attemptId}/reveal:
     post:
       tags:
-        - Token Resource
+      - Observability
       parameters:
-        - name: attemptId
-          in: path
-          required: true
-          schema:
-            type: string
+      - name: attemptId
+        in: path
+        required: true
+        schema:
+          type: string
       requestBody:
         content:
           application/json:
@@ -197,11 +213,11 @@ paths:
               schema:
                 $ref: '#/components/schemas/RevealResponseDto'
       security:
-        - SecurityScheme: []
+      - SecurityScheme: []
   /api/catalog:
     get:
       tags:
-        - Observability Resource
+      - Observability
       responses:
         "200":
           description: OK
@@ -210,11 +226,11 @@ paths:
               schema:
                 $ref: '#/components/schemas/CatalogDto'
       security:
-        - SecurityScheme: []
+      - SecurityScheme: []
   /api/creditors:
     get:
       tags:
-        - Observability Resource
+      - Observability
       responses:
         "200":
           description: OK
@@ -223,17 +239,17 @@ paths:
               schema:
                 $ref: '#/components/schemas/PageDtoCreditorRowDto'
       security:
-        - SecurityScheme: []
+      - SecurityScheme: []
   /api/creditors/{paFiscalCode}:
     get:
       tags:
-        - Observability Resource
+      - Observability
       parameters:
-        - name: paFiscalCode
-          in: path
-          required: true
-          schema:
-            type: string
+      - name: paFiscalCode
+        in: path
+        required: true
+        schema:
+          type: string
       responses:
         "200":
           description: OK
@@ -242,17 +258,17 @@ paths:
               schema:
                 $ref: '#/components/schemas/CreditorDetailDto'
       security:
-        - SecurityScheme: []
+      - SecurityScheme: []
   /api/creditors/{paFiscalCode}/stations:
     get:
       tags:
-        - Observability Resource
+      - Observability
       parameters:
-        - name: paFiscalCode
-          in: path
-          required: true
-          schema:
-            type: string
+      - name: paFiscalCode
+        in: path
+        required: true
+        schema:
+          type: string
       responses:
         "200":
           description: OK
@@ -261,32 +277,33 @@ paths:
               schema:
                 $ref: '#/components/schemas/PageDtoObject'
       security:
-        - SecurityScheme: []
+      - SecurityScheme: []
   /api/events:
     get:
       tags:
-        - Events Resource
+      - Observability
       parameters:
-        - name: Last-Event-ID
-          in: header
-          schema:
-            type: string
+      - name: Last-Event-ID
+        in: header
+        schema:
+          type: string
       responses:
         "200":
-          description: "SSE frames: event type in event:, JSON envelope in data:. Heartbeats are comments."
+          description: "SSE frames: event type in event:, JSON envelope in data:.\
+            \ Heartbeats are comments."
           content:
             text/event-stream:
               schema:
                 oneOf:
-                  - $ref: '#/components/schemas/ReadyEvent'
-                  - $ref: '#/components/schemas/PaymentDelta'
-                  - $ref: '#/components/schemas/AggregateDelta'
+                - $ref: '#/components/schemas/ReadyEvent'
+                - $ref: '#/components/schemas/PaymentDelta'
+                - $ref: '#/components/schemas/AggregateDelta'
       security:
-        - SecurityScheme: []
+      - SecurityScheme: []
   /api/freshness:
     get:
       tags:
-        - Observability Resource
+      - Observability
       responses:
         "200":
           description: OK
@@ -295,11 +312,11 @@ paths:
               schema:
                 $ref: '#/components/schemas/FreshnessDto'
       security:
-        - SecurityScheme: []
+      - SecurityScheme: []
   /api/me:
     get:
       tags:
-        - Observability Resource
+      - Observability Resource
       responses:
         "200":
           description: OK
@@ -308,13 +325,16 @@ paths:
               schema:
                 $ref: '#/components/schemas/MeDto'
       security:
-        - SecurityScheme: []
+      - SecurityScheme: []
   /api/nodo-monitoring/cache/version:
     get:
       tags:
-        - Nodo Monitoring Resource
+      - Observability
       summary: Cache version of NDP001 and NDP004
-      description: "Read-only. Calls Nodo monitoring once per node (X-Ndp-Target) in parallel and aggregates the results. A node that is unconfigured or unreachable is reported with its outcome and null cache fields, without failing the whole response."
+      description: "Read-only. Calls Nodo monitoring once per node (X-Ndp-Target)\
+        \ in parallel and aggregates the results. A node that is unconfigured or unreachable\
+        \ is reported with its outcome and null cache fields, without failing the\
+        \ whole response."
       operationId: getCacheVersions
       responses:
         "200":
@@ -330,11 +350,11 @@ paths:
               schema:
                 $ref: '#/components/schemas/ErrorDto'
       security:
-        - SecurityScheme: []
+      - SecurityScheme: []
   /api/overview:
     get:
       tags:
-        - Observability Resource
+      - Observability
       responses:
         "200":
           description: OK
@@ -343,11 +363,11 @@ paths:
               schema:
                 $ref: '#/components/schemas/OverviewDto'
       security:
-        - SecurityScheme: []
+      - SecurityScheme: []
   /api/overview/primitive-warnings:
     get:
       tags:
-        - Observability Resource
+      - Observability
       responses:
         "200":
           description: OK
@@ -356,11 +376,11 @@ paths:
               schema:
                 $ref: '#/components/schemas/PageDtoPrimitiveWarningDto'
       security:
-        - SecurityScheme: []
+      - SecurityScheme: []
   /api/payments:
     get:
       tags:
-        - Observability Resource
+      - Observability
       responses:
         "200":
           description: OK
@@ -369,22 +389,22 @@ paths:
               schema:
                 $ref: '#/components/schemas/PageDtoPaymentSummaryDto'
       security:
-        - SecurityScheme: []
+      - SecurityScheme: []
   /api/payments/{paFiscalCode}/{noticeNumber}:
     get:
       tags:
-        - Observability Resource
+      - Observability
       parameters:
-        - name: noticeNumber
-          in: path
-          required: true
-          schema:
-            type: string
-        - name: paFiscalCode
-          in: path
-          required: true
-          schema:
-            type: string
+      - name: noticeNumber
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: paFiscalCode
+        in: path
+        required: true
+        schema:
+          type: string
       responses:
         "200":
           description: OK
@@ -393,11 +413,11 @@ paths:
               schema:
                 $ref: '#/components/schemas/PaymentDetailDto'
       security:
-        - SecurityScheme: []
+      - SecurityScheme: []
   /api/serviceIdentifiers:
     get:
       tags:
-        - Observability Resource
+      - Observability
       responses:
         "200":
           description: OK
@@ -408,11 +428,11 @@ paths:
                 items:
                   type: string
       security:
-        - SecurityScheme: []
+      - SecurityScheme: []
   /api/token-lookup:
     post:
       tags:
-        - Token Resource
+      - Observability
       requestBody:
         content:
           application/json:
@@ -426,17 +446,17 @@ paths:
               schema:
                 $ref: '#/components/schemas/TokenLookupResponseDto'
       security:
-        - SecurityScheme: []
+      - SecurityScheme: []
   /events/negative/{bizEventId}:
     get:
       tags:
-        - Events Resource
+      - Events Resource
       parameters:
-        - name: bizEventId
-          in: path
-          required: true
-          schema:
-            type: string
+      - name: bizEventId
+        in: path
+        required: true
+        schema:
+          type: string
       responses:
         "200":
           description: OK
@@ -459,7 +479,7 @@ paths:
   /info:
     get:
       tags:
-        - Info
+      - Info
       summary: Get info of Node tech support API
       responses:
         "200":
@@ -468,61 +488,10 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/InfoResponse'
-  /internal/cache/{key}:
-    get:
-      tags:
-        - Internal Resource
-      parameters:
-        - name: key
-          in: path
-          required: true
-          schema:
-            type: string
-      responses:
-        "200":
-          description: OK
-          content:
-            application/json: {}
-    delete:
-      tags:
-        - Internal Resource
-      parameters:
-        - name: key
-          in: path
-          required: true
-          schema:
-            type: string
-      responses:
-        "200":
-          description: OK
-          content:
-            application/json: {}
-  /internal/cache/{key}/{value}:
-    put:
-      tags:
-        - Internal Resource
-      parameters:
-        - name: key
-          in: path
-          required: true
-          schema:
-            type: string
-        - name: value
-          in: path
-          required: true
-          schema:
-            type: string
-      responses:
-        "200":
-          description: OK
-          content:
-            application/json:
-              schema:
-                type: object
   /internal/observability/sync/attempt:
     post:
       tags:
-        - Online Status Sync Resource
+      - Observability
       requestBody:
         description: Payment key and attempt token
         content:
@@ -543,10 +512,12 @@ paths:
           description: Database or server error
         "502":
           description: Unsupported state returned by Nodo Online
+      security:
+      - SecurityScheme: []
   /internal/observability/sync/payment:
     post:
       tags:
-        - Online Status Sync Resource
+      - Observability
       requestBody:
         description: Payment key
         content:
@@ -567,29 +538,31 @@ paths:
           description: Database or server error
         "502":
           description: Unsupported state returned by Nodo Online
+      security:
+      - SecurityScheme: []
   /organizations/{organizationFiscalCode}/iuv/{iuv}:
     get:
       tags:
-        - Worker Resource
+      - Worker Resource
       parameters:
-        - name: iuv
-          in: path
-          required: true
-          schema:
-            type: string
-        - name: organizationFiscalCode
-          in: path
-          required: true
-          schema:
-            type: string
-        - name: dateFrom
-          in: query
-          schema:
-            $ref: '#/components/schemas/LocalDate'
-        - name: dateTo
-          in: query
-          schema:
-            $ref: '#/components/schemas/LocalDate'
+      - name: iuv
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: organizationFiscalCode
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: dateFrom
+        in: query
+        schema:
+          $ref: '#/components/schemas/LocalDate'
+      - name: dateTo
+        in: query
+        schema:
+          $ref: '#/components/schemas/LocalDate'
       responses:
         "200":
           description: OK
@@ -612,31 +585,31 @@ paths:
   /organizations/{organizationFiscalCode}/iuv/{iuv}/ccp/{ccp}:
     get:
       tags:
-        - Worker Resource
+      - Worker Resource
       parameters:
-        - name: ccp
-          in: path
-          required: true
-          schema:
-            type: string
-        - name: iuv
-          in: path
-          required: true
-          schema:
-            type: string
-        - name: organizationFiscalCode
-          in: path
-          required: true
-          schema:
-            type: string
-        - name: dateFrom
-          in: query
-          schema:
-            $ref: '#/components/schemas/LocalDate'
-        - name: dateTo
-          in: query
-          schema:
-            $ref: '#/components/schemas/LocalDate'
+      - name: ccp
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: iuv
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: organizationFiscalCode
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: dateFrom
+        in: query
+        schema:
+          $ref: '#/components/schemas/LocalDate'
+      - name: dateTo
+        in: query
+        schema:
+          $ref: '#/components/schemas/LocalDate'
       responses:
         "200":
           description: OK
@@ -659,26 +632,26 @@ paths:
   /organizations/{organizationFiscalCode}/noticeNumber/{noticeNumber}:
     get:
       tags:
-        - Worker Resource
+      - Worker Resource
       parameters:
-        - name: noticeNumber
-          in: path
-          required: true
-          schema:
-            type: string
-        - name: organizationFiscalCode
-          in: path
-          required: true
-          schema:
-            type: string
-        - name: dateFrom
-          in: query
-          schema:
-            $ref: '#/components/schemas/LocalDate'
-        - name: dateTo
-          in: query
-          schema:
-            $ref: '#/components/schemas/LocalDate'
+      - name: noticeNumber
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: organizationFiscalCode
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: dateFrom
+        in: query
+        schema:
+          $ref: '#/components/schemas/LocalDate'
+      - name: dateTo
+        in: query
+        schema:
+          $ref: '#/components/schemas/LocalDate'
       responses:
         "200":
           description: OK
@@ -701,31 +674,31 @@ paths:
   /organizations/{organizationFiscalCode}/noticeNumber/{noticeNumber}/paymentToken/{paymentToken}:
     get:
       tags:
-        - Worker Resource
+      - Worker Resource
       parameters:
-        - name: noticeNumber
-          in: path
-          required: true
-          schema:
-            type: string
-        - name: organizationFiscalCode
-          in: path
-          required: true
-          schema:
-            type: string
-        - name: paymentToken
-          in: path
-          required: true
-          schema:
-            type: string
-        - name: dateFrom
-          in: query
-          schema:
-            $ref: '#/components/schemas/LocalDate'
-        - name: dateTo
-          in: query
-          schema:
-            $ref: '#/components/schemas/LocalDate'
+      - name: noticeNumber
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: organizationFiscalCode
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: paymentToken
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: dateFrom
+        in: query
+        schema:
+          $ref: '#/components/schemas/LocalDate'
+      - name: dateTo
+        in: query
+        schema:
+          $ref: '#/components/schemas/LocalDate'
       responses:
         "200":
           description: OK
@@ -748,17 +721,17 @@ paths:
   /paymentToken/{paymentToken}:
     get:
       tags:
-        - Position Payment Snapshot Resource
+      - Observability
       parameters:
-        - name: paymentToken
-          in: path
-          required: true
-          schema:
-            type: string
-        - name: serviceIdentifier
-          in: query
-          schema:
-            type: string
+      - name: paymentToken
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: serviceIdentifier
+        in: query
+        schema:
+          type: string
       responses:
         "200":
           description: OK
@@ -766,46 +739,48 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/PositionPaymentSnapshotDto'
+      security:
+      - SecurityScheme: []
   /snapshot/organizations/{organizationFiscalCode}:
     get:
       tags:
-        - Snapshot Resource
+      - Snapshot Resource
       parameters:
-        - name: organizationFiscalCode
-          in: path
-          required: true
-          schema:
-            type: string
-        - name: dateFrom
-          in: query
-          schema:
-            $ref: '#/components/schemas/LocalDate'
-        - name: dateTo
-          in: query
-          schema:
-            $ref: '#/components/schemas/LocalDate'
-        - name: noticeNumber
-          in: query
-          schema:
-            type: string
-        - name: page
-          in: query
-          schema:
-            format: int64
-            default: 1
-            minimum: 1
-            type: integer
-        - name: paymentToken
-          in: query
-          schema:
-            type: string
-        - name: size
-          in: query
-          schema:
-            format: int64
-            default: 1000
-            minimum: 1
-            type: integer
+      - name: organizationFiscalCode
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: dateFrom
+        in: query
+        schema:
+          $ref: '#/components/schemas/LocalDate'
+      - name: dateTo
+        in: query
+        schema:
+          $ref: '#/components/schemas/LocalDate'
+      - name: noticeNumber
+        in: query
+        schema:
+          type: string
+      - name: page
+        in: query
+        schema:
+          format: int64
+          default: 1
+          minimum: 1
+          type: integer
+      - name: paymentToken
+        in: query
+        schema:
+          type: string
+      - name: size
+        in: query
+        schema:
+          format: int64
+          default: 1000
+          minimum: 1
+          type: integer
       responses:
         "200":
           description: OK
@@ -828,19 +803,20 @@ paths:
 components:
   schemas:
     AggregateChanges:
-      description: "Signed additive differences; durationSnapshot is the authoritative replacement, including an empty array."
+      description: "Signed additive differences; durationSnapshot is the authoritative\
+        \ replacement, including an empty array."
       required:
-        - counts
-        - logicalStates
-        - attemptStates
-        - recipientStates
-        - traffic
-        - transitions
-        - matrices
-        - anomalies
-        - durations
-        - durationSnapshot
-        - primitives
+      - counts
+      - logicalStates
+      - attemptStates
+      - recipientStates
+      - traffic
+      - transitions
+      - matrices
+      - anomalies
+      - durations
+      - durationSnapshot
+      - primitives
       type: object
       properties:
         counts:
@@ -884,16 +860,16 @@ components:
       additionalProperties: false
     AggregateDelta:
       required:
-        - type
-        - scope
-        - projectionRevision
-        - changes
-        - freshness
+      - type
+      - scope
+      - projectionRevision
+      - changes
+      - freshness
       type: object
       properties:
         type:
           enum:
-            - aggregate.delta
+          - aggregate.delta
           type: string
         scope:
           type: object
@@ -918,19 +894,20 @@ components:
           type: integer
     ApiConfigCacheVersion:
       required:
-        - outcome
-        - cacheId
-        - version
-        - timestamp
-        - environment
-        - serviceIdentifier
+      - outcome
+      - cacheId
+      - version
+      - timestamp
+      - environment
+      - serviceIdentifier
       type: object
       properties:
         outcome:
-          description: "UNCONFIGURED: no subscription key; UNAVAILABLE: call failed or timed out"
+          description: "UNCONFIGURED: no subscription key; UNAVAILABLE: call failed\
+            \ or timed out"
           type: string
           allOf:
-            - $ref: '#/components/schemas/CacheVersionOutcome'
+          - $ref: '#/components/schemas/CacheVersionOutcome'
         cacheId:
           description: X-CACHE-ID returned by apiconfig-cache
           type: string
@@ -947,12 +924,12 @@ components:
           type: string
         serviceIdentifier:
           enum:
-            - CACHE
+          - CACHE
           type: string
     AttemptChange:
       required:
-        - attemptId
-        - warning
+      - attemptId
+      - warning
       type: object
       properties:
         attemptId:
@@ -974,22 +951,22 @@ components:
       additionalProperties: false
     AttemptDto:
       required:
-        - attemptId
-        - serviceIdentifier
-        - psp
-        - stazione
-        - canale
-        - attemptStartedAt
-        - startTimestampBasis
-        - timelineIncomplete
-        - timeline
-        - paFiscalCode
-        - noticeNumber
-        - state
-        - warning
-        - hasAnomaly
-        - tokenDisplay
-        - projectionRevision
+      - attemptId
+      - serviceIdentifier
+      - psp
+      - stazione
+      - canale
+      - attemptStartedAt
+      - startTimestampBasis
+      - timelineIncomplete
+      - timeline
+      - paFiscalCode
+      - noticeNumber
+      - state
+      - warning
+      - hasAnomaly
+      - tokenDisplay
+      - projectionRevision
       type: object
       properties:
         attemptId:
@@ -1024,24 +1001,24 @@ components:
           type: string
         state:
           enum:
-            - PAYING
-            - PAYING_RPT
-            - PAID_NORPT
-            - PAID
-            - FAILED_NORPT
-            - FAILED
-            - CANCELLED
-            - CANCELLED_NORPT
-            - NOTICE_GENERATED
-            - NOTICE_STORED
-            - NOTICE_SENT
-            - NOTIFIED
-            - PAYMENT_RESERVED
-            - PAYMENT_SENT
-            - PAYMENT_ACCEPTED
-            - PAYMENT_REFUSED
-            - PAYMENT_UNKNOWN
-            - PAYMENT_SEND_ERROR
+          - PAYING
+          - PAYING_RPT
+          - PAID_NORPT
+          - PAID
+          - FAILED_NORPT
+          - FAILED
+          - CANCELLED
+          - CANCELLED_NORPT
+          - NOTICE_GENERATED
+          - NOTICE_STORED
+          - NOTICE_SENT
+          - NOTIFIED
+          - PAYMENT_RESERVED
+          - PAYMENT_SENT
+          - PAYMENT_ACCEPTED
+          - PAYMENT_REFUSED
+          - PAYMENT_UNKNOWN
+          - PAYMENT_SEND_ERROR
           type: string
         warning:
           type: boolean
@@ -1075,30 +1052,30 @@ components:
       additionalProperties: false
     AttemptState:
       enum:
-        - PAYING
-        - PAYING_RPT
-        - PAID_NORPT
-        - PAID
-        - FAILED_NORPT
-        - FAILED
-        - CANCELLED
-        - CANCELLED_NORPT
-        - NOTICE_GENERATED
-        - NOTICE_STORED
-        - NOTICE_SENT
-        - NOTIFIED
-        - PAYMENT_RESERVED
-        - PAYMENT_SENT
-        - PAYMENT_ACCEPTED
-        - PAYMENT_REFUSED
-        - PAYMENT_UNKNOWN
-        - PAYMENT_SEND_ERROR
+      - PAYING
+      - PAYING_RPT
+      - PAID_NORPT
+      - PAID
+      - FAILED_NORPT
+      - FAILED
+      - CANCELLED
+      - CANCELLED_NORPT
+      - NOTICE_GENERATED
+      - NOTICE_STORED
+      - NOTICE_SENT
+      - NOTIFIED
+      - PAYMENT_RESERVED
+      - PAYMENT_SENT
+      - PAYMENT_ACCEPTED
+      - PAYMENT_REFUSED
+      - PAYMENT_UNKNOWN
+      - PAYMENT_SEND_ERROR
       type: string
     AttemptSyncRequest:
       required:
-        - paFiscalCode
-        - noticeNumber
-        - paymentToken
+      - paFiscalCode
+      - noticeNumber
+      - paymentToken
       type: object
       properties:
         paFiscalCode:
@@ -1123,29 +1100,30 @@ components:
           type: string
     CacheVersionNode:
       required:
-        - node
-        - target
-        - outcome
-        - dbStatus
-        - cacheId
-        - version
-        - environment
-        - serviceIdentifier
+      - node
+      - target
+      - outcome
+      - dbStatus
+      - cacheId
+      - version
+      - environment
+      - serviceIdentifier
       type: object
       properties:
         node:
           enum:
-            - NDP001
-            - NDP004
+          - NDP001
+          - NDP004
           type: string
         target:
           description: X-Ndp-Target sent to Nodo monitoring
           type: string
         outcome:
-          description: "UNCONFIGURED: no subscription key; UNAVAILABLE: call failed or timed out"
+          description: "UNCONFIGURED: no subscription key; UNAVAILABLE: call failed\
+            \ or timed out"
           type: string
           allOf:
-            - $ref: '#/components/schemas/CacheVersionOutcome'
+          - $ref: '#/components/schemas/CacheVersionOutcome'
         dbStatus:
           type: string
           nullable: true
@@ -1163,16 +1141,16 @@ components:
           nullable: true
     CacheVersionOutcome:
       enum:
-        - OK
-        - UNCONFIGURED
-        - UNAVAILABLE
+      - OK
+      - UNCONFIGURED
+      - UNAVAILABLE
       type: string
     CacheVersions:
       description: Cache version of NDP001 and NDP004 read from Nodo monitoring
       required:
-        - checkedAt
-        - nodes
-        - cache
+      - checkedAt
+      - nodes
+      - cache
       type: object
       properties:
         checkedAt:
@@ -1180,7 +1158,8 @@ components:
           pattern: "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}\\.\\d{3}Z$"
           type: string
         nodes:
-          description: "One entry per node, NDP001 first; a failing node does not hide the others"
+          description: "One entry per node, NDP001 first; a failing node does not\
+            \ hide the others"
           type: array
           items:
             $ref: '#/components/schemas/CacheVersionNode'
@@ -1188,7 +1167,7 @@ components:
           description: Api Config Cache info
           type: object
           allOf:
-            - $ref: '#/components/schemas/ApiConfigCacheVersion'
+          - $ref: '#/components/schemas/ApiConfigCacheVersion'
     CapabilitiesDto:
       type: object
       properties:
@@ -1244,21 +1223,21 @@ components:
           type: integer
     CreditorDetailDto:
       required:
-        - paFiscalCode
-        - snapshotAt
-        - projectionRevision
-        - window
-        - counts
-        - logicalStates
-        - attemptStates
-        - recipientStates
-        - unresolved
-        - matrices
-        - traffic
-        - transitions
-        - durations
-        - anomalies
-        - freshness
+      - paFiscalCode
+      - snapshotAt
+      - projectionRevision
+      - window
+      - counts
+      - logicalStates
+      - attemptStates
+      - recipientStates
+      - unresolved
+      - matrices
+      - traffic
+      - transitions
+      - durations
+      - anomalies
+      - freshness
       type: object
       properties:
         paFiscalCode:
@@ -1324,15 +1303,15 @@ components:
     DbCheck:
       description: Read-only comparison with the routed Nodo Online database
       required:
-        - attemptId
-        - paFiscalCode
-        - noticeNumber
-        - serviceIdentifier
-        - projectionRevision
-        - source
-        - checkedAt
-        - observed
-        - database
+      - attemptId
+      - paFiscalCode
+      - noticeNumber
+      - serviceIdentifier
+      - projectionRevision
+      - source
+      - checkedAt
+      - observed
+      - database
       type: object
       properties:
         attemptId:
@@ -1351,7 +1330,7 @@ components:
           type: integer
         source:
           enum:
-            - NODO_ONLINE
+          - NODO_ONLINE
           type: string
         checkedAt:
           format: date-time
@@ -1363,26 +1342,26 @@ components:
           $ref: '#/components/schemas/DbCheckDatabaseStates'
     DbCheckDatabaseStates:
       required:
-        - logicalState
-        - attemptState
+      - logicalState
+      - attemptState
       type: object
       properties:
         logicalState:
           description: null when the logical snapshot is absent
           type: string
           allOf:
-            - $ref: '#/components/schemas/LogicalState'
+          - $ref: '#/components/schemas/LogicalState'
           nullable: true
         attemptState:
           description: null when the attempt snapshot is absent
           type: string
           allOf:
-            - $ref: '#/components/schemas/AttemptState'
+          - $ref: '#/components/schemas/AttemptState'
           nullable: true
     DbCheckObservedStates:
       required:
-        - logicalState
-        - attemptState
+      - logicalState
+      - attemptState
       type: object
       properties:
         logicalState:
@@ -1391,11 +1370,11 @@ components:
           $ref: '#/components/schemas/AttemptState'
     DeltaCounts:
       required:
-        - payments
-        - attempts
-        - unresolvedPayments
-        - unresolvedAttempts
-        - anomalyTransitions
+      - payments
+      - attempts
+      - unresolvedPayments
+      - unresolvedAttempts
+      - anomalyTransitions
       type: object
       properties:
         payments:
@@ -1416,9 +1395,9 @@ components:
       additionalProperties: false
     DeltaMatrices:
       required:
-        - psp
-        - canale
-        - recipient
+      - psp
+      - canale
+      - recipient
       type: object
       properties:
         psp:
@@ -1436,9 +1415,9 @@ components:
       additionalProperties: false
     DimensionDelta:
       required:
-        - value
-        - state
-        - count
+      - value
+      - state
+      - count
       type: object
       properties:
         value:
@@ -1462,19 +1441,19 @@ components:
             $ref: '#/components/schemas/StateCountDto'
     DurationDelta:
       required:
-        - entity
-        - fromState
-        - toState
-        - timestampBasis
-        - samples
-        - totalMs
+      - entity
+      - fromState
+      - toState
+      - timestampBasis
+      - samples
+      - totalMs
       type: object
       properties:
         entity:
           enum:
-            - logical
-            - attempt
-            - recipient
+          - logical
+          - attempt
+          - recipient
           type: string
         fromState:
           type: string
@@ -1491,21 +1470,21 @@ components:
       additionalProperties: false
     DurationRowDto:
       required:
-        - entity
-        - fromState
-        - toState
-        - timestampBasis
-        - samples
-        - averageMs
-        - medianMs
-        - p95Ms
+      - entity
+      - fromState
+      - toState
+      - timestampBasis
+      - samples
+      - averageMs
+      - medianMs
+      - p95Ms
       type: object
       properties:
         entity:
           enum:
-            - logical
-            - attempt
-            - recipient
+          - logical
+          - attempt
+          - recipient
           type: string
         fromState:
           type: string
@@ -1604,20 +1583,20 @@ components:
       example: 2022-03-10
     LogicalState:
       enum:
-        - INSERTED
-        - PAYING
-        - PAID
-        - NOTICE_STORED
-        - NOTIFIED
+      - INSERTED
+      - PAYING
+      - PAID
+      - NOTICE_STORED
+      - NOTIFIED
       type: string
     Maintenance:
       required:
-        - brokerCode
-        - brokerName
-        - startDateTime
-        - endDateTime
-        - stations
-        - creditorInstitutions
+      - brokerCode
+      - brokerName
+      - startDateTime
+      - endDateTime
+      - stations
+      - creditorInstitutions
       type: object
       properties:
         brokerCode:
@@ -1640,8 +1619,8 @@ components:
             $ref: '#/components/schemas/MaintenanceCreditor'
     MaintenanceCreditor:
       required:
-        - businessName
-        - code
+      - businessName
+      - code
       type: object
       properties:
         businessName:
@@ -1651,11 +1630,11 @@ components:
     Maintenances:
       description: "Scheduled station maintenances of the next 7 days, cached daily"
       required:
-        - fetchedAt
-        - windowFrom
-        - windowTo
-        - stale
-        - items
+      - fetchedAt
+      - windowFrom
+      - windowTo
+      - stale
+      - items
       type: object
       properties:
         fetchedAt:
@@ -1671,7 +1650,8 @@ components:
           description: windowFrom + 7 days
           type: string
         stale:
-          description: True when the last refresh failed and the previous data is served
+          description: True when the last refresh failed and the previous data is
+            served
           type: boolean
         items:
           type: array
@@ -1679,9 +1659,9 @@ components:
             $ref: '#/components/schemas/Maintenance'
     MatricesDto:
       required:
-        - psp
-        - canale
-        - recipient
+      - psp
+      - canale
+      - recipient
       type: object
       properties:
         psp:
@@ -1729,21 +1709,21 @@ components:
           example: 3
     OverviewDto:
       required:
-        - snapshotAt
-        - projectionRevision
-        - window
-        - counts
-        - logicalStates
-        - attemptStates
-        - recipientStates
-        - unresolved
-        - matrices
-        - traffic
-        - transitions
-        - durations
-        - anomalies
-        - freshness
-        - primitives
+      - snapshotAt
+      - projectionRevision
+      - window
+      - counts
+      - logicalStates
+      - attemptStates
+      - recipientStates
+      - unresolved
+      - matrices
+      - traffic
+      - transitions
+      - durations
+      - anomalies
+      - freshness
+      - primitives
       type: object
       properties:
         snapshotAt:
@@ -1852,12 +1832,13 @@ components:
           format: int64
           type: integer
     PaymentChanges:
-      description: "Recipient changes/removals are independent of attempts. Omitted optional arrays mean no change, not unsupported recipients."
+      description: "Recipient changes/removals are independent of attempts. Omitted\
+        \ optional arrays mean no change, not unsupported recipients."
       required:
-        - logicalTransitions
-        - attemptChanges
-        - removedAttemptIds
-        - deleted
+      - logicalTransitions
+      - attemptChanges
+      - removedAttemptIds
+      - deleted
       type: object
       properties:
         logicalTransitions:
@@ -1887,17 +1868,17 @@ components:
       additionalProperties: false
     PaymentDelta:
       required:
-        - type
-        - scope
-        - paFiscalCode
-        - noticeNumber
-        - projectionRevision
-        - changes
+      - type
+      - scope
+      - paFiscalCode
+      - noticeNumber
+      - projectionRevision
+      - changes
       type: object
       properties:
         type:
           enum:
-            - payment.delta
+          - payment.delta
           type: string
         scope:
           type: object
@@ -1915,17 +1896,17 @@ components:
       additionalProperties: false
     PaymentDetailDto:
       required:
-        - paFiscalCode
-        - noticeNumber
-        - state
-        - projectionRevision
-        - timelineIncomplete
-        - hasAnomaly
-        - warning
-        - attemptCount
-        - timeline
-        - attempts
-        - recipients
+      - paFiscalCode
+      - noticeNumber
+      - state
+      - projectionRevision
+      - timelineIncomplete
+      - hasAnomaly
+      - warning
+      - attemptCount
+      - timeline
+      - attempts
+      - recipients
       type: object
       properties:
         paFiscalCode:
@@ -1933,13 +1914,14 @@ components:
         noticeNumber:
           type: string
         state:
-          description: Logical position state; null while no position event or logical source snapshot has been observed. Never derived from attempts or recipients.
+          description: Logical position state; null while no position event or logical
+            source snapshot has been observed. Never derived from attempts or recipients.
           enum:
-            - INSERTED
-            - PAYING
-            - PAID
-            - NOTICE_STORED
-            - NOTIFIED
+          - INSERTED
+          - PAYING
+          - PAID
+          - NOTICE_STORED
+          - NOTIFIED
           type: string
           nullable: true
         projectionRevision:
@@ -2076,10 +2058,10 @@ components:
           $ref: '#/components/schemas/LocalDate'
     PaymentStatus:
       enum:
-        - completed
-        - failed
-        - cancelled
-        - unknown
+      - completed
+      - failed
+      - cancelled
+      - unknown
       type: string
     PaymentSummaryDto:
       type: object
@@ -2089,13 +2071,14 @@ components:
         noticeNumber:
           type: string
         state:
-          description: Logical position state; null while no position event or logical source snapshot has been observed. Never derived from attempts or recipients.
+          description: Logical position state; null while no position event or logical
+            source snapshot has been observed. Never derived from attempts or recipients.
           enum:
-            - INSERTED
-            - PAYING
-            - PAID
-            - NOTICE_STORED
-            - NOTIFIED
+          - INSERTED
+          - PAYING
+          - PAID
+          - NOTICE_STORED
+          - NOTIFIED
           type: string
           nullable: true
         projectionRevision:
@@ -2112,8 +2095,8 @@ components:
           type: integer
     PaymentSyncRequest:
       required:
-        - paFiscalCode
-        - noticeNumber
+      - paFiscalCode
+      - noticeNumber
       type: object
       properties:
         paFiscalCode:
@@ -2210,12 +2193,12 @@ components:
           type: string
     PrimitiveCount:
       required:
-        - serviceIdentifier
-        - primitive
-        - direction
-        - requests
-        - responses
-        - warnings
+      - serviceIdentifier
+      - primitive
+      - direction
+      - requests
+      - responses
+      - warnings
       type: object
       properties:
         serviceIdentifier:
@@ -2228,9 +2211,9 @@ components:
         direction:
           description: "Direzione rispetto al Nodo dai campi RE fruitore/erogatore dell'evento REQ: INBOUND se il Nodo è l'erogatore, OUTBOUND se è il fruitore, UNKNOWN altrimenti. Mai dedotta dal nome della primitiva."
           enum:
-            - INBOUND
-            - OUTBOUND
-            - UNKNOWN
+          - INBOUND
+          - OUTBOUND
+          - UNKNOWN
           type: string
         requests:
           format: int64
@@ -2247,15 +2230,16 @@ components:
       additionalProperties: false
     PrimitiveWarning:
       required:
-        - calledAt
-        - psp
-        - canale
-        - paFiscalCode
-        - stazione
+      - calledAt
+      - psp
+      - canale
+      - paFiscalCode
+      - stazione
       type: object
       properties:
         calledAt:
-          description: Data-ora (UTC) della richiesta rimasta senza risposta entro 10 secondi.
+          description: Data-ora (UTC) della richiesta rimasta senza risposta entro
+            10 secondi.
           type: string
         psp:
           description: PSP della richiesta; null se non disponibile.
@@ -2278,317 +2262,320 @@ components:
       type: object
       properties:
         title:
-          description: "A short, summary of the problem type. Written in english and readable for engineers (usually not suited for non technical stakeholders and not localized); example: Service Unavailable"
+          description: "A short, summary of the problem type. Written in english and\
+            \ readable for engineers (usually not suited for non technical stakeholders and not localized); example: Service Unavailable"
           type: string
         status:
           format: int32
-          description: The HTTP status code generated by the origin server for this occurrence of the problem.
+          description: The HTTP status code generated by the origin server for this
+            occurrence of the problem.
           maximum: 600
           minimum: 100
           type: integer
           example: 200
         details:
-          description: A human readable explanation specific to this occurrence of the problem.
+          description: A human readable explanation specific to this occurrence of
+            the problem.
           type: string
           example: There was an error processing the request
     ReEvent:
       required:
-        - insertedTimestamp
-        - componente
-        - categoriaEvento
-        - sottoTipoEvento
-        - idDominio
-        - iuv
-        - ccp
-        - psp
-        - tipoVersamento
-        - tipoEvento
-        - fruitore
-        - erogatore
-        - stazione
-        - canale
-        - parametriSpecificiInterfaccia
-        - esito
-        - sessionId
-        - status
-        - payload
-        - info
-        - businessProcess
-        - fruitoreDescr
-        - erogatoreDescr
-        - pspDescr
-        - noticeNumber
-        - creditorReferenceId
-        - paymentToken
-        - sessionIdOriginal
-        - standIn
-        - serviceIdentifier
-        - dataOraEvento
-        - uniqueId
-        - version
-        - payloadDecoded
-        - payloadOmitted
-        - payloadSourceBytes
+      - insertedTimestamp
+      - componente
+      - categoriaEvento
+      - sottoTipoEvento
+      - idDominio
+      - iuv
+      - ccp
+      - psp
+      - tipoVersamento
+      - tipoEvento
+      - fruitore
+      - erogatore
+      - stazione
+      - canale
+      - parametriSpecificiInterfaccia
+      - esito
+      - sessionId
+      - status
+      - payload
+      - info
+      - businessProcess
+      - fruitoreDescr
+      - erogatoreDescr
+      - pspDescr
+      - noticeNumber
+      - creditorReferenceId
+      - paymentToken
+      - sessionIdOriginal
+      - standIn
+      - serviceIdentifier
+      - dataOraEvento
+      - uniqueId
+      - version
+      - payloadDecoded
+      - payloadOmitted
+      - payloadSourceBytes
       type: object
       properties:
         insertedTimestamp:
           oneOf:
-            - type: string
-              nullable: true
-            - format: double
-              type: number
-            - type: boolean
+          - type: string
+            nullable: true
+          - format: double
+            type: number
+          - type: boolean
           nullable: true
         componente:
           oneOf:
-            - type: string
-              nullable: true
-            - format: double
-              type: number
-            - type: boolean
+          - type: string
+            nullable: true
+          - format: double
+            type: number
+          - type: boolean
           nullable: true
         categoriaEvento:
           oneOf:
-            - type: string
-              nullable: true
-            - format: double
-              type: number
-            - type: boolean
+          - type: string
+            nullable: true
+          - format: double
+            type: number
+          - type: boolean
           nullable: true
         sottoTipoEvento:
           oneOf:
-            - type: string
-              nullable: true
-            - format: double
-              type: number
-            - type: boolean
+          - type: string
+            nullable: true
+          - format: double
+            type: number
+          - type: boolean
           nullable: true
         idDominio:
           oneOf:
-            - type: string
-              nullable: true
-            - format: double
-              type: number
-            - type: boolean
+          - type: string
+            nullable: true
+          - format: double
+            type: number
+          - type: boolean
           nullable: true
         iuv:
           oneOf:
-            - type: string
-              nullable: true
-            - format: double
-              type: number
-            - type: boolean
+          - type: string
+            nullable: true
+          - format: double
+            type: number
+          - type: boolean
           nullable: true
         ccp:
           oneOf:
-            - type: string
-              nullable: true
-            - format: double
-              type: number
-            - type: boolean
+          - type: string
+            nullable: true
+          - format: double
+            type: number
+          - type: boolean
           nullable: true
         psp:
           oneOf:
-            - type: string
-              nullable: true
-            - format: double
-              type: number
-            - type: boolean
+          - type: string
+            nullable: true
+          - format: double
+            type: number
+          - type: boolean
           nullable: true
         tipoVersamento:
           oneOf:
-            - type: string
-              nullable: true
-            - format: double
-              type: number
-            - type: boolean
+          - type: string
+            nullable: true
+          - format: double
+            type: number
+          - type: boolean
           nullable: true
         tipoEvento:
           oneOf:
-            - type: string
-              nullable: true
-            - format: double
-              type: number
-            - type: boolean
+          - type: string
+            nullable: true
+          - format: double
+            type: number
+          - type: boolean
           nullable: true
         fruitore:
           oneOf:
-            - type: string
-              nullable: true
-            - format: double
-              type: number
-            - type: boolean
+          - type: string
+            nullable: true
+          - format: double
+            type: number
+          - type: boolean
           nullable: true
         erogatore:
           oneOf:
-            - type: string
-              nullable: true
-            - format: double
-              type: number
-            - type: boolean
+          - type: string
+            nullable: true
+          - format: double
+            type: number
+          - type: boolean
           nullable: true
         stazione:
           oneOf:
-            - type: string
-              nullable: true
-            - format: double
-              type: number
-            - type: boolean
+          - type: string
+            nullable: true
+          - format: double
+            type: number
+          - type: boolean
           nullable: true
         canale:
           oneOf:
-            - type: string
-              nullable: true
-            - format: double
-              type: number
-            - type: boolean
+          - type: string
+            nullable: true
+          - format: double
+            type: number
+          - type: boolean
           nullable: true
         parametriSpecificiInterfaccia:
           oneOf:
-            - type: string
-              nullable: true
-            - format: double
-              type: number
-            - type: boolean
+          - type: string
+            nullable: true
+          - format: double
+            type: number
+          - type: boolean
           nullable: true
         esito:
           oneOf:
-            - type: string
-              nullable: true
-            - format: double
-              type: number
-            - type: boolean
+          - type: string
+            nullable: true
+          - format: double
+            type: number
+          - type: boolean
           nullable: true
         sessionId:
           oneOf:
-            - type: string
-              nullable: true
-            - format: double
-              type: number
-            - type: boolean
+          - type: string
+            nullable: true
+          - format: double
+            type: number
+          - type: boolean
           nullable: true
         status:
           oneOf:
-            - type: string
-              nullable: true
-            - format: double
-              type: number
-            - type: boolean
+          - type: string
+            nullable: true
+          - format: double
+            type: number
+          - type: boolean
           nullable: true
         payload:
           type: string
           nullable: true
         info:
           oneOf:
-            - type: string
-              nullable: true
-            - format: double
-              type: number
-            - type: boolean
+          - type: string
+            nullable: true
+          - format: double
+            type: number
+          - type: boolean
           nullable: true
         businessProcess:
           oneOf:
-            - type: string
-              nullable: true
-            - format: double
-              type: number
-            - type: boolean
+          - type: string
+            nullable: true
+          - format: double
+            type: number
+          - type: boolean
           nullable: true
         fruitoreDescr:
           oneOf:
-            - type: string
-              nullable: true
-            - format: double
-              type: number
-            - type: boolean
+          - type: string
+            nullable: true
+          - format: double
+            type: number
+          - type: boolean
           nullable: true
         erogatoreDescr:
           oneOf:
-            - type: string
-              nullable: true
-            - format: double
-              type: number
-            - type: boolean
+          - type: string
+            nullable: true
+          - format: double
+            type: number
+          - type: boolean
           nullable: true
         pspDescr:
           oneOf:
-            - type: string
-              nullable: true
-            - format: double
-              type: number
-            - type: boolean
+          - type: string
+            nullable: true
+          - format: double
+            type: number
+          - type: boolean
           nullable: true
         noticeNumber:
           oneOf:
-            - type: string
-              nullable: true
-            - format: double
-              type: number
-            - type: boolean
+          - type: string
+            nullable: true
+          - format: double
+            type: number
+          - type: boolean
           nullable: true
         creditorReferenceId:
           oneOf:
-            - type: string
-              nullable: true
-            - format: double
-              type: number
-            - type: boolean
+          - type: string
+            nullable: true
+          - format: double
+            type: number
+          - type: boolean
           nullable: true
         paymentToken:
           oneOf:
-            - type: string
-              nullable: true
-            - format: double
-              type: number
-            - type: boolean
+          - type: string
+            nullable: true
+          - format: double
+            type: number
+          - type: boolean
           nullable: true
         sessionIdOriginal:
           oneOf:
-            - type: string
-              nullable: true
-            - format: double
-              type: number
-            - type: boolean
+          - type: string
+            nullable: true
+          - format: double
+            type: number
+          - type: boolean
           nullable: true
         standIn:
           oneOf:
-            - type: string
-              nullable: true
-            - format: double
-              type: number
-            - type: boolean
+          - type: string
+            nullable: true
+          - format: double
+            type: number
+          - type: boolean
           nullable: true
         serviceIdentifier:
           oneOf:
-            - type: string
-              nullable: true
-            - format: double
-              type: number
-            - type: boolean
+          - type: string
+            nullable: true
+          - format: double
+            type: number
+          - type: boolean
           nullable: true
         dataOraEvento:
           oneOf:
-            - type: string
-              nullable: true
-            - format: double
-              type: number
-            - type: boolean
+          - type: string
+            nullable: true
+          - format: double
+            type: number
+          - type: boolean
           nullable: true
         uniqueId:
           oneOf:
-            - type: string
-              nullable: true
-            - format: double
-              type: number
-            - type: boolean
+          - type: string
+            nullable: true
+          - format: double
+            type: number
+          - type: boolean
           nullable: true
         version:
           oneOf:
-            - type: string
-              nullable: true
-            - format: double
-              type: number
-            - type: boolean
+          - type: string
+            nullable: true
+          - format: double
+            type: number
+          - type: boolean
           nullable: true
         payloadDecoded:
           $ref: '#/components/schemas/RePayloadDecoded'
@@ -2600,18 +2587,18 @@ components:
           nullable: true
     RePayloadDecoded:
       required:
-        - status
-        - text
-        - reason
+      - status
+      - text
+      - reason
       type: object
       properties:
         status:
           enum:
-            - ABSENT
-            - DECODED
-            - INVALID_BASE64
-            - INVALID_UTF8
-            - TOO_LARGE
+          - ABSENT
+          - DECODED
+          - INVALID_BASE64
+          - INVALID_UTF8
+          - TOO_LARGE
           type: string
         text:
           type: string
@@ -2621,8 +2608,8 @@ components:
           nullable: true
     ReRequest:
       required:
-        - from
-        - to
+      - from
+      - to
       type: object
       properties:
         from:
@@ -2639,30 +2626,32 @@ components:
           type: string
           nullable: true
         scope:
-          description: "ATTEMPT (default): PA + NAV + token of the attempt. POSITION: PA + NAV only, so events without a paymentToken (verifyPaymentNotice) are included, together with those of every token."
+          description: "ATTEMPT (default): PA + NAV + token of the attempt. POSITION:\
+            \ PA + NAV only, so events without a paymentToken (verifyPaymentNotice)\
+            \ are included, together with those of every token."
           enum:
-            - ATTEMPT
-            - POSITION
+          - ATTEMPT
+          - POSITION
           type: string
           nullable: true
     ReResponse:
       required:
-        - attemptId
-        - source
-        - retrievedAt
-        - window
-        - coverage
-        - events
-        - nextCursor
-        - truncated
-        - warnings
+      - attemptId
+      - source
+      - retrievedAt
+      - window
+      - coverage
+      - events
+      - nextCursor
+      - truncated
+      - warnings
       type: object
       properties:
         attemptId:
           type: string
         source:
           enum:
-            - RE
+          - RE
           type: string
         retrievedAt:
           format: date-time
@@ -2671,9 +2660,9 @@ components:
           $ref: '#/components/schemas/ReWindow'
         coverage:
           enum:
-            - WINDOW_ONLY
-            - RETENTION_CLIPPED
-            - LIMIT_REACHED
+          - WINDOW_ONLY
+          - RETENTION_CLIPPED
+          - LIMIT_REACHED
           type: string
         events:
           maxItems: 100
@@ -2691,16 +2680,16 @@ components:
             type: string
     ReScalar:
       oneOf:
-        - type: string
-          nullable: true
-        - format: double
-          type: number
-        - type: boolean
+      - type: string
+        nullable: true
+      - format: double
+        type: number
+      - type: boolean
       nullable: true
     ReWindow:
       required:
-        - from
-        - to
+      - from
+      - to
       type: object
       properties:
         from:
@@ -2709,14 +2698,14 @@ components:
           type: string
     ReadyEvent:
       required:
-        - type
-        - scope
-        - projectionRevision
+      - type
+      - scope
+      - projectionRevision
       type: object
       properties:
         type:
           enum:
-            - ready
+          - ready
           type: string
         scope:
           type: object
@@ -2730,7 +2719,7 @@ components:
       additionalProperties: false
     RecipientChange:
       required:
-        - recipientId
+      - recipientId
       type: object
       properties:
         recipientId:
@@ -2745,23 +2734,25 @@ components:
           $ref: '#/components/schemas/RecipientPatch'
       additionalProperties: false
     RecipientDto:
-      description: Receipt recipient keyed by PA/NAV/stazioneRecipient. No token association or primary role.
+      description: Receipt recipient keyed by PA/NAV/stazioneRecipient. No token association
+        or primary role.
       required:
-        - recipientId
-        - stazioneRecipient
-        - paFiscalCode
-        - noticeNumber
-        - state
-        - timelineIncomplete
-        - hasAnomaly
-        - timeline
-        - projectionRevision
+      - recipientId
+      - stazioneRecipient
+      - paFiscalCode
+      - noticeNumber
+      - state
+      - timelineIncomplete
+      - hasAnomaly
+      - timeline
+      - projectionRevision
       type: object
       properties:
         recipientId:
           type: string
         stazioneRecipient:
-          description: Null denotes the single unidentified recipient of this logical pair.
+          description: Null denotes the single unidentified recipient of this logical
+            pair.
           type: string
           nullable: true
         paFiscalCode:
@@ -2770,10 +2761,10 @@ components:
           type: string
         state:
           enum:
-            - NOTICE_GENERATED
-            - NOTICE_SENT
-            - NOTICE_PENDING
-            - NOTIFIED
+          - NOTICE_GENERATED
+          - NOTICE_SENT
+          - NOTICE_PENDING
+          - NOTIFIED
           type: string
         timelineIncomplete:
           type: boolean
@@ -2810,26 +2801,28 @@ components:
           type: integer
     StatusSyncResponse:
       required:
-        - outcome
+      - outcome
       type: object
       properties:
         outcome:
           description: "SYNCED when the projection changed, otherwise NOOP"
           enum:
-            - SYNCED
-            - NOOP
+          - SYNCED
+          - NOOP
           type: string
         state:
-          description: "State returned by Nodo Online, or null when the source snapshot is missing"
+          description: "State returned by Nodo Online, or null when the source snapshot\
+            \ is missing"
           type: string
           nullable: true
     TimelineItemDto:
-      description: "Server transition order is authoritative, including repeated states and null or nonmonotonic dates."
+      description: "Server transition order is authoritative, including repeated states\
+        \ and null or nonmonotonic dates."
       required:
-        - state
-        - transitionAt
-        - timestampBasis
-        - trigger
+      - state
+      - transitionAt
+      - timestampBasis
+      - trigger
       type: object
       properties:
         state:
@@ -2841,16 +2834,17 @@ components:
         timestampBasis:
           $ref: '#/components/schemas/TimestampBasis'
         trigger:
-          description: "Original application trigger from the admitted RE event, when available."
+          description: "Original application trigger from the admitted RE event, when\
+            \ available."
           type: string
           nullable: true
       additionalProperties: false
     TimestampBasis:
       enum:
-        - SOURCE_EVENT
-        - SOURCE_SYNC
-        - INFERRED
-        - ANOMALY
+      - SOURCE_EVENT
+      - SOURCE_SYNC
+      - INFERRED
+      - ANOMALY
       type: string
     TokenLookupRequestDto:
       type: object
@@ -2886,8 +2880,8 @@ components:
           type: integer
     TransitionCorrection:
       required:
-        - index
-        - transition
+      - index
+      - transition
       type: object
       properties:
         index:
@@ -2899,20 +2893,20 @@ components:
       additionalProperties: false
     TransitionTrendDto:
       required:
-        - bucketStart
-        - entity
-        - state
-        - timestampBasis
-        - count
+      - bucketStart
+      - entity
+      - state
+      - timestampBasis
+      - count
       type: object
       properties:
         bucketStart:
           type: string
         entity:
           enum:
-            - logical
-            - attempt
-            - recipient
+          - logical
+          - attempt
+          - recipient
           type: string
         state:
           type: string
@@ -2932,6 +2926,6 @@ components:
   securitySchemes:
     SecurityScheme:
       type: http
-      description: "Microsoft Entra ID token (MSAL ID token, audience = ENTRA_CLIENT_ID)"
+      description: "Microsoft Entra ID token (MSAL ID token), validated by Azure APIM"
       scheme: bearer
       bearerFormat: JWT

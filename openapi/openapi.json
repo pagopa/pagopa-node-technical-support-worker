@@ -14,13 +14,16 @@
     {
       "name": "Info",
       "description": "Info operations"
+    },
+    {
+      "name": "Observability"
     }
   ],
   "paths": {
     "/api/apiconfig/maintenances": {
       "get": {
         "tags": [
-          "Api Config Resource"
+          "Observability"
         ],
         "summary": "Scheduled station maintenances of the next 7 days",
         "description": "Read-only. Served from a cache that is reloaded from apiconfig every midnight.",
@@ -67,7 +70,7 @@
     "/api/attempts": {
       "get": {
         "tags": [
-          "Observability Resource"
+          "Observability"
         ],
         "responses": {
           "200": {
@@ -91,7 +94,7 @@
     "/api/attempts/{attemptId}/check-db": {
       "get": {
         "tags": [
-          "Check Db Resource"
+          "Observability"
         ],
         "summary": "Compare attempt and payment states with Nodo Online",
         "description": "Read-only. Resolves token, PA/NAV and datasource from the retained attempt, using the existing serviceIdentifier routing. No query parameters or projection writes. Missing Online snapshots are independent null values; duplicate or unsupported snapshots fail explicitly. projectionRevision identifies the captured observation, not a distributed transaction across both databases.",
@@ -178,7 +181,7 @@
     "/api/attempts/{attemptId}/re-events": {
       "post": {
         "tags": [
-          "Re Events Resource"
+          "Observability"
         ],
         "summary": "Consult a bounded RE diagnostic window",
         "description": "Read-only; disabled until deployment verification and personal-data approval. Explicit UTC [from,to), maximum 24h. Resolves PA/NAV/token and expiry server-side. All RE events matching the AND keys are included, without FSM/primitive filters. With scope POSITION the paymentToken key is dropped: events of the whole PA + NAV pair, including token-less calls such as verifyPaymentNotice, are returned. Coverage never means full history; retained windows may be clipped. Signed opaque seek cursors freeze the ingestion watermark and expire after at most 300s. Maximum 100 events/page, 1000 events/consultation, 5MiB JSON/response. Decoded payload is untrusted plain text; no interpretation or decompression. All responses, including errors, are no-store.",
@@ -295,7 +298,7 @@
     "/api/attempts/{attemptId}/reveal": {
       "post": {
         "tags": [
-          "Token Resource"
+          "Observability"
         ],
         "parameters": [
           {
@@ -339,7 +342,7 @@
     "/api/catalog": {
       "get": {
         "tags": [
-          "Observability Resource"
+          "Observability"
         ],
         "responses": {
           "200": {
@@ -363,7 +366,7 @@
     "/api/creditors": {
       "get": {
         "tags": [
-          "Observability Resource"
+          "Observability"
         ],
         "responses": {
           "200": {
@@ -387,7 +390,7 @@
     "/api/creditors/{paFiscalCode}": {
       "get": {
         "tags": [
-          "Observability Resource"
+          "Observability"
         ],
         "parameters": [
           {
@@ -421,7 +424,7 @@
     "/api/creditors/{paFiscalCode}/stations": {
       "get": {
         "tags": [
-          "Observability Resource"
+          "Observability"
         ],
         "parameters": [
           {
@@ -455,7 +458,7 @@
     "/api/events": {
       "get": {
         "tags": [
-          "Events Resource"
+          "Observability"
         ],
         "parameters": [
           {
@@ -498,7 +501,7 @@
     "/api/freshness": {
       "get": {
         "tags": [
-          "Observability Resource"
+          "Observability"
         ],
         "responses": {
           "200": {
@@ -546,7 +549,7 @@
     "/api/nodo-monitoring/cache/version": {
       "get": {
         "tags": [
-          "Nodo Monitoring Resource"
+          "Observability"
         ],
         "summary": "Cache version of NDP001 and NDP004",
         "description": "Read-only. Calls Nodo monitoring once per node (X-Ndp-Target) in parallel and aggregates the results. A node that is unconfigured or unreachable is reported with its outcome and null cache fields, without failing the whole response.",
@@ -583,7 +586,7 @@
     "/api/overview": {
       "get": {
         "tags": [
-          "Observability Resource"
+          "Observability"
         ],
         "responses": {
           "200": {
@@ -607,7 +610,7 @@
     "/api/overview/primitive-warnings": {
       "get": {
         "tags": [
-          "Observability Resource"
+          "Observability"
         ],
         "responses": {
           "200": {
@@ -631,7 +634,7 @@
     "/api/payments": {
       "get": {
         "tags": [
-          "Observability Resource"
+          "Observability"
         ],
         "responses": {
           "200": {
@@ -655,7 +658,7 @@
     "/api/payments/{paFiscalCode}/{noticeNumber}": {
       "get": {
         "tags": [
-          "Observability Resource"
+          "Observability"
         ],
         "parameters": [
           {
@@ -697,7 +700,7 @@
     "/api/serviceIdentifiers": {
       "get": {
         "tags": [
-          "Observability Resource"
+          "Observability"
         ],
         "responses": {
           "200": {
@@ -724,7 +727,7 @@
     "/api/token-lookup": {
       "post": {
         "tags": [
-          "Token Resource"
+          "Observability"
         ],
         "requestBody": {
           "content": {
@@ -823,95 +826,10 @@
         }
       }
     },
-    "/internal/cache/{key}": {
-      "get": {
-        "tags": [
-          "Internal Resource"
-        ],
-        "parameters": [
-          {
-            "name": "key",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "application/json": {}
-            }
-          }
-        }
-      },
-      "delete": {
-        "tags": [
-          "Internal Resource"
-        ],
-        "parameters": [
-          {
-            "name": "key",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "application/json": {}
-            }
-          }
-        }
-      }
-    },
-    "/internal/cache/{key}/{value}": {
-      "put": {
-        "tags": [
-          "Internal Resource"
-        ],
-        "parameters": [
-          {
-            "name": "key",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "value",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
     "/internal/observability/sync/attempt": {
       "post": {
         "tags": [
-          "Online Status Sync Resource"
+          "Observability"
         ],
         "requestBody": {
           "description": "Payment key and attempt token",
@@ -944,13 +862,18 @@
           "502": {
             "description": "Unsupported state returned by Nodo Online"
           }
-        }
+        },
+        "security": [
+          {
+            "SecurityScheme": []
+          }
+        ]
       }
     },
     "/internal/observability/sync/payment": {
       "post": {
         "tags": [
-          "Online Status Sync Resource"
+          "Observability"
         ],
         "requestBody": {
           "description": "Payment key",
@@ -983,7 +906,12 @@
           "502": {
             "description": "Unsupported state returned by Nodo Online"
           }
-        }
+        },
+        "security": [
+          {
+            "SecurityScheme": []
+          }
+        ]
       }
     },
     "/organizations/{organizationFiscalCode}/iuv/{iuv}": {
@@ -1289,7 +1217,7 @@
     "/paymentToken/{paymentToken}": {
       "get": {
         "tags": [
-          "Position Payment Snapshot Resource"
+          "Observability"
         ],
         "parameters": [
           {
@@ -1319,7 +1247,12 @@
               }
             }
           }
-        }
+        },
+        "security": [
+          {
+            "SecurityScheme": []
+          }
+        ]
       }
     },
     "/snapshot/organizations/{organizationFiscalCode}": {
@@ -4504,7 +4437,7 @@
     "securitySchemes": {
       "SecurityScheme": {
         "type": "http",
-        "description": "Microsoft Entra ID token (MSAL ID token, audience = ENTRA_CLIENT_ID)",
+        "description": "Microsoft Entra ID token (MSAL ID token), validated by Azure APIM",
         "scheme": "bearer",
         "bearerFormat": "JWT"
       }

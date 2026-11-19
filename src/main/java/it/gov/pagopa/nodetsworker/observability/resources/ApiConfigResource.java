@@ -1,6 +1,7 @@
 package it.gov.pagopa.nodetsworker.observability.resources;
 
 import org.eclipse.microprofile.openapi.annotations.security.SecurityRequirement;
+import org.eclipse.microprofile.openapi.annotations.tags.Tag;
 import it.gov.pagopa.nodetsworker.observability.dto.ErrorDto;
 import it.gov.pagopa.nodetsworker.observability.dto.MaintenancesDto;
 import it.gov.pagopa.nodetsworker.observability.exception.Errors;
@@ -22,6 +23,7 @@ import org.eclipse.microprofile.openapi.annotations.responses.APIResponses;
 @Produces(MediaType.APPLICATION_JSON)
 @NoStore
 @SecurityRequirement(name = "SecurityScheme")
+@Tag(name = "Observability")
 public class ApiConfigResource {
   @Inject
   MaintenanceCache cache;

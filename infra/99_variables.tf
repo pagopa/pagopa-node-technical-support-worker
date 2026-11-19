@@ -28,7 +28,7 @@ variable "location_short" {
   type = string
   validation {
     condition = (
-    length(var.location_short) == 3
+      length(var.location_short) == 3
     )
     error_message = "Length must be 3 chars."
   }
@@ -64,9 +64,20 @@ variable "domain" {
   type = string
   validation {
     condition = (
-    length(var.domain) <= 12
+      length(var.domain) <= 12
     )
     error_message = "Max length is 12 chars."
   }
   default = "nodo"
+}
+
+variable "nodo_observability_entra_tenant_id" {
+  type        = string
+  default     = "7788edaf-0346-4068-9d79-c868aed15b3d"
+  description = "Entra ID tenant that issues the tokens of the Nodo Observability frontend"
+}
+
+variable "nodo_observability_entra_client_id" {
+  type        = string
+  description = "Application (client) id of the Nodo Observability frontend app registration on Entra ID"
 }

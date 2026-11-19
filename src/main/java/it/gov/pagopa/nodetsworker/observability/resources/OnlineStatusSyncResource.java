@@ -17,12 +17,16 @@ import org.eclipse.microprofile.openapi.annotations.media.Content;
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
 import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
 import org.eclipse.microprofile.openapi.annotations.responses.APIResponses;
+import org.eclipse.microprofile.openapi.annotations.security.SecurityRequirement;
+import org.eclipse.microprofile.openapi.annotations.tags.Tag;
 
 /** Internal endpoints for correcting observability state from Nodo Online. */
 @Path("/internal/observability/sync")
 @Produces(MediaType.APPLICATION_JSON)
 @Consumes(MediaType.APPLICATION_JSON)
 @NoStore
+@SecurityRequirement(name = "SecurityScheme")
+@Tag(name = "Observability")
 public class OnlineStatusSyncResource {
 
   @Inject
