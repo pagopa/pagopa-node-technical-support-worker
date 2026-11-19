@@ -210,6 +210,7 @@ run_merge() {
 
 assert_success_output() {
   local output="$1"
+  local output_mode
   "$JQ" -e '
     .openapi == "3.0.3" and
     .info.version == "1.2.3" and
@@ -247,11 +248,14 @@ assert_success_output() {
     .components.links.SameLink == {"operationId": "same"} and
     .components.callbacks.SameCallback == {"{$request.body#/url}": {"post": {"responses": {"200": {"description": "ok"}}}}}
   ' "$output" >/dev/null || fail "successful merge output did not satisfy merge assertions"
+  output_mode="$(stat -f '%Lp' "$output" 2>/dev/null || stat -c '%a' "$output" 2>/dev/null)" ||
+    fail "could not inspect output file permissions"
+  [[ "$output_mode" == 644 ]] || fail "successful merge output mode was $output_mode, expected 644"
 }
 
 printf 'Running merge success fixture...\n'
 rm -f "$OUTPUT" "$OUTPUT.expected"
-if ! run_merge "$SOURCE_ONE" "$SOURCE_TWO" "$OUTPUT"; then
+if ! (umask 077; run_merge "$SOURCE_ONE" "$SOURCE_TWO" "$OUTPUT"); then
   fail "success fixture: merge command failed"
 fi
 assert_success_output "$OUTPUT"
@@ -403,19 +407,47 @@ done
 expect_failure "missing jq" 'jq|dependenc|command' "$OUTPUT" \
   env PATH="$SHIM_DIR" bash "$MERGE_SCRIPT" "$SOURCE_ONE" "$SOURCE_TWO" "$OUTPUT"
 
-FAILING_TOUCH="$WORKSPACE/failing-touch"
-mkdir -p "$FAILING_TOUCH"
-for utility in bash dirname mv realpath readlink cat rm mkdir cp cmp find grep basename jq awk sed tr cut sort; do
-  ln -s "$(command -v "$utility")" "$FAILING_TOUCH/$utility"
+RACE_SHIM="$WORKSPACE/race-shim"
+RACE_OUTPUT="$WORKSPACE/output/symlink-race.json"
+RACE_SENTINEL="$WORKSPACE/symlink-race-sentinel"
+mkdir -p "$RACE_SHIM"
+for utility in bash dirname mv realpath readlink cat rm mkdir cp cmp find grep basename jq awk sed tr cut sort ln stat; do
+  ln -s "$(command -v "$utility")" "$RACE_SHIM/$utility"
 done
-cat >"$FAILING_TOUCH/touch" <<'SH'
+cat >"$RACE_SHIM/touch" <<'SH'
 #!/usr/bin/env bash
-echo "touch deliberately failed" >&2
-exit 1
+rm -f "$1"
+ln -s "$RACE_SENTINEL" "$1"
 SH
-chmod +x "$FAILING_TOUCH/touch"
-expect_failure "temporary output creation failure" 'temp|touch' "$OUTPUT" \
-  env PATH="$FAILING_TOUCH" bash "$MERGE_SCRIPT" "$SOURCE_ONE" "$SOURCE_TWO" "$OUTPUT"
+chmod +x "$RACE_SHIM/touch"
+printf 'symlink race sentinel bytes\n' >"$RACE_SENTINEL"
+cp "$RACE_SENTINEL" "$RACE_SENTINEL.expected"
+if ! env PATH="$RACE_SHIM" RACE_SENTINEL="$RACE_SENTINEL" bash "$MERGE_SCRIPT" \
+  "$SOURCE_ONE" "$SOURCE_TWO" "$RACE_OUTPUT" >"$WORKSPACE/stdout.log" 2>"$WORKSPACE/stderr.log"; then
+  cat "$WORKSPACE/stderr.log" >&2
+  fail "symlink race fixture: merge command failed"
+fi
+cmp -s "$RACE_SENTINEL.expected" "$RACE_SENTINEL" ||
+  fail "temporary-file creation followed a symlink and changed the sentinel"
+assert_success_output "$RACE_OUTPUT"
+pass "temporary-file creation does not follow a competing symlink"
+
+READONLY_DIR="$WORKSPACE/read-only-output"
+mkdir -p "$READONLY_DIR"
+READONLY_OUTPUT="$READONLY_DIR/merged.json"
+seed_output "$READONLY_OUTPUT"
+chmod 500 "$READONLY_DIR"
+if run_merge "$SOURCE_ONE" "$SOURCE_TWO" "$READONLY_OUTPUT" >"$WORKSPACE/stdout.log" 2>"$WORKSPACE/stderr.log"; then
+  chmod 700 "$READONLY_DIR"
+  fail "temporary output creation failure: expected nonzero exit"
+fi
+chmod 700 "$READONLY_DIR"
+grep -Eiq 'temp|create|output' "$WORKSPACE/stderr.log" ||
+  fail "temporary output creation failure: missing diagnostic"
+cmp -s "$READONLY_OUTPUT.expected" "$READONLY_OUTPUT" ||
+  fail "temporary output creation failure: output bytes changed"
+assert_no_output_temps "$READONLY_OUTPUT"
+pass "temporary output creation failure leaves existing output intact"
 
 FAILING_MV="$WORKSPACE/failing-mv"
 mkdir -p "$FAILING_MV"

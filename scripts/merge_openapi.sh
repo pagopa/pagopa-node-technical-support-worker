@@ -66,26 +66,38 @@ if [[ -e "$output_path" || -L "$output_path" ]]; then
 fi
 
 temp_output=''
+temp_fd_open=false
 cleanup() {
+  if [[ "$temp_fd_open" == true ]]; then
+    exec 3>&-
+  fi
   if [[ -n "$temp_output" ]]; then
     rm -f "$temp_output" 2>/dev/null || true
   fi
 }
 trap cleanup EXIT
 
+previous_umask="$(umask)"
+noclobber_was_set=false
+if [[ -o noclobber ]]; then
+  noclobber_was_set=true
+else
+  set -o noclobber
+fi
+umask 022
 for attempt in {1..20}; do
   candidate="$output_path.tmp.$$.${RANDOM}.${attempt}"
-  if [[ -e "$candidate" || -L "$candidate" ]]; then
-    continue
-  fi
-  if touch "$candidate" 2>/dev/null; then
+  if exec 3>"$candidate"; then
     temp_output="$candidate"
+    temp_fd_open=true
     break
   fi
-  temp_output="$candidate"
-  fail "could not create temporary output file in $output_dir_real"
 done
-if [[ -z "$temp_output" || ! -f "$temp_output" ]]; then
+if [[ "$noclobber_was_set" == false ]]; then
+  set +o noclobber
+fi
+umask "$previous_umask"
+if [[ -z "$temp_output" ]]; then
   fail "could not create a unique temporary output file in $output_dir_real"
 fi
 
@@ -155,9 +167,13 @@ if ! jq -n --slurpfile one "$source_one_real" --slurpfile two "$source_two_real"
       }
     end
   end
-' >"$temp_output"; then
+' >&3; then
+  exec 3>&-
+  temp_fd_open=false
   fail "could not validate or merge the OpenAPI inputs"
 fi
+exec 3>&-
+temp_fd_open=false
 
 if ! mv -f "$temp_output" "$output_path"; then
   fail "could not replace output file: $requested_output"
