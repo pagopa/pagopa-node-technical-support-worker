@@ -45,15 +45,14 @@ module "observability_api_v1" {
   service_url = local.nodo_observability_api.service_url
 
   content_format = "openapi"
-  content_value  = templatefile("../openapi/openapi.json", {
-    host = local.host,
+  content_value = templatefile("../openapi/openapi.json", {
+    host    = local.host,
     service = local.nodo_observability_api.product_id
   })
 
   xml_content = templatefile("./policy/nodo_observability/base_policy.xml", {
-    hostname = var.hostname
-    frontendUrl = "https://pagopa${var.env_short}weunodoobsvsa.z6.web.core.windows.net/"
-    localUrl = "http://localhost:4201/"
+    hostname    = var.hostname
+    frontendUrl = "https://pagopa${var.env_short}weunodoobsvsa.z6.web.core.windows.net"
+    localUrl    = "http://localhost:4201"
   })
 }
-
