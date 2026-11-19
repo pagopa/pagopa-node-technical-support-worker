@@ -1,25 +1,10 @@
 {
-  "swagger": "2.0",
-  "info": {
-    "description": "Specifiche di interfaccia Nodo ",
-    "version": "1.0.0",
-    "title": "Nodo direct service ${service}",
-    "license": {
-      "name": "Apache 2.0",
-      "url": "http://www.apache.org/licenses/LICENSE-2.0.html"
-    }
+  "openapi" : "3.0.1",
+  "info" : {
+    "title" : "CheckPosition",
+    "version" : "0.8.1"
   },
-  "host": "${host}",
-  "tags": [
-    {
-      "name": "Nodo",
-      "description": "Servizi esposti da Nodo dei Pagamenti"
-    }
-  ],
-  "schemes": [
-    "http"
-  ],
-  "paths": {
+  "paths" : {
     "/checkPosition": {
       "post": {
         "tags": [
@@ -37,7 +22,7 @@
             "name": "body",
             "required": true,
             "schema": {
-              "$ref": "#/definitions/CheckPosition"
+              "$ref": "#/components/schemas/CheckPosition"
             }
           }
         ],
@@ -45,89 +30,99 @@
           "200": {
             "description": "successful operation",
             "schema": {
-              "$ref": "#/definitions/CheckPositionResponse"
+              "$ref": "#/components/schemas/CheckPositionResponse"
             }
           },
           "400": {
             "description": "Bad Request",
             "schema": {
-              "$ref": "#/definitions/Error"
+              "$ref": "#/components/schemas/Error"
             }
           },
           "404": {
             "description": "Not found",
             "schema": {
-              "$ref": "#/definitions/Error"
+              "$ref": "#/components/schemas/Error"
             }
           },
           "408": {
             "description": "Request Timeout",
             "schema": {
-              "$ref": "#/definitions/Error"
+              "$ref": "#/components/schemas/Error"
             }
           },
           "422": {
             "description": "Unprocessable entry",
             "schema": {
-              "$ref": "#/definitions/Error"
+              "$ref": "#/components/schemas/Error"
             }
           }
         }
       }
     }
   },
-  "definitions": {
-    "CheckPosition" : {
-      "type": "object",
-      "required": ["positionslist"],
-      "properties": {
-        "positionslist": {
-          "type": "array",
-          "items": { "$ref": "#/definitions/listelement" },
-          "minItems": 1,
-          "maxItems": 5
+  "components" : {
+    "schemas" : {
+      "CheckPosition" : {
+        "type": "object",
+        "required": ["positionslist"],
+        "properties": {
+          "positionslist": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/listelement" },
+            "minItems": 1,
+            "maxItems": 5
+          }
         }
       },
-    },
-    "listelement": {
-      "type": "object",
-      "required": [ "fiscalCode", "noticeNumber" ],
-      "properties": {
-        "fiscalCode": {
-          "type": "string",
-          "pattern": "^[0-9]{11}$"
-        },
-        "noticeNumber": {
-          "type": "string",
-          "pattern": "^[0-9]{18}$"
+      "listelement": {
+        "type": "object",
+        "required": [ "fiscalCode", "noticeNumber" ],
+        "properties": {
+          "fiscalCode": {
+            "type": "string",
+            "pattern": "^[0-9]{11}$"
+          },
+          "noticeNumber": {
+            "type": "string",
+            "pattern": "^[0-9]{18}$"
+          }
+        }
+      },
+      "Error": {
+        "type": "object",
+        "required": [
+          "error"
+        ],
+        "properties": {
+          "error": {
+            "type": "string",
+            "example": "error message"
+          }
+        }
+      },
+      "CheckPositionResponse": {
+        "type": "object",
+        "required": [
+          "esito"
+        ],
+        "properties": {
+          "esito": {
+            "type": "string",
+            "enum": [
+              "OK",
+              "KO"
+            ]
+          }
         }
       }
     },
-    "Error": {
-      "type": "object",
-      "required": [
-        "error"
-      ],
-      "properties": {
-        "error": {
-          "type": "string",
-          "example": "error message"
-        }
-      }
-    },
-    "CheckPositionResponse": {
-      "type": "object",
-      "required": [
-        "esito"
-      ],
-      "properties": {
-        "esito": {
-          "type": "string",
-          "enum": [
-            "OK",
-            "KO"
-          ]
-        }
+    "securitySchemes" : {
+      "ApiKey" : {
+        "type" : "apiKey",
+        "description" : "The API key to access this function app.",
+        "name" : "Ocp-Apim-Subscription-Key",
+        "in" : "header"
       }
     }
   }

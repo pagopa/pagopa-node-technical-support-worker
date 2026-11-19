@@ -96,11 +96,6 @@ module "api_ndp_direct" { # direct API to NDP
     service = local.apim.product_id
   })
 
-  # xml_content = templatefile("./policy/_base_policy.xml", {
-  #   hostname = var.hostname
-  # })
-
-
   xml_content = templatestring(data.http.template_decoupler_policy.body, { # we consider decoupler ON 👀👇
     # address-range-from       = var.env_short == "p" ? "10.1.128.0" : "0.0.0.0"
     # address-range-to         = var.env_short == "p" ? "10.1.128.255" : "0.0.0.0"
@@ -109,12 +104,4 @@ module "api_ndp_direct" { # direct API to NDP
     is-nodo-auth-pwd-replace = false
   })
 
-  # xml_content = var.apim_nodo_decoupler_enable ? templatefile("./api_product/nodo_pagamenti_api/decoupler/base_policy.xml.tpl", { # decoupler ON
-  #   address-range-from       = var.env_short == "p" ? "10.1.128.0" : "0.0.0.0"
-  #   address-range-to         = var.env_short == "p" ? "10.1.128.255" : "0.0.0.0"
-  #   is-nodo-auth-pwd-replace = false
-  #   }) : templatefile("./api_product/nodo_pagamenti_api/_base_policy.xml", { # decoupler OFF
-  #   address-range-from = var.env_short == "p" ? "10.1.128.0" : "0.0.0.0"
-  #   address-range-to   = var.env_short == "p" ? "10.1.128.255" : "0.0.0.0"
-  # })  
 }
