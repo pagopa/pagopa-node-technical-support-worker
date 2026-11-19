@@ -53,6 +53,7 @@ module "observability_api_v1" {
   xml_content = templatefile("./policy/nodo_observability/base_policy.xml", {
     hostname = var.hostname
     frontendUrl = "https://pagopa${var.env_short}weunodoobsvsa.z6.web.core.windows.net/"
+    localUrl = "http://localhost:4201/"
   })
 }
 
