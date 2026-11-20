@@ -1,11 +1,3 @@
-# resource "azurerm_api_management_group" "observability_api_group" {
-#   name                = local.apim.product_id
-#   resource_group_name = local.apim.rg
-#   api_management_name = local.apim.name
-#   display_name        = "Nodo Observability"
-#   description         = "API di Osservabilità del Nodo dei Pagamenti"
-# }
-
 locals {
   nodo_observability_api = {
     display_name          = "Nodo Observability"
@@ -32,7 +24,7 @@ module "observability_api_v1" {
   resource_group_name   = local.apim.rg
   api_management_name   = local.apim.name
   product_ids           = [local.nodo_observability_api.product_id]
-  subscription_required = true
+  subscription_required = false
 
   version_set_id = azurerm_api_management_api_version_set.observability_api_version_set.id
   api_version    = "v1"
@@ -51,11 +43,22 @@ module "observability_api_v1" {
     service = local.nodo_observability_api.product_id
   })
 
-  xml_content = templatefile("./policy/nodo_observability/base_policy.xml", {
+  xml_content = templatefile("./policy/nodo_observability/api_group_base_policy.xml", {
     hostname      = var.hostname
     frontendUrl   = "https://pagopa${var.env_short}weunodoobsvsa.z6.web.core.windows.net"
-    localUrl      = "http://localhost:4201"
+    localUrl      = var.env_short == "d" ? "http://localhost:4201": ""
     entraTenantId = data.azurerm_client_config.current.tenant_id
     entraClientId = var.nodo_observability_entra_client_id
   })
+}
+
+resource "azurerm_api_management_api_operation_policy" "api_events_policy" {
+
+  api_name              = module.observability_api_v1.name
+  api_management_name   = local.apim.name
+  resource_group_name   = local.apim.rg
+
+  operation_id          = "get-api-events"
+
+  xml_content = file("./policy/nodo_observability/api_events_base_policy.xml")
 }
