@@ -3,7 +3,7 @@
     <cors>
       <allowed-origins>
         <origin>${frontendUrl}</origin>
-        <origin>${localUrl}</origin>
+        ${localUrl}
       </allowed-origins>
       <allowed-methods>
         <method>*</method>

@@ -46,7 +46,7 @@ module "observability_api_v1" {
   xml_content = templatefile("./policy/nodo_observability/api_group_base_policy.xml", {
     hostname      = var.hostname
     frontendUrl   = "https://pagopa${var.env_short}weunodoobsvsa.z6.web.core.windows.net"
-    localUrl      = var.env_short == "d" ? "http://localhost:4201": ""
+    localUrl      = var.env_short == "d" ? "<origin>http://localhost:4201</origin>": ""
     entraTenantId = data.azurerm_client_config.current.tenant_id
     entraClientId = var.nodo_observability_entra_client_id
   })
