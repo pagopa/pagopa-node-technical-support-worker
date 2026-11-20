@@ -30,3 +30,8 @@ replay_pid*
 /target/
 /infra/.terraform/
 /.identity/.terraform/
+/.run/uat.run.xml
+/env.dev
+/env.uat
+/docs/superpowers/
+/.worktrees/

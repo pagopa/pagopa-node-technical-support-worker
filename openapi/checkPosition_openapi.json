@@ -1,0 +1,153 @@
+{
+  "openapi": "3.0.1",
+  "info": {
+    "title": "CheckPosition",
+    "version": "1.3.2-nodo-observability"
+  },
+  "paths": {
+    "/checkPosition": {
+      "post": {
+        "tags": [
+          "Nodo"
+        ],
+        "summary": "checkPosition",
+        "description": "Ha lo scopo di consentire di fare il check di positions",
+        "operationId": "checkPosition",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CheckPosition"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "successful operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CheckPositionResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "408": {
+            "description": "Request Timeout",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Unprocessable entry",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "CheckPosition": {
+        "type": "object",
+        "required": [
+          "positionslist"
+        ],
+        "properties": {
+          "positionslist": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/listelement"
+            },
+            "minItems": 1,
+            "maxItems": 5
+          }
+        }
+      },
+      "listelement": {
+        "type": "object",
+        "required": [
+          "fiscalCode",
+          "noticeNumber"
+        ],
+        "properties": {
+          "fiscalCode": {
+            "type": "string",
+            "pattern": "^[0-9]{11}$"
+          },
+          "noticeNumber": {
+            "type": "string",
+            "pattern": "^[0-9]{18}$"
+          }
+        }
+      },
+      "Error": {
+        "type": "object",
+        "required": [
+          "error"
+        ],
+        "properties": {
+          "error": {
+            "type": "string",
+            "example": "error message"
+          }
+        }
+      },
+      "CheckPositionResponse": {
+        "type": "object",
+        "required": [
+          "esito"
+        ],
+        "properties": {
+          "esito": {
+            "type": "string",
+            "enum": [
+              "OK",
+              "KO"
+            ]
+          }
+        }
+      }
+    },
+    "securitySchemes": {
+      "ApiKey": {
+        "type": "apiKey",
+        "description": "The API key to access this function app.",
+        "name": "Ocp-Apim-Subscription-Key",
+        "in": "header"
+      }
+    }
+  }
+}
