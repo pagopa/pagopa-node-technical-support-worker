@@ -482,6 +482,21 @@ and the schemas they reference. Requires `jq`.
 
 `./scripts/observability_openapi.sh`
 
+To generate **./openapi/nodoTechnicalSupport.openapi.json**, containing the remaining operations and their
+referenced components, run the following command (requires Python 3):
+
+`./scripts/nodoTechnicalSupport_openapi.sh`
+
+The script excludes operations tagged `Observability` or `Observability Resource`. It also accepts input and
+output paths as optional positional arguments.
+
+To generate **./openapi/nodoTechnicalSupport_direct_openapi.json**, run `./scripts/merge_openapi.sh`
+(requires `jq`). Its sources are listed in `openapi/merge_direct_sources.txt`, one repository-relative path per
+line; add a path there to include another API. The first source supplies the base document's metadata.
+All sources must use the same OpenAPI and `info.version` values; conflicting paths or component
+definitions cause the merge to fail without replacing the existing output. For custom inputs, pass at
+least two source paths followed by the output path.
+
 ### Run the project
 
 Run in development mode with command

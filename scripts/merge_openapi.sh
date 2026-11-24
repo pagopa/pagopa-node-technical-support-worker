@@ -2,7 +2,7 @@
 set -euo pipefail
 
 usage() {
-  printf 'Usage: %s [<source-one.json> <source-two.json> <output.json>]\n' "$0" >&2
+  printf 'Usage: %s [<source.json> <source.json> ... <output.json>]\n' "$0" >&2
 }
 
 fail() {
@@ -14,35 +14,48 @@ if ! command -v jq >/dev/null 2>&1; then
   fail "jq is required but was not found in PATH"
 fi
 
-case "$#" in
-  0)
-    script_dir="$(cd -P "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-    repo_root="$(cd "$script_dir/.." && pwd -P)"
-    source_one="$repo_root/openapi/checkPosition_openapi.json"
-    source_two="$repo_root/openapi/paymentStatus_openapi.json"
-    requested_output="$repo_root/openapi/nodoTechnicalSupport_direct_openapi.json"
-    ;;
-  3)
-    source_one="$1"
-    source_two="$2"
-    requested_output="$3"
-    ;;
-  *)
-    usage
-    fail "expected either zero arguments or exactly three paths"
-    ;;
-esac
+sources=()
+if [[ "$#" -eq 0 ]]; then
+  script_dir="$(cd -P "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+  repo_root="$(cd "$script_dir/.." && pwd -P)"
+  source_list="$repo_root/openapi/merge_direct_sources.txt"
+  [[ -f "$source_list" && -r "$source_list" ]] ||
+    fail "source list is missing or unreadable: $source_list"
+  while IFS= read -r source || [[ -n "$source" ]]; do
+    [[ -z "$source" || "$source" == \#* ]] && continue
+    sources+=("$repo_root/$source")
+  done <"$source_list"
+  requested_output="$repo_root/openapi/nodoTechnicalSupport_direct_openapi.json"
+elif [[ "$#" -ge 3 ]]; then
+  while [[ "$#" -gt 1 ]]; do
+    sources+=("$1")
+    shift
+  done
+  requested_output="$1"
+else
+  usage
+  fail "expected either zero arguments or at least two input paths and an output path"
+fi
 
-for source in "$source_one" "$source_two"; do
+[[ "${#sources[@]}" -ge 2 ]] || fail "source list must contain at least two input paths"
+source_paths=()
+jq_args=()
+source_refs=''
+index=0
+for source in "${sources[@]}"; do
   if [[ ! -f "$source" || ! -r "$source" ]]; then
     fail "input source is missing, not a regular file, or unreadable: $source"
   fi
+  source_real="$(realpath "$source")" ||
+    fail "could not resolve input source path: $source"
+  source_paths+=("$source_real")
+  jq_args+=(--slurpfile "source$index" "$source_real")
+  if [[ -n "$source_refs" ]]; then
+    source_refs+=', '
+  fi
+  source_refs+="\$source$index"
+  index=$((index + 1))
 done
-
-source_one_real="$(realpath "$source_one")" ||
-  fail "could not resolve input source path: $source_one"
-source_two_real="$(realpath "$source_two")" ||
-  fail "could not resolve input source path: $source_two"
 
 if [[ -z "$requested_output" || -d "$requested_output" ]]; then
   fail "output must be a file path, not a directory"
@@ -59,10 +72,11 @@ output_path="$output_dir_real/$output_name"
 if [[ -e "$output_path" || -L "$output_path" ]]; then
   output_real="$(realpath "$output_path" 2>/dev/null)" ||
     fail "could not resolve existing output path: $requested_output"
-  if [[ "$output_real" == "$source_one_real" || "$output_real" == "$source_two_real" ]] ||
-    [[ "$output_path" -ef "$source_one" || "$output_path" -ef "$source_two" ]]; then
-    fail "output aliases an input source; refusing to replace it"
-  fi
+  for source in "${source_paths[@]}"; do
+    if [[ "$output_real" == "$source" || "$output_path" -ef "$source" ]]; then
+      fail "output aliases an input source; refusing to replace it"
+    fi
+  done
 fi
 
 temp_output=''
@@ -101,7 +115,7 @@ if [[ -z "$temp_output" ]]; then
   fail "could not create a unique temporary output file in $output_dir_real"
 fi
 
-if ! jq -n --slurpfile one "$source_one_real" --slurpfile two "$source_two_real" '
+if ! jq -n "${jq_args[@]}" "[$source_refs]"' |
   def validate($document; $label):
     if ($document | type) != "object" then
       error("\($label) must be a JSON object")
@@ -136,23 +150,25 @@ if ! jq -n --slurpfile one "$source_one_real" --slurpfile two "$source_two_real"
          .[$key] = $right[$key]
        end);
 
-  if ($one | length) != 1 then
-    error("source one must contain exactly one JSON document")
-  elif ($two | length) != 1 then
-    error("source two must contain exactly one JSON document")
-  else
-    $one[0] as $source_one |
-    $two[0] as $source_two |
-    validate($source_one; "source one") |
-    validate($source_two; "source two") |
-    if $source_one.openapi != $source_two.openapi then
+  [to_entries[] |
+    if (.value | length) != 1 then
+      error("source \(.key + 1) must contain exactly one JSON document")
+    else
+      .value[0] as $document |
+      validate($document; "source \(.key + 1)") |
+      $document
+    end] as $documents |
+  $documents[0] as $base |
+  reduce $documents[1:][] as $source
+    ($base;
+    if $base.openapi != $source.openapi then
       error("openapi versions do not match")
-    elif $source_one.info.version != $source_two.info.version then
+    elif $base.info.version != $source.info.version then
       error("info.version values do not match")
     else
-      ($source_one.components // {}) as $components_one |
-      ($source_two.components // {}) as $components_two |
-      merge_named("path"; $source_one.paths; $source_two.paths) as $paths |
+      (.components // {}) as $components_one |
+      ($source.components // {}) as $components_two |
+      merge_named("path"; .paths; $source.paths) as $paths |
       (reduce ((($components_one | keys) + ($components_two | keys)) | unique)[] as $category
         ({};
          .[$category] = merge_named(
@@ -160,13 +176,12 @@ if ! jq -n --slurpfile one "$source_one_real" --slurpfile two "$source_two_real"
            ($components_one[$category] // {});
            ($components_two[$category] // {})
          ))) as $components |
-      $source_one + {
-        info: ($source_one.info + {title: "Nodo Technical Support direct API"}),
+      . + {
         paths: $paths,
         components: $components
       }
-    end
-  end
+    end) |
+  .info.title = "Nodo Technical Support direct API"
 ' >&3; then
   exec 3>&-
   temp_fd_open=false

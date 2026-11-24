@@ -10,7 +10,8 @@
         "tags": [
           "PaymentStatus"
         ],
-        "summary": "Get payment status by token",
+        "summary": "paymentStatus",
+        "description": "Get payment status by token",
         "operationId": "paymentStatus",
         "parameters": [
           {

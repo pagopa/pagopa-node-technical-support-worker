@@ -262,10 +262,93 @@ assert_success_output "$OUTPUT"
 pass "successfully merges paths and all component categories"
 assert_no_output_temps "$OUTPUT"
 
+SOURCE_THREE="$FIXTURES/source-three.json"
+SOURCE_FOUR="$FIXTURES/source-four.json"
+"$JQ" '.paths = {"/three": {"get": {"operationId": "getThree"}}} |
+  .components = {"schemas": {"ThreeSchema": {"type": "number"}}}' "$SOURCE_TWO" >"$SOURCE_THREE"
+"$JQ" '.paths = {"/four": {"get": {"operationId": "getFour"}}} |
+  .components = {"schemas": {"FourSchema": {"type": "array"}}}' "$SOURCE_TWO" >"$SOURCE_FOUR"
+
+if ! run_merge "$SOURCE_ONE" "$SOURCE_TWO" "$SOURCE_THREE" "$SOURCE_FOUR" "$OUTPUT"; then
+  fail "multiple sources: merge command failed"
+fi
+assert_success_output "$OUTPUT"
+"$JQ" -e '.paths | has("/three") and has("/four")' "$OUTPUT" >/dev/null ||
+  fail "multiple sources: missing later paths"
+"$JQ" -e '.components.schemas | has("ThreeSchema") and has("FourSchema")' "$OUTPUT" >/dev/null ||
+  fail "multiple sources: missing later components"
+pass "merges four source arguments"
+
+DEFAULT_REPO="$WORKSPACE/default-repo"
+mkdir -p "$DEFAULT_REPO/scripts" "$DEFAULT_REPO/openapi"
+cp "$MERGE_SCRIPT" "$DEFAULT_REPO/scripts/merge_openapi.sh"
+cp "$SOURCE_ONE" "$DEFAULT_REPO/openapi/one.json"
+cp "$SOURCE_TWO" "$DEFAULT_REPO/openapi/two.json"
+cp "$SOURCE_THREE" "$DEFAULT_REPO/openapi/three.json"
+cp "$SOURCE_FOUR" "$DEFAULT_REPO/openapi/four.json"
+printf 'openapi/one.json\nopenapi/two.json\nopenapi/three.json\n' >"$DEFAULT_REPO/openapi/merge_sources.txt"
+(cd "$WORKSPACE" && bash "$DEFAULT_REPO/scripts/merge_openapi.sh") ||
+  fail "default source list: merge command failed"
+"$JQ" -e '.paths | has("/one") and has("/two") and has("/three") and (has("/four") | not)' \
+  "$DEFAULT_REPO/openapi/nodoTechnicalSupport_direct_openapi.json" >/dev/null ||
+  fail "default source list: wrong paths"
+printf 'openapi/four.json\n' >>"$DEFAULT_REPO/openapi/merge_sources.txt"
+(cd "$WORKSPACE" && bash "$DEFAULT_REPO/scripts/merge_openapi.sh") ||
+  fail "extended source list: merge command failed"
+"$JQ" -e '.paths | has("/one") and has("/two") and has("/three") and has("/four")' \
+  "$DEFAULT_REPO/openapi/nodoTechnicalSupport_direct_openapi.json" >/dev/null ||
+  fail "extended source list: missing paths"
+pass "uses and extends the default source list independently of the working directory"
+
 printf 'Running failure fixtures...\n'
 expect_failure "one argument" 'usage|argument' "$OUTPUT" run_merge "$SOURCE_ONE"
 expect_failure "two arguments" 'usage|argument' "$OUTPUT" run_merge "$SOURCE_ONE" "$SOURCE_TWO"
-expect_failure "four arguments" 'usage|argument' "$OUTPUT" run_merge "$SOURCE_ONE" "$SOURCE_TWO" "$OUTPUT" extra
+
+DEFAULT_OUTPUT="$DEFAULT_REPO/openapi/nodoTechnicalSupport_direct_openapi.json"
+printf '# only one source\n\nopenapi/one.json\n' >"$DEFAULT_REPO/openapi/merge_sources.txt"
+expect_failure "too few default sources" 'source|at least two' "$DEFAULT_OUTPUT" \
+  bash "$DEFAULT_REPO/scripts/merge_openapi.sh"
+rm "$DEFAULT_REPO/openapi/merge_sources.txt"
+expect_failure "missing source list" 'source list|missing' "$DEFAULT_OUTPUT" \
+  bash "$DEFAULT_REPO/scripts/merge_openapi.sh"
+
+"$JQ" '.paths["/two"].post.operationId = "conflicting"' "$SOURCE_THREE" >"$FIXTURES/third-conflict.json"
+expect_failure "conflict in later source" 'conflict|path' "$OUTPUT" \
+  run_merge "$SOURCE_ONE" "$SOURCE_TWO" "$FIXTURES/third-conflict.json" "$OUTPUT"
+"$JQ" '.components.schemas.SharedSchema = {"type": "boolean"}' "$SOURCE_THREE" >"$FIXTURES/third-component-conflict.json"
+expect_failure "component conflict in later source" 'conflict|component' "$OUTPUT" \
+  run_merge "$SOURCE_ONE" "$SOURCE_TWO" "$FIXTURES/third-component-conflict.json" "$OUTPUT"
+"$JQ" '.info.version = "different"' "$SOURCE_THREE" >"$FIXTURES/third-version.json"
+expect_failure "version mismatch in later source" 'mismatch|differ|version' "$OUTPUT" \
+  run_merge "$SOURCE_ONE" "$SOURCE_TWO" "$FIXTURES/third-version.json" "$OUTPUT"
+cp "$SOURCE_THREE" "$FIXTURES/third-multiple.json"
+printf '\n{}\n' >>"$FIXTURES/third-multiple.json"
+expect_failure "multiple documents in later source" 'exactly one|document' "$OUTPUT" \
+  run_merge "$SOURCE_ONE" "$SOURCE_TWO" "$FIXTURES/third-multiple.json" "$OUTPUT"
+cp "$SOURCE_THREE" "$WORKSPACE/source-three.expected"
+if run_merge "$SOURCE_ONE" "$SOURCE_TWO" "$SOURCE_THREE" "$SOURCE_THREE" >"$WORKSPACE/stdout.log" 2>"$WORKSPACE/stderr.log"; then
+  fail "later source output alias: expected nonzero exit"
+fi
+grep -Eiq 'same|alias|input|output|identif' "$WORKSPACE/stderr.log" ||
+  fail "later source output alias: missing diagnostic"
+cmp -s "$WORKSPACE/source-three.expected" "$SOURCE_THREE" ||
+  fail "later source output alias: source bytes changed"
+pass "rejects a later source as output"
+
+REAL_REPO="$WORKSPACE/real-repo"
+mkdir -p "$REAL_REPO/scripts" "$REAL_REPO/openapi"
+cp "$MERGE_SCRIPT" "$REAL_REPO/scripts/merge_openapi.sh"
+cp "$SCRIPT_DIR/../openapi/merge_sources.txt" "$REAL_REPO/openapi/merge_sources.txt"
+while IFS= read -r source || [[ -n "$source" ]]; do
+  [[ -z "$source" || "$source" == \#* ]] && continue
+  mkdir -p "$REAL_REPO/$(dirname "$source")"
+  cp "$SCRIPT_DIR/../$source" "$REAL_REPO/$source"
+done <"$REAL_REPO/openapi/merge_sources.txt"
+bash "$REAL_REPO/scripts/merge_openapi.sh" || fail "actual source list: merge command failed"
+"$JQ" -e '.paths | has("/checkPosition") and has("/paymentstatus") and has("/verifyPaymentNotice")' \
+  "$REAL_REPO/openapi/nodoTechnicalSupport_direct_openapi.json" >/dev/null ||
+  fail "actual source list: expected API paths missing"
+pass "merges the configured direct APIs"
 
 make_case_sources() {
   local case_dir="$1"
