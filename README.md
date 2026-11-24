@@ -107,7 +107,7 @@ exposes one row per (`serviceIdentifier`, `primitive`, `direction`) as `Overview
   to `primitive_warning` (migration `0007`) exactly when a call becomes a warning, with the request
   attributes held in `primitive_call` (`pa_fiscal_code` was added there for this). No payload, token,
   notice number or `sessionId` is stored; the rows follow `observability.retention.days`. Not published
-  via SSE: the console reads the list on demand. Cursors expire (`410`) on every aggregate revision change.
+  via SSE: the console reads the list on demand. List cursors page through a snapshot frozen at the first page (see Pagination below).
 * **Publication.** Every counted event bumps the aggregate revision and writes an aggregate-only
   outbox row (`outbox_event.primitive_changes`, signed differences) that `OutboxPublisher` coalesces.
 * **Filters.** `serviceIdentifier`, `psp`, `canale` and `stazione` (and `~unknown`) apply. State, anomaly
@@ -397,6 +397,19 @@ Synthetic validation (no credentials/connections to ADX):
 `./mvnw -q -Dtest=RePayloadTest,ReDiagnosticsTest,ReKustoSourceTest,ReTelemetryPrivacyTest,ReRequestLoggingTest,ReDisabledResourceTest,ReEventsResourceTest test`.
 REST tests use isolated H2 projection data and a mocked SDK boundary; SDK tests use
 synthetic result tables, including nanoseconds/scalars, cancellation and failures.
+
+## Pagination cursors
+
+List endpoints (`/api/payments`, `/api/attempts`, `/api/creditors`, `/api/creditors/{pa}/stations`,
+`/api/overview/primitive-warnings`) return `{items,nextCursor,snapshotRevision}`. The first page freezes
+the sorted result list and its aggregate revision in memory; `nextCursor` pages through that snapshot
+even while live traffic bumps the revision, so pages never skip or repeat rows. `snapshotRevision` stays
+the first page's revision: an SSE event with a newer `projectionRevision` means the results changed and the
+first page should be reloaded. Cursors are opaque, bound to caller, path, query, page size and sort
+(`400` otherwise) and expire `observability.cursor.ttl-seconds` (default 300 s) after being issued
+(`410 CURSOR_EXPIRED`). The store is per instance and in memory, bounded to 2048 cursors (the one closest
+to expiry is evicted first, then answers `410`): a cursor only works on the replica that issued it and is
+lost on restart. Each multi-page search keeps its full sorted list alive for the TTL.
 
 ## Authentication (Microsoft Entra ID)
 
