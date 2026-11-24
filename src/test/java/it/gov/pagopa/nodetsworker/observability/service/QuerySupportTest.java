@@ -4,7 +4,10 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import it.gov.pagopa.nodetsworker.observability.exception.ObservabilityException;
+import jakarta.ws.rs.core.MultivaluedHashMap;
+import jakarta.ws.rs.core.MultivaluedMap;
 import java.util.List;
+import java.util.Set;
 import org.junit.jupiter.api.Test;
 
 class QuerySupportTest {
@@ -71,19 +74,56 @@ class QuerySupportTest {
   }
 
   @Test
-  void rejectsValuesLongerThan256Characters() {
-    String tooLong = "12345678901:123456789012345678,"
-        + "99999999999:999999999999999999,"
-        + "88888888888:888888888888888888,"
-        + "77777777777:777777777777777777,"
-        + "66666666666:666666666666666666,"
-        + "55555555555:555555555555555555,"
-        + "44444444444:444444444444444444,"
-        + "33333333333:333333333333333333,"
-        + "22222222222:222222222222222222,"
-        + "11111111111:111111111111111111";
-    assertEquals(309, tooLong.length());
-    assertInvalid(tooLong);
+  void acceptsAFullDefaultPageOfTwentyPaymentKeys() {
+    String keys = paymentKeys(20);
+    assertEquals(619, keys.length());
+    assertEquals(20, QuerySupport.parsePaymentKeys(keys).size());
+  }
+
+  @Test
+  void acceptsUpToTheMaximumPageSizeOfPaymentKeys() {
+    assertEquals(QuerySupport.MAX_PAYMENT_KEYS,
+        QuerySupport.parsePaymentKeys(paymentKeys(QuerySupport.MAX_PAYMENT_KEYS)).size());
+  }
+
+  @Test
+  void rejectsMorePaymentKeysThanTheMaximumPageSize() {
+    assertInvalid(paymentKeys(QuerySupport.MAX_PAYMENT_KEYS + 1));
+  }
+
+  @Test
+  void rejectsValuesLongerThanTheMaximumKeyList() {
+    assertInvalid(paymentKeys(QuerySupport.MAX_PAYMENT_KEYS) + "1");
+  }
+
+  @Test
+  void otherQueryValuesKeepThe256CharacterLimit() {
+    MultivaluedMap<String, String> params = new MultivaluedHashMap<>();
+    params.putSingle("psp", "x".repeat(257));
+    assertThrows(ObservabilityException.class, () -> QuerySupport.validate(params, Set.of("psp")));
+    params.putSingle("psp", "x".repeat(256));
+    assertEquals("x".repeat(256), QuerySupport.validate(params, Set.of("psp")).get("psp"));
+  }
+
+  @Test
+  void keysQueryValueAcceptsAFullPageButNotMore() {
+    MultivaluedMap<String, String> params = new MultivaluedHashMap<>();
+    params.putSingle("keys", paymentKeys(QuerySupport.MAX_PAYMENT_KEYS));
+    assertEquals(paymentKeys(QuerySupport.MAX_PAYMENT_KEYS),
+        QuerySupport.validate(params, Set.of("keys")).get("keys"));
+    params.putSingle("keys", paymentKeys(QuerySupport.MAX_PAYMENT_KEYS) + ",");
+    assertThrows(ObservabilityException.class, () -> QuerySupport.validate(params, Set.of("keys")));
+  }
+
+  static String paymentKeys(int count) {
+    StringBuilder keys = new StringBuilder();
+    for (int i = 0; i < count; i++) {
+      if (i > 0) {
+        keys.append(',');
+      }
+      keys.append("12345678901:").append(String.format("3%017d", i));
+    }
+    return keys.toString();
   }
 
   private static void assertInvalid(String value) {

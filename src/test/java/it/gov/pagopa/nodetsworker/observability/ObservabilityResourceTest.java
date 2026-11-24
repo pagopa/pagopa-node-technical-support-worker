@@ -336,6 +336,25 @@ class ObservabilityResourceTest {
   }
 
   @Test
+  void paymentListEventsAcceptAFullPageOfKeysAndRejectMore() {
+    // Unknown payments: passing validation surfaces as 404, a rejected key list as 400.
+    given().when().get("/api/events?scope=payment-list&keys=" + paymentKeys(20, "00000000009"))
+        .then().statusCode(404).body("code", equalTo("NOT_FOUND"));
+    given().when().get("/api/events?scope=payment-list&keys=" + paymentKeys(100, "00000000009"))
+        .then().statusCode(404).body("code", equalTo("NOT_FOUND"));
+    given().when().get("/api/events?scope=payment-list&keys=" + paymentKeys(101, "00000000009"))
+        .then().statusCode(400).body("code", equalTo("INVALID_REQUEST"));
+  }
+
+  private static String paymentKeys(int count, String paFiscalCode) {
+    StringBuilder keys = new StringBuilder();
+    for (int i = 0; i < count; i++) {
+      keys.append(i > 0 ? "," : "").append(paFiscalCode).append(':').append(String.format("3%017d", i));
+    }
+    return keys.toString();
+  }
+
+  @Test
   void paymentListEventsNotFoundForMissingPayment() {
     given().when().get("/api/events?scope=payment-list&keys=00000000009:300000000000000099")
         .then().statusCode(404)

@@ -30,6 +30,18 @@ public final class QuerySupport {
   private static final Pattern PAYMENT_KEY_PA = Pattern.compile("[0-9]{11}");
   private static final Pattern PAYMENT_KEY_NOTICE = Pattern.compile("[0-9]{18}");
 
+  /** Generic per-value length limit for query parameters. */
+  static final int MAX_QUERY_VALUE_LENGTH = 256;
+
+  /**
+   * A payment-list stream covers at most one result page, whose size is capped by
+   * {@code observability.page.max-size} (default 100).
+   */
+  public static final int MAX_PAYMENT_KEYS = 100;
+
+  /** {@code PA(11) ':' notice(18)} per key plus one comma between keys. */
+  static final int MAX_PAYMENT_KEYS_LENGTH = MAX_PAYMENT_KEYS * 31 - 1;
+
   private QuerySupport() {
     throw new IllegalStateException("Utility class");
   }
@@ -52,14 +64,18 @@ public final class QuerySupport {
 
   /** Parse payment-list keys, rejecting malformed or duplicate pairs and returning canonical order. */
   public static List<PaymentKey> parsePaymentKeys(String value) {
-    if (value == null || value.isEmpty() || value.length() > 256
+    if (value == null || value.isEmpty() || value.length() > MAX_PAYMENT_KEYS_LENGTH
         || !value.chars().allMatch(character -> character <= 0x7f)) {
       throw Errors.invalidRequest();
     }
 
     List<PaymentKey> keys = new ArrayList<>();
     Set<PaymentKey> uniqueKeys = new HashSet<>();
-    for (String element : value.split(",", -1)) {
+    String[] elements = value.split(",", -1);
+    if (elements.length > MAX_PAYMENT_KEYS) {
+      throw Errors.invalidRequest();
+    }
+    for (String element : elements) {
       String[] parts = element.split(":", -1);
       if (parts.length != 2) {
         throw Errors.invalidRequest();
@@ -97,7 +113,8 @@ public final class QuerySupport {
         throw Errors.invalidRequest();
       }
       String value = values.get(0);
-      if (value == null || value.isEmpty() || value.length() > 256) {
+      int maxLength = "keys".equals(name) ? MAX_PAYMENT_KEYS_LENGTH : MAX_QUERY_VALUE_LENGTH;
+      if (value == null || value.isEmpty() || value.length() > maxLength) {
         throw Errors.invalidRequest();
       }
       q.put(name, value);
