@@ -9,10 +9,12 @@ technical-support and observability projections from it.
 
 Extend `generate_openapi` in `build-and-run.sh` to invoke, in order,
 `./scripts/nodoTechnicalSupport_openapi.sh` and
-`./scripts/observability_openapi.sh` with no arguments, immediately after
-downloading `openapi/openapi.json`. Both scripts use their repository-relative
-default source and output paths. The existing `set -e` behavior stops the flow
-if the download or either projection script fails.
+`./scripts/observability_openapi.sh` with no arguments, after downloading
+`openapi/openapi.json` and removing the temporary Docker container. Both
+scripts use their repository-relative default source and output paths. The
+existing `set -e` behavior stops the flow if the download or either projection
+script fails; running projections after container removal avoids leaving the
+container running when a projection fails.
 
 ## Alternatives
 
