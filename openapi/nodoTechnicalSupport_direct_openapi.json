@@ -2,7 +2,7 @@
   "openapi": "3.0.1",
   "info": {
     "title": "Nodo Technical Support direct API",
-    "version": "1.3.2-6-nodo-observability"
+    "version": "1.3.2-7-nodo-observability"
   },
   "paths": {
     "/checkPosition": {

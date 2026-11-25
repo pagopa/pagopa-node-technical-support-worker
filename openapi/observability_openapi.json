@@ -3,7 +3,7 @@
   "info": {
     "title": "Nodo Observability - API ${service}",
     "termsOfService": "https://www.pagopa.gov.it/",
-    "version": "1.3.2-6-nodo-observability"
+    "version": "1.3.2-7-nodo-observability"
   },
   "servers": [
     {
