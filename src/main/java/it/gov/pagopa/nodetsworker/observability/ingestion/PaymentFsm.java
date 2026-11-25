@@ -106,6 +106,12 @@ public final class PaymentFsm {
     return graph(entity).containsKey(state);
   }
 
+  /** Whether {@code state} is a known state of the entity's FSM with no outgoing transition. */
+  public static boolean isTerminal(Entity entity, String state) {
+    Set<String> next = graph(entity).get(state);
+    return next != null && next.isEmpty();
+  }
+
   /** A direct, FSM-allowed transition {@code from -> to}. */
   public static boolean isAllowed(Entity entity, String from, String to) {
     Set<String> next = graph(entity).get(from);

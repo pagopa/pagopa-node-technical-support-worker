@@ -411,6 +411,63 @@ first page should be reloaded. Cursors are opaque, bound to caller, path, query,
 to expiry is evicted first, then answers `410`): a cursor only works on the replica that issued it and is
 lost on restart. Each multi-page search keeps its full sorted list alive for the TTL.
 
+## Analytics: activations versus payment outcomes
+
+`GET /api/analytics/activations-outcomes` compares, on the same window and filters, two counters that
+are nearly identical when nothing is anomalous:
+
+- `activatePaymentNoticeOk` (`total`, `activatePaymentNotice`, `activatePaymentNoticeV2`): activations
+  with outcome OK, i.e. payment attempts (tokens) created by the activate. The Nodo issues a token, and the RE
+  `payment_PAYING` event, only for a successful activate. Each attempt counts once, in the minute of its
+  `PAYING` transition observed on a source RE event with `tipoEvento` `activatePaymentNotice`/V2; inferred
+  or synchronised `PAYING` items are excluded. The `esito` of RE interface events is only technical
+  (`RICEVUTA`/`INVIATA`) and is not used.
+- `sendPaymentOutcome` (`total`, `sendPaymentOutcome`, `sendPaymentOutcomeV2`): every request (REQ) received,
+  whatever its outcome, read from the per-minute primitive counters (deduplicated by `uniqueId` and
+  `sessionId`/`tipoEvento`).
+- `tokens` (`null` when `coverage.status=UNAVAILABLE`): the **same tokens** counted in
+  `activatePaymentNoticeOk` (same window and filters), each in exactly one category by its **last observed**
+  state; `total` = `activatePaymentNoticeOk.total` = sum of the five `total`s:
+  - `acceptedOutcome` (`total`, `sendPaymentOutcome`, `sendPaymentOutcomeV2`): tokens with at least one state
+    transition whose RE `tipoEvento` is `sendPaymentOutcome`/V2 (V2 if any V2 one). An accepted outcome always
+    moves the token (OK `PAYING` → `PAID`, KO → `FAILED`; V2 moves every token of the cart), while a rejected
+    one (e.g. a late request answered `PPT_TOKEN_SCADUTO` on a `CANCELLED` token) moves nothing;
+  - `cancelledByMod3Cancel` (`total`, `mod3Cancel`, `mod3CancelV2`), without an accepted outcome: `CANCELLED`
+    by the expiry job (the `tipoEvento` of the transition into `CANCELLED` starts with `mod3Cancel`, any case; a
+    `V2` suffix marks the V2 job; the RE values are `mod3CancelV1`/`mod3CancelV2`), whenever it happened, also
+    after the window end, so a recent window changes as tokens expire;
+  - `otherCancelled` (`total`, `byCause[{cause, count}]`): `CANCELLED` by any other recorded `tipoEvento`
+    (e.g. `closePayment-v2` for a negative closePayment, `nodoInviaRPT`);
+  - `nonTerminal` (`total`, `byState[{state, count}]`, one item per state): last observed state not final (e.g. `PAYING`,
+    `PAYMENT_ACCEPTED`). It means **final state not observed**, not "in progress": the later events may simply
+    not have been ingested;
+  - `otherTerminal` (`total`, `byState[{state, cause, count}]`): other final states without an accepted outcome.
+
+  `cause` (`otherCancelled`, `otherTerminal`) is the `tipoEvento` of the latest transition into the last observed
+  state, `null` when not recorded; each array sums to its category `total`;
+  arrays are sorted by `count` descending. Tokens without an accepted outcome are **not** requests never
+  received: `sendPaymentOutcome` requests and tokens are not 1:1.
+- `coverage` (`status`, `reasons`, `lastObservedEventAt`): the worker records no reliable ingestion watermark
+  (the Event Hub checkpoint says nothing about which source periods were delivered, and `freshness` is not
+  maintained), so the completeness of the timeline is **never asserted**: `status=UNKNOWN`,
+  `reasons=[NO_INGESTION_WATERMARK]`. Every figure is *observed* data: a token whose later events were not
+  ingested shows up in `nonTerminal`, and missing periods are not inferred from silence. `lastObservedEventAt`
+  is the source time of the latest attempt transition ingested (any window), informative only.
+  `status=UNAVAILABLE` (`reasons` also contains `RETENTION`, `tokens=null`) when the window starts before the
+  projection retention, since tokens may already be deleted.
+- `difference` = `sendPaymentOutcome.total` - `activatePaymentNoticeOk.total`: negative when outcomes are
+  missing. It is a raw indicator: requests and tokens are not 1:1 (a V2 request may carry up to 5 tokens, a
+  rejected late request is counted, an outcome may concern a token activated outside the window); `tokens`
+  is the per-token figure.
+
+Parameters: `from`, `to` (default last 60 minutes, at most 60 days), `live` (window open on the right),
+`serviceIdentifier`, `psp`, `canale`, `stazione` (`~unknown` matches a missing value). Any other parameter is a
+`400`. Both counters use the minute-aligned effective window returned in `window`: `from` is truncated to the
+minute and `to` is rounded up to the next minute (`null` when `live`). The counters carry no creditor, so a
+caller restricted to one creditor gets `403`. Data older than the
+retention (60 days) is gone. Expected legitimate differences: payments in flight across the window edges (the
+outcome follows the activate), tokens that expire or are cancelled without an outcome, and late events.
+
 ## Authentication (Microsoft Entra ID)
 
 Every `/api/*` operation, including the `/api/events` SSE stream, is called with

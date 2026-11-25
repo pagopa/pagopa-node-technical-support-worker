@@ -6,6 +6,7 @@ import it.gov.pagopa.nodetsworker.observability.domain.Filters;
 import it.gov.pagopa.nodetsworker.observability.domain.PrimitiveLogic;
 import it.gov.pagopa.nodetsworker.observability.domain.ProjectionLogic;
 import it.gov.pagopa.nodetsworker.observability.dto.AggregateDto;
+import it.gov.pagopa.nodetsworker.observability.dto.AnalyticsDto;
 import it.gov.pagopa.nodetsworker.observability.dto.AttemptDto;
 import it.gov.pagopa.nodetsworker.observability.dto.CatalogDto;
 import it.gov.pagopa.nodetsworker.observability.dto.CreditorDetailDto;
@@ -20,6 +21,9 @@ import it.gov.pagopa.nodetsworker.observability.dto.RevealResponseDto;
 import it.gov.pagopa.nodetsworker.observability.dto.StationRowDto;
 import it.gov.pagopa.nodetsworker.observability.dto.TokenLookupResponseDto;
 import it.gov.pagopa.nodetsworker.observability.dto.TrafficBucketDto;
+import it.gov.pagopa.nodetsworker.observability.dto.WindowDto;
+import it.gov.pagopa.nodetsworker.observability.domain.PrimitiveBucket;
+import it.gov.pagopa.nodetsworker.observability.util.IsoTime;
 import it.gov.pagopa.nodetsworker.observability.exception.Errors;
 import it.gov.pagopa.nodetsworker.observability.model.AttemptState;
 import it.gov.pagopa.nodetsworker.observability.model.LogicalState;
@@ -30,7 +34,10 @@ import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Comparator;
+import it.gov.pagopa.nodetsworker.observability.ingestion.PaymentFsm;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
+import java.util.Objects;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeSet;
@@ -154,6 +161,150 @@ public class ObservabilityService {
     dto.setPrimitives(PrimitiveLogic.rows(repository.primitiveBuckets(window[0], primitivesTo),
         QuerySupport.filters(q), window[0], window[1], caller.allowedPa(), live));
     return dto;
+  }
+
+  static final String ACTIVATE = "activatePaymentNotice";
+  static final String ACTIVATE_V2 = "activatePaymentNoticeV2";
+  static final String OUTCOME = "sendPaymentOutcome";
+  static final String OUTCOME_V2 = "sendPaymentOutcomeV2";
+
+  /**
+   * Activations with outcome OK versus {@code sendPaymentOutcome} requests on the same minute-aligned
+   * window and dimension filters. An activation is OK when the Nodo issued its payment token: the RE
+   * {@code payment_PAYING} event with {@code tipoEvento} activate V1/V2 (the interface {@code esito} is only
+   * technical and is not used). Outcomes count every V1/V2 request (OK or KO) from the primitive counters.
+   * Activated tokens with no transition triggered by {@code sendPaymentOutcome}/V2 (no accepted outcome) are
+   * broken down per token by current state and {@code mod3Cancel}/V2 cause. The
+   * counters carry no creditor, so a caller restricted to one creditor is refused.
+   */
+  public AnalyticsDto activationsOutcomes(Caller caller, Map<String, String> q) {
+    if (caller.allowedPa() != null) {
+      throw Errors.forbidden("Analytics non disponibili per un ente creditore.");
+    }
+    Instant now = Instant.now();
+    Instant[] window = QuerySupport.window(q, now, config);
+    boolean live = QuerySupport.live(q);
+    Instant from = PrimitiveLogic.bucketOf(window[0]);
+    Instant to = live ? null : ceilMinute(window[1]);
+    Filters filters = QuerySupport.filters(q);
+
+    long activate = 0;
+    long activateV2 = 0;
+    for (var group : repository.activationGroups(List.of(ACTIVATE, ACTIVATE_V2), from, to)) {
+      if (PrimitiveLogic.matchesDimensions(group.serviceIdentifier(), group.psp(), group.canale(),
+          group.stazione(), filters)) {
+        if (ACTIVATE.equals(group.trigger())) {
+          activate += group.attempts();
+        } else {
+          activateV2 += group.attempts();
+        }
+      }
+    }
+    boolean retained = !from.isBefore(now.minus(config.retentionDays(), ChronoUnit.DAYS));
+    Instant lastObserved = repository.lastObservedAttemptEvent();
+    // No reliable source watermark is recorded: completeness cannot be proven, so it is never asserted.
+    var coverage = retained
+        ? new AnalyticsDto.CoverageDto("UNKNOWN", List.of("NO_INGESTION_WATERMARK"), IsoTime.format(lastObserved))
+        : new AnalyticsDto.CoverageDto("UNAVAILABLE", List.of("RETENTION", "NO_INGESTION_WATERMARK"),
+            IsoTime.format(lastObserved));
+    AnalyticsDto.TokensDto tokens = retained
+        ? tokenBreakdown(repository.tokenGroups(List.of(ACTIVATE, ACTIVATE_V2), OUTCOME, OUTCOME_V2, from, to),
+            filters)
+        : null;
+    long outcome = 0;
+    long outcomeV2 = 0;
+    // A live window has no upper bound; one day ahead covers every request still to be recorded.
+    for (PrimitiveBucket bucket : repository.primitiveBuckets(from, to == null ? now.plus(1, ChronoUnit.DAYS) : to)) {
+      if (!PrimitiveLogic.matchesDimensions(bucket.serviceIdentifier(), bucket.psp(), bucket.canale(),
+          bucket.stazione(), filters)) {
+        continue;
+      }
+      if (OUTCOME.equals(bucket.primitive())) {
+        outcome += bucket.requests();
+      } else if (OUTCOME_V2.equals(bucket.primitive())) {
+        outcomeV2 += bucket.requests();
+      }
+    }
+    long activations = activate + activateV2;
+    long outcomes = outcome + outcomeV2;
+    return new AnalyticsDto(
+        new WindowDto(IsoTime.format(from), to == null ? null : IsoTime.format(to)), live,
+        new AnalyticsDto.ActivationsDto(activations, activate, activateV2),
+        new AnalyticsDto.OutcomesDto(outcomes, outcome, outcomeV2),
+        tokens, coverage, outcomes - activations, freshnessService.current(), IsoTime.format(now));
+  }
+
+  static AnalyticsDto.TokensDto tokenBreakdown(List<ProjectionRepository.TokenGroup> groups,
+      Filters filters) {
+    long accepted = 0;
+    long acceptedV2 = 0;
+    long mod3 = 0;
+    long mod3V2 = 0;
+    Map<String, Long> cancelledByCause = new HashMap<>();
+    Map<String, Long> nonTerminal = new HashMap<>();
+    Map<List<String>, Long> otherTerminal = new HashMap<>();
+    for (var g : groups) {
+      if (!PrimitiveLogic.matchesDimensions(g.serviceIdentifier(), g.psp(), g.canale(), g.stazione(), filters)) {
+        continue;
+      }
+      String cause = g.cause() == null ? null : g.cause().toLowerCase(java.util.Locale.ROOT);
+      if (g.outcomeVersion() == 2) {
+        acceptedV2 += g.attempts();
+      } else if (g.outcomeVersion() == 1) {
+        accepted += g.attempts();
+      } else if ("CANCELLED".equals(g.currentState()) && cause != null && cause.startsWith("mod3cancel")) {
+        if (cause.endsWith("v2")) {
+          mod3V2 += g.attempts();
+        } else {
+          mod3 += g.attempts();
+        }
+      } else if ("CANCELLED".equals(g.currentState())) {
+        cancelledByCause.merge(Objects.toString(g.cause(), NO_CAUSE), g.attempts(), Long::sum);
+      } else if (PaymentFsm.isTerminal(it.gov.pagopa.nodetsworker.observability.ingestion.AdmissionFilter.Entity.PAYMENT, g.currentState())) {
+        otherTerminal.merge(java.util.Arrays.asList(g.currentState(), g.cause()), g.attempts(), Long::sum);
+      } else {
+        nonTerminal.merge(g.currentState(), g.attempts(), Long::sum);
+      }
+    }
+    var byCause = cancelledByCause.entrySet().stream()
+        .map(e -> new AnalyticsDto.Bucket(null, NO_CAUSE.equals(e.getKey()) ? null : e.getKey(), e.getValue()))
+        .toList();
+    var byState = nonTerminal.entrySet().stream()
+        .map(e -> new AnalyticsDto.StateCount(e.getKey(), e.getValue()))
+        .sorted(java.util.Comparator.comparingLong(AnalyticsDto.StateCount::getCount).reversed()
+            .thenComparing(AnalyticsDto.StateCount::getState))
+        .toList();
+    var terminal = buckets(otherTerminal);
+    var cancelled = new AnalyticsDto.ByCauseDto(sum(byCause), sorted(byCause));
+    var open = new AnalyticsDto.NonTerminalDto(byState.stream().mapToLong(AnalyticsDto.StateCount::getCount).sum(),
+        byState);
+    var otherFinal = new AnalyticsDto.ByStateDto(sum(terminal), sorted(terminal));
+    long total = accepted + acceptedV2 + mod3 + mod3V2 + cancelled.getTotal() + open.getTotal()
+        + otherFinal.getTotal();
+    return new AnalyticsDto.TokensDto(total, new AnalyticsDto.OutcomesDto(accepted + acceptedV2, accepted, acceptedV2),
+        new AnalyticsDto.CancellationsDto(mod3 + mod3V2, mod3, mod3V2), cancelled, open, otherFinal);
+  }
+
+  /** Map key for a cause not recorded (a tipoEvento never contains a NUL character). */
+  private static final String NO_CAUSE = "\0";
+
+  private static List<AnalyticsDto.Bucket> buckets(Map<List<String>, Long> byStateAndCause) {
+    return byStateAndCause.entrySet().stream()
+        .map(e -> new AnalyticsDto.Bucket(e.getKey().get(0), e.getKey().get(1), e.getValue())).toList();
+  }
+
+  private static long sum(List<AnalyticsDto.Bucket> buckets) {
+    return buckets.stream().mapToLong(AnalyticsDto.Bucket::getCount).sum();
+  }
+
+  private static List<AnalyticsDto.Bucket> sorted(List<AnalyticsDto.Bucket> buckets) {
+    return buckets.stream().sorted(java.util.Comparator.comparingLong(AnalyticsDto.Bucket::getCount).reversed()
+        .thenComparing(b -> Objects.toString(b.getState(), "") + Objects.toString(b.getCause(), ""))).toList();
+  }
+
+  private static Instant ceilMinute(Instant instant) {
+    Instant floor = PrimitiveLogic.bucketOf(instant);
+    return floor.equals(instant) ? floor : floor.plus(1, ChronoUnit.MINUTES);
   }
 
   /**

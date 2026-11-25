@@ -2,6 +2,7 @@ package it.gov.pagopa.nodetsworker.observability.resources;
 
 import org.eclipse.microprofile.openapi.annotations.security.SecurityRequirement;
 import org.eclipse.microprofile.openapi.annotations.tags.Tag;
+import it.gov.pagopa.nodetsworker.observability.dto.AnalyticsDto;
 import it.gov.pagopa.nodetsworker.observability.dto.AttemptDto;
 import it.gov.pagopa.nodetsworker.observability.dto.CatalogDto;
 import it.gov.pagopa.nodetsworker.observability.dto.CreditorDetailDto;
@@ -45,6 +46,8 @@ public class ObservabilityResource {
   private static final Set<String> OVERVIEW_PARAMS = withExtra("from", "to", "live");
   private static final Set<String> PRIMITIVE_WARNING_PARAMS =
       withExtra("from", "to", "live", "primitive", "pageSize", "cursor");
+  private static final Set<String> ANALYTICS_PARAMS =
+      Set.of("from", "to", "live", "serviceIdentifier", "psp", "canale", "stazione");
   private static final Set<String> CREDITOR_PARAMS = withExtra("from", "to", "pageSize", "cursor", "sort");
 
   @Inject
@@ -125,6 +128,18 @@ public class ObservabilityResource {
     Map<String, String> q = QuerySupport.validate(query(uriInfo), OVERVIEW_PARAMS);
     QuerySupport.checkAggregate(q);
     return service.overview(callerResolver.resolve(), q);
+  }
+
+  /**
+   * Activations with outcome OK ({@code activatePaymentNotice}/V2) versus {@code sendPaymentOutcome}/V2
+   * requests on the same minute-aligned window and filters; without anomalies they are nearly identical.
+   */
+  @GET
+  @Tag(name = "Observability")
+  @Path("/analytics/activations-outcomes")
+  public AnalyticsDto activationsOutcomes(@Context UriInfo uriInfo) {
+    Map<String, String> q = QuerySupport.validate(query(uriInfo), ANALYTICS_PARAMS);
+    return service.activationsOutcomes(callerResolver.resolve(), q);
   }
 
   /** Calls counted in {@code Overview.primitives[].warnings}: PSP, channel, creditor, station and time. */

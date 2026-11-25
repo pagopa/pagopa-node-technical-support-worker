@@ -161,6 +161,107 @@ public class ProjectionRepository {
         .getResultList();
   }
 
+  // --- analytics ------------------------------------------------------------
+
+  /** Attempt dimensions plus the number of attempts that entered {@code PAYING} through one trigger. */
+  public record ActivationGroup(String trigger, String serviceIdentifier, String psp, String canale,
+      String stazione, long attempts) {
+  }
+
+  /**
+   * Attempts whose {@code PAYING} transition was observed on a source RE event in {@code [from, to)} with
+   * one of {@code triggers} as application trigger, grouped by trigger and attempt dimensions. A {@code null}
+   * {@code to} leaves the window open. Inferred or anomalous {@code PAYING} items are not counted.
+   */
+  @Transactional
+  public List<ActivationGroup> activationGroups(List<String> triggers, Instant from, Instant to) {
+    var query = em.createQuery(
+            "SELECT t.trigger, a.serviceIdentifier, a.psp, a.canale, a.stazione, COUNT(DISTINCT a.id)"
+                + " FROM AttemptTransitionEntity t JOIN t.attempt a"
+                + " WHERE t.state = 'PAYING' AND t.timestampBasis = :basis AND t.trigger IN :triggers"
+                + " AND t.transitionAt >= :from" + (to == null ? "" : " AND t.transitionAt < :to")
+                + " GROUP BY t.trigger, a.serviceIdentifier, a.psp, a.canale, a.stazione",
+            Object[].class)
+        .setParameter("basis", it.gov.pagopa.nodetsworker.observability.model.TimestampBasis.SOURCE_EVENT)
+        .setParameter("triggers", triggers)
+        .setParameter("from", from);
+    if (to != null) {
+      query.setParameter("to", to);
+    }
+    return query.getResultList().stream()
+        .map(r -> new ActivationGroup((String) r[0], blankToNull((String) r[1]), blankToNull((String) r[2]),
+            blankToNull((String) r[3]), blankToNull((String) r[4]), ((Number) r[5]).longValue()))
+        .toList();
+  }
+
+  /**
+   * Activated attempts grouped by their accepted-outcome version (0 none, 1 V1 only, 2 any V2), current state,
+   * trigger of the latest transition into the current state ({@code null} when not recorded) and dimensions.
+   */
+  public record TokenGroup(int outcomeVersion, String currentState, String cause, String serviceIdentifier,
+      String psp, String canale, String stazione, long attempts) {
+  }
+
+  /**
+   * The attempts counted by {@link #activationGroups} for the same arguments, each in exactly one group. An
+   * accepted outcome is a transition triggered by {@code outcomeV1} or {@code outcomeV2}.
+   */
+  @Transactional
+  public List<TokenGroup> tokenGroups(List<String> activationTriggers, String outcomeV1, String outcomeV2,
+      Instant from, Instant to) {
+    String v2 = "EXISTS (SELECT 1 FROM AttemptTransitionEntity o2 WHERE o2.attempt = a AND o2.trigger = :v2)";
+    String v1 = "EXISTS (SELECT 1 FROM AttemptTransitionEntity o1 WHERE o1.attempt = a AND o1.trigger = :v1)";
+    // One query per version keeps the GROUP BY free of parameterised expressions (portable across dialects).
+    List<TokenGroup> result = new java.util.ArrayList<>();
+    result.addAll(tokenGroups(2, v2, activationTriggers, outcomeV1, outcomeV2, from, to));
+    result.addAll(tokenGroups(1, "NOT " + v2 + " AND " + v1, activationTriggers, outcomeV1, outcomeV2, from, to));
+    result.addAll(tokenGroups(0, "NOT " + v2 + " AND NOT " + v1, activationTriggers, outcomeV1, outcomeV2, from,
+        to));
+    return result;
+  }
+
+  private List<TokenGroup> tokenGroups(int version, String versionCondition, List<String> activationTriggers,
+      String outcomeV1, String outcomeV2, Instant from, Instant to) {
+    var query = em.createQuery(
+            "SELECT a.currentState, c.trigger, a.serviceIdentifier, a.psp, a.canale, a.stazione,"
+                + " COUNT(DISTINCT a.id)"
+                + " FROM AttemptTransitionEntity t JOIN t.attempt a"
+                + " LEFT JOIN AttemptTransitionEntity c ON c.attempt = a AND c.state = a.currentState"
+                + " AND c.id = (SELECT MAX(c2.id) FROM AttemptTransitionEntity c2 WHERE c2.attempt = a"
+                + " AND c2.state = a.currentState)"
+                + " WHERE t.state = 'PAYING' AND t.timestampBasis = :basis AND t.trigger IN :triggers"
+                + " AND t.transitionAt >= :from" + (to == null ? "" : " AND t.transitionAt < :to")
+                + " AND " + versionCondition
+                + " GROUP BY a.currentState, c.trigger, a.serviceIdentifier, a.psp, a.canale, a.stazione",
+            Object[].class)
+        .setParameter("basis", it.gov.pagopa.nodetsworker.observability.model.TimestampBasis.SOURCE_EVENT)
+        .setParameter("triggers", activationTriggers)
+        .setParameter("from", from);
+    if (versionCondition.contains(":v2")) {
+      query.setParameter("v2", outcomeV2);
+    }
+    if (versionCondition.contains(":v1")) {
+      query.setParameter("v1", outcomeV1);
+    }
+    if (to != null) {
+      query.setParameter("to", to);
+    }
+    return query.getResultList().stream()
+        .map(r -> new TokenGroup(version, (String) r[0], blankToNull((String) r[1]), blankToNull((String) r[2]),
+            blankToNull((String) r[3]), blankToNull((String) r[4]), blankToNull((String) r[5]),
+            ((Number) r[6]).longValue()))
+        .toList();
+  }
+
+  /** Source time of the latest attempt transition observed on a source event, or {@code null}. */
+  @Transactional
+  public Instant lastObservedAttemptEvent() {
+    return em.createQuery("SELECT MAX(t.transitionAt) FROM AttemptTransitionEntity t"
+            + " WHERE t.timestampBasis = :basis", Instant.class)
+        .setParameter("basis", it.gov.pagopa.nodetsworker.observability.model.TimestampBasis.SOURCE_EVENT)
+        .getSingleResult();
+  }
+
   // --- primitive counters ---------------------------------------------------
 
   /** Primitive counter rows whose minute lies in the window; empty-string dimensions map to null. */

@@ -38,6 +38,13 @@ public final class PrimitiveLogic {
     return !bucketStart.isBefore(bucketOf(from)) && bucketStart.isBefore(to);
   }
 
+  /** Whether a row with these dimensions passes the {@code serviceIdentifier}/{@code psp}/{@code canale}/{@code stazione} filters. */
+  public static boolean matchesDimensions(String serviceIdentifier, String psp, String canale, String stazione,
+      Filters filters) {
+    return match(serviceIdentifier, filters.getServiceIdentifier()) && match(psp, filters.getPsp())
+        && match(canale, filters.getCanale()) && match(stazione, filters.getStazione());
+  }
+
   private static boolean match(String value, String wanted) {
     if (wanted == null) {
       return true;

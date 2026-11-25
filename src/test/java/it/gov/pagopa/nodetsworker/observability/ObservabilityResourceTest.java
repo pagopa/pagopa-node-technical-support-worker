@@ -87,6 +87,25 @@ class ObservabilityResourceTest {
   }
 
   @Test
+  void activationsOutcomesValidatesItsParameters() {
+    given().when().get("/api/analytics/activations-outcomes").then().statusCode(200)
+        .body("activatePaymentNoticeOk.total", org.hamcrest.Matchers.notNullValue())
+        .body("sendPaymentOutcome.total", org.hamcrest.Matchers.notNullValue())
+        .body("window.from", org.hamcrest.Matchers.endsWith(":00.000Z"))
+        .body("freshness", org.hamcrest.Matchers.notNullValue())
+        .body("coverage.status", equalTo("UNKNOWN"))
+        .body("coverage.reasons", hasItem("NO_INGESTION_WATERMARK"))
+        .body("tokens.total", org.hamcrest.Matchers.notNullValue());
+    given().when().get("/api/analytics/activations-outcomes?live=true&psp=~unknown").then().statusCode(200)
+        .body("live", org.hamcrest.Matchers.is(true))
+        .body("window.to", org.hamcrest.Matchers.nullValue());
+    given().when().get("/api/analytics/activations-outcomes?paFiscalCode=00000000001").then().statusCode(400);
+    given().when().get("/api/analytics/activations-outcomes?live=maybe").then().statusCode(400);
+    given().when().get("/api/analytics/activations-outcomes?from=2024-06-16T00:00:00.000Z&to=2024-06-15T00:00:00.000Z")
+        .then().statusCode(400);
+  }
+
+  @Test
   void liveFlagIsAcceptedOnlyOnTheOverviewWindow() {
     given().when().get("/api/overview?live=true").then().statusCode(200)
         .body("primitives", org.hamcrest.Matchers.notNullValue());

@@ -1351,10 +1351,122 @@
           }
         }
       }
+    },
+    "/api/analytics/activations-outcomes": {
+      "get": {
+        "tags": [
+          "Observability"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ActivationsOutcomes"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "SecurityScheme": []
+          }
+        ]
+      }
     }
   },
   "components": {
     "schemas": {
+      "ActivationCounts": {
+        "required": [
+          "total",
+          "activatePaymentNotice",
+          "activatePaymentNoticeV2"
+        ],
+        "type": "object",
+        "properties": {
+          "total": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "activatePaymentNotice": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "activatePaymentNoticeV2": {
+            "format": "int64",
+            "type": "integer"
+          }
+        },
+        "additionalProperties": false
+      },
+      "ActivationsOutcomes": {
+        "required": [
+          "window",
+          "live",
+          "activatePaymentNoticeOk",
+          "sendPaymentOutcome",
+          "tokens",
+          "coverage",
+          "difference",
+          "freshness",
+          "generatedAt"
+        ],
+        "type": "object",
+        "properties": {
+          "window": {
+            "$ref": "#/components/schemas/WindowDto"
+          },
+          "live": {
+            "type": "boolean"
+          },
+          "activatePaymentNoticeOk": {
+            "description": "Payment attempts (tokens) created by activatePaymentNotice/V2, i.e. activations with outcome OK: RE payment_PAYING with that tipoEvento, counted once per token in its minute",
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ActivationCounts"
+              }
+            ]
+          },
+          "sendPaymentOutcome": {
+            "description": "sendPaymentOutcome/V2 requests (REQ) received, any outcome, deduplicated, in the minute of the request",
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/OutcomeCounts"
+              }
+            ]
+          },
+          "tokens": {
+            "description": "Per-token breakdown of activatePaymentNoticeOk (same tokens, window and filters) by last observed state; null when coverage.status is UNAVAILABLE",
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ActivatedTokens"
+              }
+            ],
+            "nullable": true
+          },
+          "coverage": {
+            "$ref": "#/components/schemas/AnalyticsCoverage"
+          },
+          "difference": {
+            "format": "int64",
+            "description": "sendPaymentOutcome.total - activatePaymentNoticeOk.total: negative when outcomes are missing. Raw indicator: requests and tokens are not 1:1 (a V2 request may carry up to 5 tokens, a rejected late request is counted); tokens is the per-token figure",
+            "type": "integer"
+          },
+          "freshness": {
+            "$ref": "#/components/schemas/FreshnessDto"
+          },
+          "generatedAt": {
+            "type": "string"
+          }
+        },
+        "additionalProperties": false
+      },
       "AggregateChanges": {
         "description": "Signed additive differences; durationSnapshot is the authoritative replacement, including an empty array.",
         "required": [
@@ -2600,6 +2712,52 @@
             "example": 3
           }
         }
+      },
+      "Mod3CancelCounts": {
+        "required": [
+          "total",
+          "mod3Cancel",
+          "mod3CancelV2"
+        ],
+        "type": "object",
+        "properties": {
+          "total": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "mod3Cancel": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "mod3CancelV2": {
+            "format": "int64",
+            "type": "integer"
+          }
+        },
+        "additionalProperties": false
+      },
+      "OutcomeCounts": {
+        "required": [
+          "total",
+          "sendPaymentOutcome",
+          "sendPaymentOutcomeV2"
+        ],
+        "type": "object",
+        "properties": {
+          "total": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "sendPaymentOutcome": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "sendPaymentOutcomeV2": {
+            "format": "int64",
+            "type": "integer"
+          }
+        },
+        "additionalProperties": false
       },
       "OverviewDto": {
         "required": [
@@ -4432,6 +4590,204 @@
             "type": "string"
           }
         }
+      },
+      "ActivatedTokens": {
+        "description": "Each token counted once by its last observed state: observed data, not necessarily the real state (see coverage). total = activatePaymentNoticeOk.total = sum of the five categories",
+        "required": [
+          "total",
+          "acceptedOutcome",
+          "cancelledByMod3Cancel",
+          "otherCancelled",
+          "nonTerminal",
+          "otherTerminal"
+        ],
+        "type": "object",
+        "properties": {
+          "total": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "acceptedOutcome": {
+            "description": "Tokens with at least one state transition triggered by sendPaymentOutcome/V2 (an accepted outcome, OK or KO); V2 when any such transition is V2",
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/OutcomeCounts"
+              }
+            ]
+          },
+          "cancelledByMod3Cancel": {
+            "description": "No accepted outcome; CANCELLED through the mod3Cancel/mod3CancelV2 expiry job, whenever it happened, also after the window",
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/Mod3CancelCounts"
+              }
+            ]
+          },
+          "otherCancelled": {
+            "description": "No accepted outcome; CANCELLED by another cause",
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/TokensByCause"
+              }
+            ]
+          },
+          "nonTerminal": {
+            "description": "No accepted outcome; last observed state not final in the attempt FSM: the final state has not been observed (not necessarily a payment in progress)",
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/TokensByObservedState"
+              }
+            ]
+          },
+          "otherTerminal": {
+            "description": "No accepted outcome; final state other than CANCELLED",
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/TokensByState"
+              }
+            ]
+          }
+        },
+        "additionalProperties": false
+      },
+      "TokensByCause": {
+        "required": [
+          "total",
+          "byCause"
+        ],
+        "type": "object",
+        "properties": {
+          "total": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "byCause": {
+            "description": "Sorted by count, descending",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TokenBucket"
+            }
+          }
+        },
+        "additionalProperties": false
+      },
+      "TokensByState": {
+        "required": [
+          "total",
+          "byState"
+        ],
+        "type": "object",
+        "properties": {
+          "total": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "byState": {
+            "description": "Sorted by count, descending",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TokenBucket"
+            }
+          }
+        },
+        "additionalProperties": false
+      },
+      "TokensByObservedState": {
+        "required": [
+          "total",
+          "byState"
+        ],
+        "type": "object",
+        "properties": {
+          "total": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "byState": {
+            "description": "One item per last observed state, sorted by count, descending",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TokenStateCount"
+            }
+          }
+        },
+        "additionalProperties": false
+      },
+      "TokenStateCount": {
+        "required": [
+          "state",
+          "count"
+        ],
+        "type": "object",
+        "properties": {
+          "state": {
+            "type": "string"
+          },
+          "count": {
+            "format": "int64",
+            "type": "integer"
+          }
+        },
+        "additionalProperties": false
+      },
+      "TokenBucket": {
+        "required": [
+          "cause",
+          "count"
+        ],
+        "type": "object",
+        "properties": {
+          "state": {
+            "description": "Last observed state (byState only)",
+            "type": "string"
+          },
+          "cause": {
+            "description": "tipoEvento of the transition into the last observed state; null when not recorded",
+            "type": "string",
+            "nullable": true
+          },
+          "count": {
+            "format": "int64",
+            "type": "integer"
+          }
+        },
+        "additionalProperties": false
+      },
+      "AnalyticsCoverage": {
+        "required": [
+          "status",
+          "reasons",
+          "lastObservedEventAt"
+        ],
+        "type": "object",
+        "properties": {
+          "status": {
+            "description": "Completeness is never asserted: UNKNOWN when no reliable ingestion watermark proves the timeline complete, UNAVAILABLE when tokens may already be deleted by retention (tokens is null)",
+            "enum": [
+              "UNKNOWN",
+              "UNAVAILABLE"
+            ],
+            "type": "string"
+          },
+          "reasons": {
+            "description": "NO_INGESTION_WATERMARK, RETENTION",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "lastObservedEventAt": {
+            "description": "Source time of the latest projected attempt state event: observed data, not a coverage guarantee",
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
       }
     },
     "securitySchemes": {
