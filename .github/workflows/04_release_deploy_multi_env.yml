@@ -1,0 +1,232 @@
+name: Release And Deploy
+
+# Controls when the workflow will run
+on:
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+    inputs:
+      deploy_dev:
+        description: Deploy to dev
+        type: boolean
+        default: false
+      deploy_uat:
+        description: Deploy to uat
+        type: boolean
+        default: false
+      deploy_prod:
+        description: Deploy to prod (requires approval)
+        type: boolean
+        default: false
+      deploy_mode:
+        required: true
+        type: choice
+        description: Deploy environments in parallel or in order
+        default: parallel
+        options:
+          - parallel
+          - sequential
+      semver:
+        required: false
+        type: choice
+        description: Select the version
+        default: patch
+        options:
+          - skip
+          - promote
+          - patch
+          - new_release
+          - breaking_change
+      beta:
+        required: false
+        type: boolean
+        description: deploy beta version on AKS
+        default: false
+  #      skip_release:
+  #        required: false
+  #        type: boolean
+  #        description: skip the release. Only deploy
+  #        default: false
+
+  workflow_call:
+    inputs:
+      environment:
+        required: true
+        type: string
+      semver:
+        required: true
+        type: string
+
+permissions:
+  packages: write
+  contents: write
+  issues: write
+  id-token: write
+  actions: read
+
+
+# A workflow run is made up of one or more jobs that can run sequentially or in parallel
+jobs:
+  setup:
+    name: Setup
+    runs-on: ubuntu-latest
+    outputs:
+      semver: ${{ steps.semver_setup.outputs.semver }}
+      environments: ${{ steps.select_environments.outputs.environments }}
+    steps:
+      - name: Semver setup
+        id: semver_setup
+        uses: pagopa/github-actions-template/nodo5-semver-setup@5225a04f93d77fe257acd37f1f1b55109583bbc4
+        with:
+          semver: ${{ inputs.semver }}
+      - name: Select environments
+        id: select_environments
+        shell: bash
+        env:
+          DEPLOY_DEV: ${{ inputs.deploy_dev }}
+          DEPLOY_UAT: ${{ inputs.deploy_uat }}
+          DEPLOY_PROD: ${{ inputs.deploy_prod }}
+          LEGACY_ENVIRONMENT: ${{ inputs.environment }}
+        run: |
+          environments=()
+          if [[ -z "$LEGACY_ENVIRONMENT" ]]; then
+            [[ "$DEPLOY_DEV" == "true" ]] && environments+=(dev)
+            [[ "$DEPLOY_UAT" == "true" ]] && environments+=(uat)
+            [[ "$DEPLOY_PROD" == "true" ]] && environments+=(prod)
+          else
+            case "$LEGACY_ENVIRONMENT" in
+              dev|uat|prod) environments+=("$LEGACY_ENVIRONMENT") ;;
+              all) environments=(dev uat prod) ;;
+              *) echo "::error::Invalid deployment environment: $LEGACY_ENVIRONMENT"; exit 1 ;;
+            esac
+          fi
+          if [[ ${#environments[@]} -eq 0 ]]; then
+            echo "::error::Select at least one deployment environment"
+            exit 1
+          fi
+          echo "environments=$(printf '%s\n' "${environments[@]}" | jq -Rsc 'split("\n")[:-1]')" >> "$GITHUB_OUTPUT"
+
+  release:
+    needs: [setup]
+    name: Create a New Release
+    runs-on: ubuntu-latest
+    if: ${{ needs.setup.outputs.semver != 'skip' }}
+    outputs:
+      version: ${{ steps.release.outputs.version }}
+    steps:
+      - name: Make Release
+        id: release
+        uses: pagopa/github-actions-template/maven-release@d91a1fd0b913c9830589be5d86cdb71c90813fae # v1.5.4
+        with:
+          semver: ${{ needs.setup.outputs.semver }}
+          github_token: ${{ secrets.BOT_TOKEN_GITHUB }}
+          beta: ${{ inputs.beta }}
+          skip_ci: false
+
+  image:
+    needs: [ setup, release ]
+    name: Build and Push Docker Image
+    runs-on: ubuntu-latest
+    if: ${{ needs.setup.outputs.semver != 'skip' }}
+    steps:
+      #      - name: Build and Push
+      #        id: semver
+      #        uses: pagopa/github-actions-template/ghcr-build-push@v1.5.4
+      #        with:
+      #          branch: ${{ github.ref_name}}
+      #          github_token: ${{ secrets.GITHUB_TOKEN }}
+      #          tag: ${{ needs.release.outputs.version }}
+      - name: Checkout
+        uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # v3
+        with:
+          ref: ${{ github.ref_name }}
+
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@465a07811f14bebb1938fbed4728c6a1ff8901fc # v2
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Docker meta
+        id: meta
+        uses: docker/metadata-action@507c2f2dc502c992ad446e3d7a5dfbe311567a96 # v4.3.0
+        with:
+          images: ghcr.io/${{ github.repository }}
+          tags: |
+            latest
+            ${{ needs.release.outputs.version }}
+            type=ref,event=branch
+            type=sha
+
+      - name: Build and push
+        uses: docker/build-push-action@0a97817b6ade9f46837855d676c4cca3a2471fc9 # v4
+        with:
+          context: .
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          secrets: |
+            GH_TOKEN=${{ secrets.READ_PACKAGES_TOKEN }}
+
+  deploy_parallel:
+    name: Deploy on AKS in parallel
+    needs: [ setup, release, image ]
+    if: ${{ always() && !cancelled() && !contains(needs.*.result, 'cancelled') && inputs.deploy_mode != 'sequential' && needs.setup.result == 'success' && (needs.setup.outputs.semver == 'skip' || (needs.release.result == 'success' && needs.image.result == 'success')) }}
+    strategy:
+      fail-fast: false
+      matrix:
+        environment: ${{ fromJSON(needs.setup.outputs.environments) }}
+    uses: ./.github/workflows/04h_deploy_with_github_runner.yml
+    with:
+      environment: ${{ matrix.environment }}
+      target: ${{ matrix.environment }}
+    secrets: inherit
+
+  deploy_dev:
+    name: Deploy on AKS dev
+    needs: [ setup, release, image ]
+    if: ${{ always() && !cancelled() && !contains(needs.*.result, 'cancelled') && inputs.deploy_mode == 'sequential' && needs.setup.result == 'success' && (needs.setup.outputs.semver == 'skip' || (needs.release.result == 'success' && needs.image.result == 'success')) && contains(fromJSON(needs.setup.outputs.environments), 'dev') }}
+    uses: ./.github/workflows/04h_deploy_with_github_runner.yml
+    with:
+      environment: dev
+      target: dev
+    secrets: inherit
+
+  deploy_uat:
+    name: Deploy on AKS uat
+    needs: [ setup, release, image, deploy_dev ]
+    if: ${{ always() && !cancelled() && !contains(needs.*.result, 'cancelled') && inputs.deploy_mode == 'sequential' && needs.setup.result == 'success' && (needs.setup.outputs.semver == 'skip' || (needs.release.result == 'success' && needs.image.result == 'success')) && (needs.deploy_dev.result == 'success' || needs.deploy_dev.result == 'skipped') && contains(fromJSON(needs.setup.outputs.environments), 'uat') }}
+    uses: ./.github/workflows/04h_deploy_with_github_runner.yml
+    with:
+      environment: uat
+      target: uat
+    secrets: inherit
+
+  deploy_prod:
+    name: Deploy on AKS prod
+    needs: [ setup, release, image, deploy_dev, deploy_uat ]
+    if: ${{ always() && !cancelled() && !contains(needs.*.result, 'cancelled') && inputs.deploy_mode == 'sequential' && needs.setup.result == 'success' && (needs.setup.outputs.semver == 'skip' || (needs.release.result == 'success' && needs.image.result == 'success')) && (needs.deploy_dev.result == 'success' || needs.deploy_dev.result == 'skipped') && (needs.deploy_uat.result == 'success' || needs.deploy_uat.result == 'skipped') && contains(fromJSON(needs.setup.outputs.environments), 'prod') }}
+    uses: ./.github/workflows/04h_deploy_with_github_runner.yml
+    with:
+      environment: prod
+      target: prod
+    secrets: inherit
+
+  notify:
+    name: Notify
+    needs: [ setup, release, image, deploy_parallel, deploy_dev, deploy_uat, deploy_prod ]
+    runs-on: ubuntu-latest
+    if: always()
+    steps:
+      - name: Report Status
+        if: ${{ needs.setup.result == 'success' && contains(fromJSON(needs.setup.outputs.environments), 'prod') }}
+        uses: ravsamhq/notify-slack-action@be814b201e233b2dc673608aa46e5447c8ab13f2 # v2
+        with:
+          status: ${{ contains(needs.*.result, 'failure') && 'failure' || contains(needs.*.result, 'cancelled') && 'cancelled' || (inputs.deploy_mode == 'sequential' && needs.deploy_prod.result || needs.deploy_parallel.result) }}
+          token: ${{ secrets.GITHUB_TOKEN }}
+          notification_title: 'New Release on prod for ${{ needs.release.outputs.version }} has {status_message}'
+          message_format: '{emoji} <{run_url}|{workflow}> {status_message} in <{repo_url}|{repo}>'
+          footer: 'Linked to <{workflow_url}| workflow file>'
+          icon_success: ':white_check_mark:'
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL_DEPLOY }}
