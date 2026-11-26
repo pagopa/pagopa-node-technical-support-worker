@@ -170,8 +170,8 @@ is required. Responses have `Cache-Control: no-store` and contain no raw token,
 SQL, connection string, payload or additional payment data. Database exception
 messages are not logged because they may include bound values.
 
-Runtime configuration uses `ONLINE_NDP001_IDENTIFIER` (default `ndp001`) and
-`ONLINE_NDP004_IDENTIFIER` (default `ndp004prod`), plus
+Runtime configuration uses `NDP001_IDENTIFIER` (default `ndp001`) and
+`NDP004_IDENTIFIER` (default `ndp004prod`), shared by the online and offline datasources, plus
 `ONLINE_NDP001_DATASOURCE_URL`, `ONLINE_NDP001_DATASOURCE_USERNAME`,
 `ONLINE_NDP001_DATASOURCE_PASSWORD`, and the corresponding
 `ONLINE_NDP004_DATASOURCE_*` variables. Use read-only database roles with `SELECT`
@@ -187,6 +187,16 @@ Hibernate logs a metadata connection warning but allows the application process
 to start when the database is unavailable; database operations still fail
 explicitly. Datasource readiness checks remain enabled, so the HTTP listener can
 start while the pod correctly remains unready until the database is reachable.
+
+A second, independent persistence unit `offline-ndp001` (same entities) uses the named
+`offline-ndp001` datasource, configured with `OFFLINE_NDP001_DATASOURCE_URL`,
+`OFFLINE_NDP001_DATASOURCE_USERNAME`, `OFFLINE_NDP001_DATASOURCE_PASSWORD`, and
+`OFFLINE_NDP001_DATASOURCE_SCHEMA`; it has the same startup/readiness behaviour.
+`GET /snapshot/organizations/{organizationFiscalCode}` accepts an optional `serviceIdentifier`
+query parameter: it is matched case-insensitively against
+`snapshot.offline.nodes.offline-ndp001.service-identifier` (`NDP001_IDENTIFIER`) and
+`snapshot.offline.nodes.offline-ndp004.service-identifier` (`NDP004_IDENTIFIER`); unknown values return 400.
+Without the parameter the request uses `offline-ndp004` and returns `DB_SERVICE_IDENTIFIER`, as before.
 
 ## Cache version of NDP001 and NDP004
 
@@ -538,6 +548,10 @@ OFFLINE_NDP004_DATASOURCE_URL
 OFFLINE_NDP004_DATASOURCE_USERNAME
 OFFLINE_NDP004_DATASOURCE_PASSWORD
 OFFLINE_NDP004_DATASOURCE_SCHEMA
+OFFLINE_NDP001_DATASOURCE_URL
+OFFLINE_NDP001_DATASOURCE_USERNAME
+OFFLINE_NDP001_DATASOURCE_PASSWORD
+OFFLINE_NDP001_DATASOURCE_SCHEMA
 ```
 
 `serviceIdentifier=ndp001` selects the `online-ndp001` datasource, configured

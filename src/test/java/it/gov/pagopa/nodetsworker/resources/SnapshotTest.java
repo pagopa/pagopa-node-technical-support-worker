@@ -397,4 +397,60 @@ class SnapshotTest {
     )));
   }
 
+  @ConfigProperty(name = "snapshot.offline.nodes.offline-ndp001.service-identifier")
+  String offlineNdp001ServiceIdentifier;
+
+  @ConfigProperty(name = "snapshot.offline.nodes.offline-ndp004.service-identifier")
+  String offlineNdp004ServiceIdentifier;
+
+  private PaymentResponse snapshot(String serviceIdentifier) {
+    return given()
+            .header(HEADER)
+            .queryParam("dateFrom", "2023-01-30")
+            .queryParam("dateTo", "2023-02-06")
+            .queryParam("serviceIdentifier", serviceIdentifier)
+            .when()
+            .get(POS_PAY_SS_INFO_PATH.formatted(PA_CODE))
+            .then()
+            .statusCode(200)
+            .extract()
+            .as(new TypeRef<PaymentResponse>() {});
+  }
+
+  @Test
+  @DisplayName("OK serviceIdentifier routes to offline-ndp001 persistence unit")
+  void routesToOfflineNdp001() {
+    PaymentResponse res = snapshot(offlineNdp001ServiceIdentifier.toUpperCase());
+
+    assertThat(res.getCount(), equalTo(1L));
+    assertThat(res.getData(), contains(allOf(
+            hasProperty("paymentToken", equalTo("ndp001offlinepaymenttoken0000001")),
+            hasProperty("serviceIdentifier", equalTo(offlineNdp001ServiceIdentifier))
+    )));
+  }
+
+  @Test
+  @DisplayName("OK serviceIdentifier routes to offline-ndp004 persistence unit")
+  void routesToOfflineNdp004() {
+    PaymentResponse res = snapshot(offlineNdp004ServiceIdentifier);
+
+    assertThat(res.getCount(), equalTo(10L));
+    assertThat(res.getData(), everyItem(allOf(
+            hasProperty("paymentToken", not(equalTo("ndp001offlinepaymenttoken0000001"))),
+            hasProperty("serviceIdentifier", equalTo(offlineNdp004ServiceIdentifier))
+    )));
+  }
+
+  @Test
+  @DisplayName("KO unknown serviceIdentifier")
+  void unknownServiceIdentifier() {
+    given()
+            .header(HEADER)
+            .queryParam("serviceIdentifier", "not-a-configured-node")
+            .when()
+            .get(POS_PAY_SS_INFO_PATH.formatted(PA_CODE))
+            .then()
+            .statusCode(400);
+  }
+
 }

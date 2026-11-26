@@ -83,6 +83,9 @@ microservice-chart:
     OFFLINE_NDP004_DATASOURCE_USERNAME: "biz_pagopa_sv"
     DB_SERVICE_IDENTIFIER: "NDP004PROD"
     OFFLINE_NDP004_DATASOURCE_SCHEMA: "nodo_offline"
+    OFFLINE_NDP001_DATASOURCE_URL: "TODO SET"
+    OFFLINE_NDP001_DATASOURCE_USERNAME: "TODO SET"
+    OFFLINE_NDP001_DATASOURCE_SCHEMA: "TODO SET"
     LOG_LEVEL: "INFO"
     DATA_EXPLORER_URL: "https://pagopapdataexplorer.westeurope.kusto.windows.net"
     DATA_EXPLORER_CLIENT_ID: "1e6c0b82-3e63-432d-9ad4-a443e47e1a19"
@@ -97,6 +100,7 @@ microservice-chart:
     COSMOS_NEG_BIZ_KEY: "cosmos-neg-biz-account-key"
     COSMOS_VERIFYKO_KEY: "cosmos-verifyko-account-key"
     OFFLINE_NDP004_DATASOURCE_PASSWORD: "db-nexi-offline-password"
+    OFFLINE_NDP001_DATASOURCE_PASSWORD: "TODO SET"
     DATA_EXPLORER_CLIENT_SECRET: "dataexplorer-client-secret"
   keyvault:
     name: "pagopa-p-nodo-kv"

@@ -1308,6 +1308,14 @@
             }
           },
           {
+            "name": "serviceIdentifier",
+            "in": "query",
+            "description": "Offline node to query (offline-ndp001 or offline-ndp004 service identifier). When omitted, the default offline-ndp004 datasource is used.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
             "name": "size",
             "in": "query",
             "schema": {

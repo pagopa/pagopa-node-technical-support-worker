@@ -10,7 +10,6 @@ import it.gov.pagopa.nodetsworker.util.AppDBUtil;
 import it.gov.pagopa.nodetsworker.util.ValidationUtil;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.persistence.EntityManager;
-import jakarta.persistence.PersistenceContext;
 import jakarta.persistence.TypedQuery;
 import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.CriteriaQuery;
@@ -36,20 +35,22 @@ public class SnapshotService implements Serializable {
     @ConfigProperty(name = "date-range-limit")
     Integer dateRangeLimit;
 
-    @PersistenceContext
-    private EntityManager em;
+    private final OfflineSnapshotRouter offlineSnapshotRouter;
 
-    public SnapshotService(SnapshotMapper snapshotMapper, EntityManager em) {
+    public SnapshotService(SnapshotMapper snapshotMapper, OfflineSnapshotRouter offlineSnapshotRouter) {
         this.snapshotMapper = snapshotMapper;
-        this.em = em;
+        this.offlineSnapshotRouter = offlineSnapshotRouter;
     }
 
     public PaymentResponse getPosPaymentStatusSnapshot(String paFiscalCode, String noticeNumber,
                                                                    String paymentToken, LocalDate dateFrom, LocalDate dateTo,
-                                                                   long pageNumber, long pageSize) {
+                                                                   long pageNumber, long pageSize,
+                                                                   String serviceIdentifier) {
+        OfflineSnapshotRouter.OfflineNode node = offlineSnapshotRouter.resolve(serviceIdentifier);
+        EntityManager em = node.entityManager();
         DateRequest dateRequest = ValidationUtil.verifyDateRequest(dateFrom, dateTo, dateRangeLimit);
 
-        CriteriaBuilder cb = getEm().getCriteriaBuilder();
+        CriteriaBuilder cb = em.getCriteriaBuilder();
         CriteriaQuery<PositionPaymentSSEntity> cr = cb.createQuery(PositionPaymentSSEntity.class);
         Root<PositionPaymentSSEntity> root = cr.from(PositionPaymentSSEntity.class);
         CriteriaQuery<PositionPaymentSSEntity> select = cr.select(root);
@@ -71,11 +72,11 @@ public class SnapshotService implements Serializable {
 
         select.orderBy(cb.asc(root.get("id")));
 
-        int count = getEm().createQuery(select).getResultList().size();
+        int count = em.createQuery(select).getResultList().size();
         long newPageNumber = pageNumber - 1;
         long totPage = AppDBUtil.getPageCount(count, (int) pageSize);
 
-        TypedQuery<PositionPaymentSSEntity> typedQuery = getEm().createQuery(select);
+        TypedQuery<PositionPaymentSSEntity> typedQuery = em.createQuery(select);
         typedQuery.setFirstResult((int) (newPageNumber));
         typedQuery.setMaxResults((int) pageSize);
 
@@ -91,7 +92,7 @@ public class SnapshotService implements Serializable {
                                 .totPage((int) totPage)
                                 .build()
                 )
-                .data(snapshotMapper.toPositionPaymentSSInfoList(positionPaymentSSEntityList))
+                .data(snapshotMapper.toPositionPaymentSSInfoList(positionPaymentSSEntityList, node.serviceIdentifier()))
                 .dateFrom(dateFrom)
                 .dateTo(dateTo)
                 .build();

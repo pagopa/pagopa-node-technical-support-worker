@@ -1,5 +1,6 @@
 package it.gov.pagopa.nodetsworker.datasource;
 
+import io.quarkus.hibernate.orm.PersistenceUnit;
 import io.quarkus.test.QuarkusUnitTest;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
@@ -26,6 +27,12 @@ class OfflineDatasourceStartupIT {
             .overrideConfigKey("%test.quarkus.datasource.offline-ndp004.jdbc.url",
                     "jdbc:h2:tcp://127.0.0.1:1/nodo")
             .overrideConfigKey("%test.quarkus.datasource.offline-ndp004.jdbc.acquisition-timeout", "1S")
+            .overrideConfigKey("%test.quarkus.datasource.offline-ndp001.jdbc.url",
+                    "jdbc:h2:tcp://127.0.0.1:1/nodo-ndp001")
+            .overrideConfigKey("%test.quarkus.datasource.offline-ndp001.jdbc.acquisition-timeout", "1S")
+            .overrideConfigKey("quarkus.hibernate-orm.offline-ndp001.packages", OfflineEntity.class.getPackageName())
+            .overrideConfigKey("%test.quarkus.hibernate-orm.offline-ndp001.database.generation", "none")
+            .overrideConfigKey("%test.quarkus.hibernate-orm.offline-ndp001.sql-load-script", "no-file")
             .overrideConfigKey("quarkus.hibernate-orm.packages", OfflineEntity.class.getPackageName())
             .overrideConfigKey("%test.quarkus.hibernate-orm.database.generation", "none")
             .overrideConfigKey("%test.quarkus.hibernate-orm.sql-load-script", "no-file")
@@ -42,15 +49,20 @@ class OfflineDatasourceStartupIT {
     OfflineDatasourceProbe probe;
 
     @Test
-    void startupDoesNotRequireOfflineDatabaseButDatabaseUseStillFails() throws Exception {
+    void startupDoesNotRequireOfflineDatabasesButDatabaseUseStillFails() throws Exception {
         assertEquals(1, probe.readOnlineDatabase());
         assertThrows(PersistenceException.class, probe::readOfflineDatabase);
+        assertThrows(PersistenceException.class, probe::readOfflineNdp001Database);
     }
 
     @ApplicationScoped
     static class OfflineDatasourceProbe {
         @PersistenceContext
         EntityManager offlineEntityManager;
+
+        @Inject
+        @PersistenceUnit("offline-ndp001")
+        EntityManager offlineNdp001EntityManager;
 
         @Inject
         @io.quarkus.agroal.DataSource("online-ndp001")
@@ -68,6 +80,11 @@ class OfflineDatasourceStartupIT {
         @Transactional
         Object readOfflineDatabase() {
             return offlineEntityManager.createNativeQuery("select 1").getSingleResult();
+        }
+
+        @Transactional
+        Object readOfflineNdp001Database() {
+            return offlineNdp001EntityManager.createNativeQuery("select 1").getSingleResult();
         }
     }
 

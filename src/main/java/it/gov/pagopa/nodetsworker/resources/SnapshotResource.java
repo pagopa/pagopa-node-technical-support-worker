@@ -10,6 +10,7 @@ import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import org.eclipse.microprofile.openapi.annotations.media.Content;
+import org.eclipse.microprofile.openapi.annotations.parameters.Parameter;
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
 import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
 import org.eclipse.microprofile.openapi.annotations.responses.APIResponses;
@@ -61,9 +62,12 @@ public class SnapshotResource implements Serializable {
             @QueryParam("dateFrom") LocalDate dateFrom,
             @QueryParam("dateTo") LocalDate dateTo,
             @QueryParam("page") @DefaultValue("1") @Min(value = 1) long pageNumber,
-            @QueryParam("size") @DefaultValue("1000") @Min(value = 1) long pageSize) {
+            @QueryParam("size") @DefaultValue("1000") @Min(value = 1) long pageSize,
+            @Parameter(description = "Offline node to query (offline-ndp001 or offline-ndp004 service identifier). "
+                    + "When omitted, the default offline-ndp004 datasource is used.")
+            @QueryParam("serviceIdentifier") String serviceIdentifier) {
 
-        PaymentResponse response = snapshotService.getPosPaymentStatusSnapshot(organizationFiscalCode, noticeNumber, paymentToken, dateFrom, dateTo, pageNumber, pageSize);
+        PaymentResponse response = snapshotService.getPosPaymentStatusSnapshot(organizationFiscalCode, noticeNumber, paymentToken, dateFrom, dateTo, pageNumber, pageSize, serviceIdentifier);
         return Response.ok(response).build();
     }
 }
