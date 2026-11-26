@@ -180,6 +180,14 @@ adds no new credentials or connections. Deployment connectivity/permissions must
 be verified in the target environment; automated tests use isolated H2 databases
 and JDBC mocks, not a production Nodo Online instance.
 
+The worker's separate default persistence unit uses the named `offline-ndp004` datasource,
+configured with `OFFLINE_NDP004_DATASOURCE_URL`, `OFFLINE_NDP004_DATASOURCE_USERNAME`,
+`OFFLINE_NDP004_DATASOURCE_PASSWORD`, and `OFFLINE_NDP004_DATASOURCE_SCHEMA`. In Quarkus 3.0.1,
+Hibernate logs a metadata connection warning but allows the application process
+to start when the database is unavailable; database operations still fail
+explicitly. Datasource readiness checks remain enabled, so the HTTP listener can
+start while the pod correctly remains unready until the database is reachable.
+
 ## Cache version of NDP001 and NDP004
 
 `GET /api/nodo-monitoring/cache/version` calls the Nodo monitoring API
@@ -526,6 +534,10 @@ ONLINE_NDP001_DATASOURCE_PASSWORD
 ONLINE_NDP004_DATASOURCE_URL
 ONLINE_NDP004_DATASOURCE_USERNAME
 ONLINE_NDP004_DATASOURCE_PASSWORD
+OFFLINE_NDP004_DATASOURCE_URL
+OFFLINE_NDP004_DATASOURCE_USERNAME
+OFFLINE_NDP004_DATASOURCE_PASSWORD
+OFFLINE_NDP004_DATASOURCE_SCHEMA
 ```
 
 `serviceIdentifier=ndp001` selects the `online-ndp001` datasource, configured
