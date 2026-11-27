@@ -4139,7 +4139,7 @@
     }
   },
   "info" : {
-    "title" : "Node technical support - API (local) ${service}",
+    "title" : "Node technical support - API (TEST)",
     "version" : "1.3.2-9-nodo-observability",
     "termsOfService" : "https://www.pagopa.gov.it/"
   },

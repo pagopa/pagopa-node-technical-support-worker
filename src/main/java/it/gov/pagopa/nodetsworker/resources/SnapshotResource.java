@@ -1,5 +1,6 @@
 package it.gov.pagopa.nodetsworker.resources;
 
+import io.quarkus.arc.profile.IfBuildProfile;
 import it.gov.pagopa.nodetsworker.models.ProblemJson;
 import it.gov.pagopa.nodetsworker.resources.response.PaymentResponse;
 import it.gov.pagopa.nodetsworker.service.SnapshotService;
@@ -21,6 +22,7 @@ import java.time.LocalDate;
 @Path("/snapshot/organizations")
 @Produces(value = MediaType.APPLICATION_JSON)
 @ApplicationScoped
+@IfBuildProfile(anyOf = {"build", "dev", "uat", "prod", "test", "technical_support"})
 public class SnapshotResource implements Serializable {
 
     private final SnapshotService snapshotService;

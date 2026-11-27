@@ -1,5 +1,6 @@
 package it.gov.pagopa.nodetsworker.observability.resources;
 
+import io.quarkus.arc.profile.IfBuildProfile;
 import it.gov.pagopa.nodetsworker.datasource.RequiresDatasource;
 import it.gov.pagopa.nodetsworker.datasource.DatasourceRegistry;
 import it.gov.pagopa.nodetsworker.observability.dto.AttemptSyncRequestDto;
@@ -30,6 +31,7 @@ import org.eclipse.microprofile.openapi.annotations.tags.Tag;
 @SecurityRequirement(name = "SecurityScheme")
 @Tag(name = "Observability")
 @RequiresDatasource({DatasourceRegistry.OBSERVABILITY, DatasourceRegistry.ONLINE_NDP001})
+@IfBuildProfile(anyOf = {"build", "dev", "uat", "prod", "test", "observability"})
 public class OnlineStatusSyncResource {
 
   @Inject

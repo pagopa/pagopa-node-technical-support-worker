@@ -1,5 +1,6 @@
 package it.gov.pagopa.nodetsworker.observability.resources;
 
+import io.quarkus.arc.profile.IfBuildProfile;
 import org.eclipse.microprofile.openapi.annotations.security.SecurityRequirement;
 import org.eclipse.microprofile.openapi.annotations.tags.Tag;
 import it.gov.pagopa.nodetsworker.observability.dto.ErrorDto;
@@ -24,6 +25,7 @@ import org.eclipse.microprofile.openapi.annotations.responses.APIResponses;
 @NoStore
 @SecurityRequirement(name = "SecurityScheme")
 @Tag(name = "Observability")
+@IfBuildProfile(anyOf = {"build", "dev", "uat", "prod", "test", "observability"})
 public class ApiConfigResource {
   @Inject
   MaintenanceCache cache;

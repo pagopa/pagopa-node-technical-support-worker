@@ -1,5 +1,6 @@
 package it.gov.pagopa.nodetsworker.resources;
 
+import io.quarkus.arc.profile.IfBuildProfile;
 import it.gov.pagopa.nodetsworker.models.ProblemJson;
 import it.gov.pagopa.nodetsworker.resources.response.PaymentsFullResponse;
 import it.gov.pagopa.nodetsworker.service.WorkerService;
@@ -17,6 +18,7 @@ import java.io.Serializable;
 
 @Path("/events")
 @Produces(value = MediaType.APPLICATION_JSON)
+@IfBuildProfile(anyOf = {"build", "dev", "uat", "prod", "test", "technical_support"})
 public class EventsResource implements Serializable {
 
   @Inject WorkerService workerService;

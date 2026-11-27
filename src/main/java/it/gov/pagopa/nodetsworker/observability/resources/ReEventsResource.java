@@ -1,5 +1,6 @@
 package it.gov.pagopa.nodetsworker.observability.resources;
 
+import io.quarkus.arc.profile.IfBuildProfile;
 import it.gov.pagopa.nodetsworker.datasource.RequiresDatasource;
 import it.gov.pagopa.nodetsworker.datasource.DatasourceRegistry;
 import org.eclipse.microprofile.openapi.annotations.security.SecurityRequirement;
@@ -35,6 +36,7 @@ import org.eclipse.microprofile.openapi.annotations.responses.APIResponses;
 @SecurityRequirement(name = "SecurityScheme")
 @Tag(name = "Observability")
 @RequiresDatasource(DatasourceRegistry.OBSERVABILITY)
+@IfBuildProfile(anyOf = {"build", "dev", "uat", "prod", "test", "observability"})
 public class ReEventsResource {
   @Inject ReDiagnostics diagnostics;
   @Inject CallerResolver callers;

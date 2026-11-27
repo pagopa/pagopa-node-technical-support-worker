@@ -1,5 +1,6 @@
 package it.gov.pagopa.nodetsworker.resources;
 
+import io.quarkus.arc.profile.IfBuildProfile;
 import it.gov.pagopa.nodetsworker.exceptions.AppErrorCodeMessageEnum;
 import it.gov.pagopa.nodetsworker.exceptions.AppException;
 import it.gov.pagopa.nodetsworker.observability.dto.PaymentInfoDto;
@@ -17,6 +18,7 @@ import jakarta.ws.rs.core.MediaType;
  */
 @Path("/payments")
 @Produces(MediaType.APPLICATION_JSON)
+@IfBuildProfile(anyOf = {"build", "dev", "uat", "prod", "test", "technical_support"})
 public class PaymentsResource {
 
     @Inject

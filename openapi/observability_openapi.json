@@ -492,6 +492,113 @@
         },
         "additionalProperties": false
       },
+      "AttemptInfoDto": {
+        "required": [
+          "attemptId",
+          "serviceIdentifier",
+          "psp",
+          "stazione",
+          "canale",
+          "attemptStartedAt",
+          "startTimestampBasis",
+          "timelineIncomplete",
+          "timeline",
+          "paFiscalCode",
+          "noticeNumber",
+          "state",
+          "warning",
+          "hasAnomaly",
+          "tokenDisplay",
+          "paymentToken",
+          "projectionRevision"
+        ],
+        "type": "object",
+        "properties": {
+          "attemptId": {
+            "type": "string"
+          },
+          "serviceIdentifier": {
+            "type": "string",
+            "nullable": true
+          },
+          "psp": {
+            "type": "string",
+            "nullable": true
+          },
+          "stazione": {
+            "type": "string",
+            "nullable": true
+          },
+          "canale": {
+            "type": "string",
+            "nullable": true
+          },
+          "attemptStartedAt": {
+            "format": "date-time",
+            "type": "string",
+            "nullable": true
+          },
+          "startTimestampBasis": {
+            "$ref": "#/components/schemas/TimestampBasis"
+          },
+          "timelineIncomplete": {
+            "type": "boolean"
+          },
+          "timeline": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TimelineItemDto"
+            }
+          },
+          "paFiscalCode": {
+            "type": "string"
+          },
+          "noticeNumber": {
+            "type": "string"
+          },
+          "state": {
+            "enum": [
+              "PAYING",
+              "PAYING_RPT",
+              "PAID_NORPT",
+              "PAID",
+              "FAILED_NORPT",
+              "FAILED",
+              "CANCELLED",
+              "CANCELLED_NORPT",
+              "NOTICE_GENERATED",
+              "NOTICE_STORED",
+              "NOTICE_SENT",
+              "NOTIFIED",
+              "PAYMENT_RESERVED",
+              "PAYMENT_SENT",
+              "PAYMENT_ACCEPTED",
+              "PAYMENT_REFUSED",
+              "PAYMENT_UNKNOWN",
+              "PAYMENT_SEND_ERROR"
+            ],
+            "type": "string"
+          },
+          "warning": {
+            "type": "boolean"
+          },
+          "hasAnomaly": {
+            "type": "boolean"
+          },
+          "tokenDisplay": {
+            "type": "string"
+          },
+          "projectionRevision": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "paymentToken": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
       "AttemptPatch": {
         "type": "object",
         "properties": {
@@ -669,6 +776,20 @@
                 "$ref": "#/components/schemas/ApiConfigCacheVersion"
               }
             ]
+          }
+        }
+      },
+      "CapabilitiesDto": {
+        "type": "object",
+        "properties": {
+          "lookupToken": {
+            "type": "boolean"
+          },
+          "revealToken": {
+            "type": "boolean"
+          },
+          "mockControls": {
+            "type": "boolean"
           }
         }
       },
@@ -1133,6 +1254,24 @@
         },
         "additionalProperties": false
       },
+      "ErrorCode": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string",
+            "example": "0500"
+          },
+          "description": {
+            "type": "string",
+            "example": "An unexpected error has occurred. Please contact support."
+          },
+          "statusCode": {
+            "format": "int32",
+            "type": "integer",
+            "example": 500
+          }
+        }
+      },
       "ErrorDto": {
         "type": "object",
         "properties": {
@@ -1171,6 +1310,33 @@
           },
           "observedAt": {
             "type": "string"
+          }
+        }
+      },
+      "InfoResponse": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "example": "pagopa-node-tech-support"
+          },
+          "version": {
+            "type": "string",
+            "example": "1.2.3"
+          },
+          "environment": {
+            "type": "string",
+            "example": "dev"
+          },
+          "description": {
+            "type": "string",
+            "example": "Node tech support API"
+          },
+          "errorCodes": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ErrorCode"
+            }
           }
         }
       },
@@ -1309,6 +1475,29 @@
           }
         },
         "additionalProperties": false
+      },
+      "MeDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "role": {
+            "type": "string"
+          },
+          "visiblePaFiscalCodes": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "capabilities": {
+            "$ref": "#/components/schemas/CapabilitiesDto"
+          },
+          "authentication": {
+            "type": "string"
+          }
+        }
       },
       "Mod3CancelCounts": {
         "required": [
@@ -1683,6 +1872,78 @@
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/AttemptDto"
+            }
+          },
+          "recipients": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/RecipientDto"
+            }
+          }
+        },
+        "additionalProperties": false
+      },
+      "PaymentInfoDto": {
+        "required": [
+          "paFiscalCode",
+          "noticeNumber",
+          "state",
+          "projectionRevision",
+          "timelineIncomplete",
+          "hasAnomaly",
+          "warning",
+          "attemptCount",
+          "timeline",
+          "attempts",
+          "recipients"
+        ],
+        "type": "object",
+        "properties": {
+          "paFiscalCode": {
+            "type": "string"
+          },
+          "noticeNumber": {
+            "type": "string"
+          },
+          "state": {
+            "description": "Logical position state; null while no position event or logical source snapshot has been observed. Never derived from attempts or recipients.",
+            "enum": [
+              "INSERTED",
+              "PAYING",
+              "PAID",
+              "NOTICE_STORED",
+              "NOTIFIED"
+            ],
+            "type": "string",
+            "nullable": true
+          },
+          "projectionRevision": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "timelineIncomplete": {
+            "type": "boolean"
+          },
+          "hasAnomaly": {
+            "type": "boolean"
+          },
+          "warning": {
+            "type": "boolean"
+          },
+          "attemptCount": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "timeline": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TimelineItemDto"
+            }
+          },
+          "attempts": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AttemptInfoDto"
             }
           },
           "recipients": {
@@ -2543,6 +2804,21 @@
           }
         }
       },
+      "ReScalar": {
+        "oneOf": [
+          {
+            "type": "string",
+            "nullable": true
+          },
+          {
+            "format": "double",
+            "type": "number"
+          },
+          {
+            "type": "boolean"
+          }
+        ]
+      },
       "ReWindow": {
         "required": [
           "from",
@@ -2986,8 +3262,11 @@
   },
   "tags": [
     {
-      "name": "Observability",
-      "description": "Nodo Observability operations"
+      "name": "Info",
+      "description": "Info operations"
+    },
+    {
+      "name": "Observability"
     }
   ],
   "paths": {
@@ -3518,6 +3797,30 @@
         ]
       }
     },
+    "/api/me": {
+      "get": {
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MeDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "SecurityScheme": []
+          }
+        ],
+        "tags": [
+          "Observability Resource"
+        ]
+      }
+    },
     "/api/nodo-monitoring/cache/version": {
       "get": {
         "summary": "Cache version of NDP001 and NDP004",
@@ -3730,6 +4033,26 @@
         ]
       }
     },
+    "/info": {
+      "get": {
+        "summary": "Get info of Node tech support API",
+        "tags": [
+          "Info"
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InfoResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/internal/observability/sync/attempt": {
       "post": {
         "tags": [
@@ -3861,13 +4184,22 @@
     }
   },
   "info": {
-    "title": "Nodo Observability - API ${service}",
+    "title": "Node Observability - API",
     "version": "1.3.2-9-nodo-observability",
     "termsOfService": "https://www.pagopa.gov.it/"
   },
   "servers": [
     {
-      "url": "${host}/nodo/observability/v1"
+      "url": "http://localhost:8080"
+    },
+    {
+      "url": "https://api.dev.platform.pagopa.it/nodo/observability/api/v1"
+    },
+    {
+      "url": "https://api.uat.platform.pagopa.it/nodo/observability/api/v1"
+    },
+    {
+      "url": "https://api.platform.pagopa.it/nodo/observability/api/v1"
     }
   ]
 }

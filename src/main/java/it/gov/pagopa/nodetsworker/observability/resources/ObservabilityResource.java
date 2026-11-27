@@ -1,5 +1,6 @@
 package it.gov.pagopa.nodetsworker.observability.resources;
 
+import io.quarkus.arc.profile.IfBuildProfile;
 import it.gov.pagopa.nodetsworker.datasource.RequiresDatasource;
 import it.gov.pagopa.nodetsworker.datasource.DatasourceRegistry;
 import org.eclipse.microprofile.openapi.annotations.security.SecurityRequirement;
@@ -40,6 +41,7 @@ import org.eclipse.microprofile.config.inject.ConfigProperty;
 @Produces(MediaType.APPLICATION_JSON)
 @NoStore
 @SecurityRequirement(name = "SecurityScheme")
+@IfBuildProfile(anyOf = {"build", "dev", "uat", "prod", "test", "observability"})
 public class ObservabilityResource {
 
   // Lists accept an optional [from, to) interval (both or none) with the same semantics as the overview.
