@@ -17,6 +17,7 @@ import it.gov.pagopa.nodetsworker.observability.dto.MeDto;
 import it.gov.pagopa.nodetsworker.observability.dto.OverviewDto;
 import it.gov.pagopa.nodetsworker.observability.dto.PageDto;
 import it.gov.pagopa.nodetsworker.observability.dto.PaymentDetailDto;
+import it.gov.pagopa.nodetsworker.observability.dto.PaymentInfoDto;
 import it.gov.pagopa.nodetsworker.observability.dto.PaymentSummaryDto;
 import it.gov.pagopa.nodetsworker.observability.dto.PrimitiveWarningDto;
 import it.gov.pagopa.nodetsworker.observability.dto.RevealResponseDto;
@@ -147,16 +148,18 @@ public class ObservabilityService {
     return ProjectionMapper.toDetailDto(getPayment(caller, paFiscalCode, noticeNumber));
   }
 
-  public PaymentDetailDto paymentDetail(String paFiscalCode, String noticeNumber) {
-    return ProjectionMapper.toDetailDto(getPayment(paFiscalCode, noticeNumber));
+  /** Dedicated payment-info API: unlike {@link #paymentDetail(Caller, String, String)}, attempts carry the raw token. */
+  public PaymentInfoDto paymentInfo(String paFiscalCode, String noticeNumber) {
+    return ProjectionMapper.toPaymentInfoDto(getPayment(paFiscalCode, noticeNumber));
   }
 
   // --- aggregates -----------------------------------------------------------
 
   public OverviewDto overview(Caller caller, Map<String, String> q) {
     Instant[] window = QuerySupport.window(q, Instant.now(), config);
-    List<DomainPayment> filtered = ProjectionLogic.selected(visible(caller), QuerySupport.filters(q), null);
     boolean live = QuerySupport.live(q);
+    List<DomainPayment> filtered = ProjectionLogic.selected(
+        repository.loadActiveIn(caller.allowedPa(), window[0], window[1], live), QuerySupport.filters(q), null);
     AggregateDto aggregate = AggregationService.aggregate(filtered, window[0], window[1], Instant.now(),
         revision(), live);
     OverviewDto dto = new OverviewDto();
@@ -332,7 +335,8 @@ public class ObservabilityService {
     Instant[] window = QuerySupport.window(q, Instant.now(), config);
     Map<String, String> scoped = new LinkedHashMap<>(q);
     scoped.put("paFiscalCode", paFiscalCode);
-    List<DomainPayment> filtered = ProjectionLogic.selected(visible(caller), QuerySupport.filters(scoped), null);
+    List<DomainPayment> filtered = ProjectionLogic.selected(
+        repository.loadActiveIn(caller.allowedPa(), window[0], window[1], false), QuerySupport.filters(scoped), null);
     AggregateDto aggregate = AggregationService.aggregate(filtered, window[0], window[1], Instant.now(), revision(), false);
     CreditorDetailDto dto = new CreditorDetailDto();
     copyAggregate(aggregate, dto);
@@ -378,7 +382,8 @@ public class ObservabilityService {
     Instant[] window = QuerySupport.window(q, Instant.now(), config);
     Map<String, String> scoped = new LinkedHashMap<>(q);
     scoped.put("paFiscalCode", paFiscalCode);
-    List<DomainPayment> data = ProjectionLogic.selected(visible(caller), QuerySupport.filters(scoped), null);
+    List<DomainPayment> data = ProjectionLogic.selected(
+        repository.loadVisible(paFiscalCode), QuerySupport.filters(scoped), null);
     TreeSet<String> stazioni = new TreeSet<>(Comparator.comparing(String::valueOf));
     for (DomainPayment p : data) {
       for (DomainAttempt a : p.getAttempts()) {
@@ -440,16 +445,16 @@ public class ObservabilityService {
   // --- SSE visibility helpers ----------------------------------------------
 
   public boolean creditorVisible(Caller caller, String paFiscalCode) {
-    return caller.allows(paFiscalCode)
-        && visible(caller).stream().anyMatch(p -> p.getPaFiscalCode().equals(paFiscalCode));
+    return caller.allows(paFiscalCode) && repository.existsCreditor(paFiscalCode);
   }
 
   /** The current revision of a visible payment, or {@code null} when it is absent/not visible. */
   public Long paymentRevisionIfVisible(Caller caller, String paFiscalCode, String noticeNumber) {
-    for (DomainPayment p : visible(caller)) {
-      if (p.getPaFiscalCode().equals(paFiscalCode) && p.getNoticeNumber().equals(noticeNumber)) {
-        return p.getProjectionRevision();
-      }
+    if (!caller.allows(paFiscalCode)) {
+      return null;
+    }
+    for (DomainPayment p : byKey(paFiscalCode, noticeNumber)) {
+      return p.getProjectionRevision();
     }
     return null;
   }
@@ -464,6 +469,10 @@ public class ObservabilityService {
     return repository.loadVisible(caller.allowedPa());
   }
 
+  private List<DomainPayment> byKey(String paFiscalCode, String noticeNumber) {
+    return repository.loadByKeys(List.of(new ProjectionRepository.PaymentKey(paFiscalCode, noticeNumber)));
+  }
+
   private static Map<String, DomainPayment> index(List<DomainPayment> payments) {
     Map<String, DomainPayment> byKey = new LinkedHashMap<>();
     for (DomainPayment p : payments) {
@@ -473,8 +482,8 @@ public class ObservabilityService {
   }
 
   private DomainPayment getPayment(Caller caller, String paFiscalCode, String noticeNumber) {
-    for (DomainPayment p : visible(caller)) {
-      if (p.getPaFiscalCode().equals(paFiscalCode) && p.getNoticeNumber().equals(noticeNumber)) {
+    if (caller.allows(paFiscalCode)) {
+      for (DomainPayment p : byKey(paFiscalCode, noticeNumber)) {
         return p;
       }
     }
@@ -482,11 +491,8 @@ public class ObservabilityService {
   }
 
   private DomainPayment getPayment(String paFiscalCode, String noticeNumber) {
-    List<DomainPayment> domainPayments = repository.loadVisible(null);
-    for (DomainPayment p : domainPayments) {
-      if (p.getPaFiscalCode().equals(paFiscalCode) && p.getNoticeNumber().equals(noticeNumber)) {
-        return p;
-      }
+    for (DomainPayment p : byKey(paFiscalCode, noticeNumber)) {
+      return p;
     }
     throw new AppException(AppErrorCodeMessageEnum.NOT_FOUND, "Pagamento non disponibile.");
   }
@@ -503,7 +509,7 @@ public class ObservabilityService {
   }
 
   private void ensureCreditorVisible(Caller caller, String paFiscalCode) {
-    if (!caller.allows(paFiscalCode) || visible(caller).stream().noneMatch(p -> p.getPaFiscalCode().equals(paFiscalCode))) {
+    if (!creditorVisible(caller, paFiscalCode)) {
       throw Errors.notFound("Ente non disponibile.");
     }
   }

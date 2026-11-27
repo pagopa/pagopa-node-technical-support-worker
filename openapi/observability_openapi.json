@@ -1,891 +1,71 @@
 {
   "openapi": "3.0.3",
-  "info": {
-    "title": "Nodo Observability - API ${service}",
-    "termsOfService": "https://www.pagopa.gov.it/",
-    "version": "1.3.2-9-nodo-observability"
-  },
-  "servers": [
-    {
-      "url": "${host}/nodo/observability/v1"
-    }
-  ],
-  "tags": [
-    {
-      "name": "Observability",
-      "description": "Nodo Observability operations"
-    }
-  ],
-  "paths": {
-    "/api/apiconfig/maintenances": {
-      "get": {
-        "tags": [
-          "Observability"
-        ],
-        "summary": "Scheduled station maintenances of the next 7 days",
-        "description": "Read-only. Served from a cache that is reloaded from apiconfig every midnight.",
-        "operationId": "getMaintenances",
-        "responses": {
-          "200": {
-            "description": "Cached maintenances",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Maintenances"
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Query parameters are not accepted",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorDto"
-                }
-              }
-            }
-          },
-          "503": {
-            "description": "apiconfig never answered: no data available",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorDto"
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "SecurityScheme": []
-          }
-        ]
-      }
-    },
-    "/api/attempts": {
-      "get": {
-        "tags": [
-          "Observability"
-        ],
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/PageDtoAttemptDto"
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "SecurityScheme": []
-          }
-        ]
-      }
-    },
-    "/api/attempts/{attemptId}/check-db": {
-      "get": {
-        "tags": [
-          "Observability"
-        ],
-        "summary": "Compare attempt and payment states with Nodo Online",
-        "description": "Read-only. Resolves token, PA/NAV and datasource from the retained attempt, using the existing serviceIdentifier routing. No query parameters or projection writes. Missing Online snapshots are independent null values; duplicate or unsupported snapshots fail explicitly. projectionRevision identifies the captured observation, not a distributed transaction across both databases.",
-        "operationId": "checkAttemptDatabase",
-        "parameters": [
-          {
-            "name": "attemptId",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Real Nodo Online comparison, including absent snapshots",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/DbCheck"
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Query parameters are not accepted",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorDto"
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "Attempt absent, outside caller visibility or expired",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorDto"
-                }
-              }
-            }
-          },
-          "422": {
-            "description": "DB_SERVICE_MISSING or DB_SERVICE_UNCONFIGURED",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorDto"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Incomplete projection, duplicate or invalid snapshot, or server error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorDto"
-                }
-              }
-            }
-          },
-          "503": {
-            "description": "DB_UNAVAILABLE: database failure or timeout, no partial result",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorDto"
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "SecurityScheme": []
-          }
-        ]
-      }
-    },
-    "/api/attempts/{attemptId}/re-events": {
-      "post": {
-        "tags": [
-          "Observability"
-        ],
-        "summary": "Consult a bounded RE diagnostic window",
-        "description": "Read-only; disabled until deployment verification and personal-data approval. Explicit UTC [from,to), maximum 24h. Resolves PA/NAV/token and expiry server-side. All RE events matching the AND keys are included, without FSM/primitive filters. With scope POSITION the paymentToken key is dropped: events of the whole PA + NAV pair, including token-less calls such as verifyPaymentNotice, are returned. Coverage never means full history; retained windows may be clipped. Signed opaque seek cursors freeze the ingestion watermark and expire after at most 300s. Maximum 100 events/page, 1000 events/consultation, 5MiB JSON/response. Decoded payload is untrusted plain text; no interpretation or decompression. All responses, including errors, are no-store.",
-        "operationId": "readAttemptReEvents",
-        "parameters": [
-          {
-            "name": "attemptId",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/ReRequest"
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "200": {
-            "description": "Window-only diagnostic result; never full history",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ReResponse"
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Invalid explicit UTC window, body, query or cursor",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorDto"
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "Attempt not found",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorDto"
-                }
-              }
-            }
-          },
-          "410": {
-            "description": "Attempt expired (if its projection row is still present)",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorDto"
-                }
-              }
-            }
-          },
-          "429": {
-            "description": "Rate, concurrency or consultation admission limit",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorDto"
-                }
-              }
-            }
-          },
-          "502": {
-            "description": "ADX/schema/ordering or correlation failure",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorDto"
-                }
-              }
-            }
-          },
-          "503": {
-            "description": "Disabled or missing/unverified deployment configuration",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorDto"
-                }
-              }
-            }
-          },
-          "504": {
-            "description": "RE query timeout or cancellation",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorDto"
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "SecurityScheme": []
-          }
-        ]
-      }
-    },
-    "/api/attempts/{attemptId}/reveal": {
-      "post": {
-        "tags": [
-          "Observability"
-        ],
-        "parameters": [
-          {
-            "name": "attemptId",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "additionalProperties": {}
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/RevealResponseDto"
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "SecurityScheme": []
-          }
-        ]
-      }
-    },
-    "/api/catalog": {
-      "get": {
-        "tags": [
-          "Observability"
-        ],
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/CatalogDto"
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "SecurityScheme": []
-          }
-        ]
-      }
-    },
-    "/api/creditors": {
-      "get": {
-        "tags": [
-          "Observability"
-        ],
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/PageDtoCreditorRowDto"
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "SecurityScheme": []
-          }
-        ]
-      }
-    },
-    "/api/creditors/{paFiscalCode}": {
-      "get": {
-        "tags": [
-          "Observability"
-        ],
-        "parameters": [
-          {
-            "name": "paFiscalCode",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/CreditorDetailDto"
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "SecurityScheme": []
-          }
-        ]
-      }
-    },
-    "/api/creditors/{paFiscalCode}/stations": {
-      "get": {
-        "tags": [
-          "Observability"
-        ],
-        "parameters": [
-          {
-            "name": "paFiscalCode",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/PageDtoObject"
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "SecurityScheme": []
-          }
-        ]
-      }
-    },
-    "/api/events": {
-      "get": {
-        "tags": [
-          "Observability"
-        ],
-        "parameters": [
-          {
-            "name": "Last-Event-ID",
-            "in": "header",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "SSE frames: event type in event:, JSON envelope in data:. Heartbeats are comments.",
-            "content": {
-              "text/event-stream": {
-                "schema": {
-                  "oneOf": [
-                    {
-                      "$ref": "#/components/schemas/ReadyEvent"
-                    },
-                    {
-                      "$ref": "#/components/schemas/PaymentDelta"
-                    },
-                    {
-                      "$ref": "#/components/schemas/AggregateDelta"
-                    }
-                  ]
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "SecurityScheme": []
-          }
-        ]
-      }
-    },
-    "/api/freshness": {
-      "get": {
-        "tags": [
-          "Observability"
-        ],
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/FreshnessDto"
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "SecurityScheme": []
-          }
-        ]
-      }
-    },
-    "/api/nodo-monitoring/cache/version": {
-      "get": {
-        "tags": [
-          "Observability"
-        ],
-        "summary": "Cache version of NDP001 and NDP004",
-        "description": "Read-only. Calls Nodo monitoring once per node (X-Ndp-Target) in parallel and aggregates the results. A node that is unconfigured or unreachable is reported with its outcome and null cache fields, without failing the whole response.",
-        "operationId": "getCacheVersions",
-        "responses": {
-          "200": {
-            "description": "One entry per node, including failed ones",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/CacheVersions"
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Query parameters are not accepted",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorDto"
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "SecurityScheme": []
-          }
-        ]
-      }
-    },
-    "/api/overview": {
-      "get": {
-        "tags": [
-          "Observability"
-        ],
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/OverviewDto"
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "SecurityScheme": []
-          }
-        ]
-      }
-    },
-    "/api/overview/primitive-warnings": {
-      "get": {
-        "tags": [
-          "Observability"
-        ],
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/PageDtoPrimitiveWarningDto"
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "SecurityScheme": []
-          }
-        ]
-      }
-    },
-    "/api/payments": {
-      "get": {
-        "tags": [
-          "Observability"
-        ],
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/PageDtoPaymentSummaryDto"
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "SecurityScheme": []
-          }
-        ]
-      }
-    },
-    "/api/payments/{paFiscalCode}/{noticeNumber}": {
-      "get": {
-        "tags": [
-          "Observability"
-        ],
-        "parameters": [
-          {
-            "name": "noticeNumber",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "paFiscalCode",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/PaymentDetailDto"
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "SecurityScheme": []
-          }
-        ]
-      }
-    },
-    "/api/serviceIdentifiers": {
-      "get": {
-        "tags": [
-          "Observability"
-        ],
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "array",
-                  "items": {
-                    "type": "string"
-                  }
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "SecurityScheme": []
-          }
-        ]
-      }
-    },
-    "/api/token-lookup": {
-      "post": {
-        "tags": [
-          "Observability"
-        ],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/TokenLookupRequestDto"
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/TokenLookupResponseDto"
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "SecurityScheme": []
-          }
-        ]
-      }
-    },
-    "/internal/observability/sync/attempt": {
-      "post": {
-        "tags": [
-          "Observability"
-        ],
-        "requestBody": {
-          "description": "Payment key and attempt token",
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/AttemptSyncRequest"
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "200": {
-            "description": "Synchronization outcome",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/StatusSyncResponse"
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Invalid request"
-          },
-          "500": {
-            "description": "Database or server error"
-          },
-          "502": {
-            "description": "Unsupported state returned by Nodo Online"
-          }
-        },
-        "security": [
-          {
-            "SecurityScheme": []
-          }
-        ]
-      }
-    },
-    "/internal/observability/sync/payment": {
-      "post": {
-        "tags": [
-          "Observability"
-        ],
-        "requestBody": {
-          "description": "Payment key",
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/PaymentSyncRequest"
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "200": {
-            "description": "Synchronization outcome",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/StatusSyncResponse"
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Invalid request"
-          },
-          "500": {
-            "description": "Database or server error"
-          },
-          "502": {
-            "description": "Unsupported state returned by Nodo Online"
-          }
-        },
-        "security": [
-          {
-            "SecurityScheme": []
-          }
-        ]
-      }
-    },
-    "/paymentToken/{paymentToken}": {
-      "get": {
-        "tags": [
-          "Observability"
-        ],
-        "parameters": [
-          {
-            "name": "paymentToken",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "serviceIdentifier",
-            "in": "query",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/PositionPaymentSnapshotDto"
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "SecurityScheme": []
-          }
-        ]
-      }
-    },
-    "/api/analytics/activations-outcomes": {
-      "get": {
-        "tags": [
-          "Observability"
-        ],
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ActivationsOutcomes"
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "SecurityScheme": []
-          }
-        ]
-      }
-    }
-  },
   "components": {
     "schemas": {
+      "ActivatedTokens": {
+        "description": "Each token counted once by its last observed state: observed data, not necessarily the real state (see coverage). total = activatePaymentNoticeOk.total = sum of the five categories",
+        "required": [
+          "total",
+          "acceptedOutcome",
+          "cancelledByMod3Cancel",
+          "otherCancelled",
+          "nonTerminal",
+          "otherTerminal"
+        ],
+        "type": "object",
+        "properties": {
+          "total": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "acceptedOutcome": {
+            "description": "Tokens with at least one state transition triggered by sendPaymentOutcome/V2 (an accepted outcome, OK or KO); V2 when any such transition is V2",
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/OutcomeCounts"
+              }
+            ]
+          },
+          "cancelledByMod3Cancel": {
+            "description": "No accepted outcome; CANCELLED through the mod3Cancel/mod3CancelV2 expiry job, whenever it happened, also after the window",
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/Mod3CancelCounts"
+              }
+            ]
+          },
+          "otherCancelled": {
+            "description": "No accepted outcome; CANCELLED by another cause",
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/TokensByCause"
+              }
+            ]
+          },
+          "nonTerminal": {
+            "description": "No accepted outcome; last observed state not final in the attempt FSM: the final state has not been observed (not necessarily a payment in progress)",
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/TokensByObservedState"
+              }
+            ]
+          },
+          "otherTerminal": {
+            "description": "No accepted outcome; final state other than CANCELLED",
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/TokensByState"
+              }
+            ]
+          }
+        },
+        "additionalProperties": false
+      },
       "ActivationCounts": {
         "required": [
           "total",
@@ -1082,6 +262,37 @@
           },
           "freshness": {
             "$ref": "#/components/schemas/FreshnessDto"
+          }
+        },
+        "additionalProperties": false
+      },
+      "AnalyticsCoverage": {
+        "required": [
+          "status",
+          "reasons",
+          "lastObservedEventAt"
+        ],
+        "type": "object",
+        "properties": {
+          "status": {
+            "description": "Completeness is never asserted: UNKNOWN when no reliable ingestion watermark proves the timeline complete, UNAVAILABLE when tokens may already be deleted by retention (tokens is null)",
+            "enum": [
+              "UNKNOWN",
+              "UNAVAILABLE"
+            ],
+            "type": "string"
+          },
+          "reasons": {
+            "description": "NO_INGESTION_WATERMARK, RETENTION",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "lastObservedEventAt": {
+            "description": "Source time of the latest projected attempt state event: observed data, not a coverage guarantee",
+            "type": "string",
+            "nullable": true
           }
         },
         "additionalProperties": false
@@ -2726,8 +1937,7 @@
               {
                 "type": "boolean"
               }
-            ],
-            "nullable": true
+            ]
           },
           "componente": {
             "oneOf": [
@@ -2742,8 +1952,7 @@
               {
                 "type": "boolean"
               }
-            ],
-            "nullable": true
+            ]
           },
           "categoriaEvento": {
             "oneOf": [
@@ -2758,8 +1967,7 @@
               {
                 "type": "boolean"
               }
-            ],
-            "nullable": true
+            ]
           },
           "sottoTipoEvento": {
             "oneOf": [
@@ -2774,8 +1982,7 @@
               {
                 "type": "boolean"
               }
-            ],
-            "nullable": true
+            ]
           },
           "idDominio": {
             "oneOf": [
@@ -2790,8 +1997,7 @@
               {
                 "type": "boolean"
               }
-            ],
-            "nullable": true
+            ]
           },
           "iuv": {
             "oneOf": [
@@ -2806,8 +2012,7 @@
               {
                 "type": "boolean"
               }
-            ],
-            "nullable": true
+            ]
           },
           "ccp": {
             "oneOf": [
@@ -2822,8 +2027,7 @@
               {
                 "type": "boolean"
               }
-            ],
-            "nullable": true
+            ]
           },
           "psp": {
             "oneOf": [
@@ -2838,8 +2042,7 @@
               {
                 "type": "boolean"
               }
-            ],
-            "nullable": true
+            ]
           },
           "tipoVersamento": {
             "oneOf": [
@@ -2854,8 +2057,7 @@
               {
                 "type": "boolean"
               }
-            ],
-            "nullable": true
+            ]
           },
           "tipoEvento": {
             "oneOf": [
@@ -2870,8 +2072,7 @@
               {
                 "type": "boolean"
               }
-            ],
-            "nullable": true
+            ]
           },
           "fruitore": {
             "oneOf": [
@@ -2886,8 +2087,7 @@
               {
                 "type": "boolean"
               }
-            ],
-            "nullable": true
+            ]
           },
           "erogatore": {
             "oneOf": [
@@ -2902,8 +2102,7 @@
               {
                 "type": "boolean"
               }
-            ],
-            "nullable": true
+            ]
           },
           "stazione": {
             "oneOf": [
@@ -2918,8 +2117,7 @@
               {
                 "type": "boolean"
               }
-            ],
-            "nullable": true
+            ]
           },
           "canale": {
             "oneOf": [
@@ -2934,8 +2132,7 @@
               {
                 "type": "boolean"
               }
-            ],
-            "nullable": true
+            ]
           },
           "parametriSpecificiInterfaccia": {
             "oneOf": [
@@ -2950,8 +2147,7 @@
               {
                 "type": "boolean"
               }
-            ],
-            "nullable": true
+            ]
           },
           "esito": {
             "oneOf": [
@@ -2966,8 +2162,7 @@
               {
                 "type": "boolean"
               }
-            ],
-            "nullable": true
+            ]
           },
           "sessionId": {
             "oneOf": [
@@ -2982,8 +2177,7 @@
               {
                 "type": "boolean"
               }
-            ],
-            "nullable": true
+            ]
           },
           "status": {
             "oneOf": [
@@ -2998,8 +2192,7 @@
               {
                 "type": "boolean"
               }
-            ],
-            "nullable": true
+            ]
           },
           "payload": {
             "type": "string",
@@ -3018,8 +2211,7 @@
               {
                 "type": "boolean"
               }
-            ],
-            "nullable": true
+            ]
           },
           "businessProcess": {
             "oneOf": [
@@ -3034,8 +2226,7 @@
               {
                 "type": "boolean"
               }
-            ],
-            "nullable": true
+            ]
           },
           "fruitoreDescr": {
             "oneOf": [
@@ -3050,8 +2241,7 @@
               {
                 "type": "boolean"
               }
-            ],
-            "nullable": true
+            ]
           },
           "erogatoreDescr": {
             "oneOf": [
@@ -3066,8 +2256,7 @@
               {
                 "type": "boolean"
               }
-            ],
-            "nullable": true
+            ]
           },
           "pspDescr": {
             "oneOf": [
@@ -3082,8 +2271,7 @@
               {
                 "type": "boolean"
               }
-            ],
-            "nullable": true
+            ]
           },
           "noticeNumber": {
             "oneOf": [
@@ -3098,8 +2286,7 @@
               {
                 "type": "boolean"
               }
-            ],
-            "nullable": true
+            ]
           },
           "creditorReferenceId": {
             "oneOf": [
@@ -3114,8 +2301,7 @@
               {
                 "type": "boolean"
               }
-            ],
-            "nullable": true
+            ]
           },
           "paymentToken": {
             "oneOf": [
@@ -3130,8 +2316,7 @@
               {
                 "type": "boolean"
               }
-            ],
-            "nullable": true
+            ]
           },
           "sessionIdOriginal": {
             "oneOf": [
@@ -3146,8 +2331,7 @@
               {
                 "type": "boolean"
               }
-            ],
-            "nullable": true
+            ]
           },
           "standIn": {
             "oneOf": [
@@ -3162,8 +2346,7 @@
               {
                 "type": "boolean"
               }
-            ],
-            "nullable": true
+            ]
           },
           "serviceIdentifier": {
             "oneOf": [
@@ -3178,8 +2361,7 @@
               {
                 "type": "boolean"
               }
-            ],
-            "nullable": true
+            ]
           },
           "dataOraEvento": {
             "oneOf": [
@@ -3194,8 +2376,7 @@
               {
                 "type": "boolean"
               }
-            ],
-            "nullable": true
+            ]
           },
           "uniqueId": {
             "oneOf": [
@@ -3210,8 +2391,7 @@
               {
                 "type": "boolean"
               }
-            ],
-            "nullable": true
+            ]
           },
           "version": {
             "oneOf": [
@@ -3226,8 +2406,7 @@
               {
                 "type": "boolean"
               }
-            ],
-            "nullable": true
+            ]
           },
           "payloadDecoded": {
             "$ref": "#/components/schemas/RePayloadDecoded"
@@ -3581,6 +2760,29 @@
         ],
         "type": "string"
       },
+      "TokenBucket": {
+        "required": [
+          "cause",
+          "count"
+        ],
+        "type": "object",
+        "properties": {
+          "state": {
+            "description": "Last observed state (byState only)",
+            "type": "string"
+          },
+          "cause": {
+            "description": "tipoEvento of the transition into the last observed state; null when not recorded",
+            "type": "string",
+            "nullable": true
+          },
+          "count": {
+            "format": "int64",
+            "type": "integer"
+          }
+        },
+        "additionalProperties": false
+      },
       "TokenLookupRequestDto": {
         "type": "object",
         "properties": {
@@ -3612,6 +2814,86 @@
             "type": "integer"
           }
         }
+      },
+      "TokenStateCount": {
+        "required": [
+          "state",
+          "count"
+        ],
+        "type": "object",
+        "properties": {
+          "state": {
+            "type": "string"
+          },
+          "count": {
+            "format": "int64",
+            "type": "integer"
+          }
+        },
+        "additionalProperties": false
+      },
+      "TokensByCause": {
+        "required": [
+          "total",
+          "byCause"
+        ],
+        "type": "object",
+        "properties": {
+          "total": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "byCause": {
+            "description": "Sorted by count, descending",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TokenBucket"
+            }
+          }
+        },
+        "additionalProperties": false
+      },
+      "TokensByObservedState": {
+        "required": [
+          "total",
+          "byState"
+        ],
+        "type": "object",
+        "properties": {
+          "total": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "byState": {
+            "description": "One item per last observed state, sorted by count, descending",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TokenStateCount"
+            }
+          }
+        },
+        "additionalProperties": false
+      },
+      "TokensByState": {
+        "required": [
+          "total",
+          "byState"
+        ],
+        "type": "object",
+        "properties": {
+          "total": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "byState": {
+            "description": "Sorted by count, descending",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TokenBucket"
+            }
+          }
+        },
+        "additionalProperties": false
       },
       "TrafficBucketDto": {
         "type": "object",
@@ -3691,213 +2973,901 @@
             "type": "string"
           }
         }
-      },
-      "ActivatedTokens": {
-        "description": "Each token counted once by its last observed state: observed data, not necessarily the real state (see coverage). total = activatePaymentNoticeOk.total = sum of the five categories",
-        "required": [
-          "total",
-          "acceptedOutcome",
-          "cancelledByMod3Cancel",
-          "otherCancelled",
-          "nonTerminal",
-          "otherTerminal"
-        ],
-        "type": "object",
-        "properties": {
-          "total": {
-            "format": "int64",
-            "type": "integer"
-          },
-          "acceptedOutcome": {
-            "description": "Tokens with at least one state transition triggered by sendPaymentOutcome/V2 (an accepted outcome, OK or KO); V2 when any such transition is V2",
-            "type": "object",
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/OutcomeCounts"
-              }
-            ]
-          },
-          "cancelledByMod3Cancel": {
-            "description": "No accepted outcome; CANCELLED through the mod3Cancel/mod3CancelV2 expiry job, whenever it happened, also after the window",
-            "type": "object",
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/Mod3CancelCounts"
-              }
-            ]
-          },
-          "otherCancelled": {
-            "description": "No accepted outcome; CANCELLED by another cause",
-            "type": "object",
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/TokensByCause"
-              }
-            ]
-          },
-          "nonTerminal": {
-            "description": "No accepted outcome; last observed state not final in the attempt FSM: the final state has not been observed (not necessarily a payment in progress)",
-            "type": "object",
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/TokensByObservedState"
-              }
-            ]
-          },
-          "otherTerminal": {
-            "description": "No accepted outcome; final state other than CANCELLED",
-            "type": "object",
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/TokensByState"
-              }
-            ]
-          }
-        },
-        "additionalProperties": false
-      },
-      "TokensByCause": {
-        "required": [
-          "total",
-          "byCause"
-        ],
-        "type": "object",
-        "properties": {
-          "total": {
-            "format": "int64",
-            "type": "integer"
-          },
-          "byCause": {
-            "description": "Sorted by count, descending",
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/TokenBucket"
-            }
-          }
-        },
-        "additionalProperties": false
-      },
-      "TokensByState": {
-        "required": [
-          "total",
-          "byState"
-        ],
-        "type": "object",
-        "properties": {
-          "total": {
-            "format": "int64",
-            "type": "integer"
-          },
-          "byState": {
-            "description": "Sorted by count, descending",
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/TokenBucket"
-            }
-          }
-        },
-        "additionalProperties": false
-      },
-      "TokensByObservedState": {
-        "required": [
-          "total",
-          "byState"
-        ],
-        "type": "object",
-        "properties": {
-          "total": {
-            "format": "int64",
-            "type": "integer"
-          },
-          "byState": {
-            "description": "One item per last observed state, sorted by count, descending",
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/TokenStateCount"
-            }
-          }
-        },
-        "additionalProperties": false
-      },
-      "TokenStateCount": {
-        "required": [
-          "state",
-          "count"
-        ],
-        "type": "object",
-        "properties": {
-          "state": {
-            "type": "string"
-          },
-          "count": {
-            "format": "int64",
-            "type": "integer"
-          }
-        },
-        "additionalProperties": false
-      },
-      "TokenBucket": {
-        "required": [
-          "cause",
-          "count"
-        ],
-        "type": "object",
-        "properties": {
-          "state": {
-            "description": "Last observed state (byState only)",
-            "type": "string"
-          },
-          "cause": {
-            "description": "tipoEvento of the transition into the last observed state; null when not recorded",
-            "type": "string",
-            "nullable": true
-          },
-          "count": {
-            "format": "int64",
-            "type": "integer"
-          }
-        },
-        "additionalProperties": false
-      },
-      "AnalyticsCoverage": {
-        "required": [
-          "status",
-          "reasons",
-          "lastObservedEventAt"
-        ],
-        "type": "object",
-        "properties": {
-          "status": {
-            "description": "Completeness is never asserted: UNKNOWN when no reliable ingestion watermark proves the timeline complete, UNAVAILABLE when tokens may already be deleted by retention (tokens is null)",
-            "enum": [
-              "UNKNOWN",
-              "UNAVAILABLE"
-            ],
-            "type": "string"
-          },
-          "reasons": {
-            "description": "NO_INGESTION_WATERMARK, RETENTION",
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
-          },
-          "lastObservedEventAt": {
-            "description": "Source time of the latest projected attempt state event: observed data, not a coverage guarantee",
-            "type": "string",
-            "nullable": true
-          }
-        },
-        "additionalProperties": false
       }
     },
     "securitySchemes": {
       "SecurityScheme": {
-        "type": "http",
         "description": "Microsoft Entra ID token (MSAL ID token), validated by Azure APIM",
+        "type": "http",
         "scheme": "bearer",
         "bearerFormat": "JWT"
       }
     }
-  }
+  },
+  "tags": [
+    {
+      "name": "Observability",
+      "description": "Nodo Observability operations"
+    }
+  ],
+  "paths": {
+    "/api/analytics/activations-outcomes": {
+      "get": {
+        "tags": [
+          "Observability"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ActivationsOutcomes"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "SecurityScheme": []
+          }
+        ]
+      }
+    },
+    "/api/apiconfig/maintenances": {
+      "get": {
+        "summary": "Scheduled station maintenances of the next 7 days",
+        "description": "Read-only. Served from a cache that is reloaded from apiconfig every midnight.",
+        "operationId": "getMaintenances",
+        "tags": [
+          "Observability"
+        ],
+        "responses": {
+          "200": {
+            "description": "Cached maintenances",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Maintenances"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Query parameters are not accepted",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "apiconfig never answered: no data available",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "SecurityScheme": []
+          }
+        ]
+      }
+    },
+    "/api/attempts": {
+      "get": {
+        "tags": [
+          "Observability"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PageDtoAttemptDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "SecurityScheme": []
+          }
+        ]
+      }
+    },
+    "/api/attempts/{attemptId}/check-db": {
+      "get": {
+        "summary": "Compare attempt and payment states with Nodo Online",
+        "description": "Read-only. Resolves token, PA/NAV and datasource from the retained attempt, using the existing serviceIdentifier routing. No query parameters or projection writes. Missing Online snapshots are independent null values; duplicate or unsupported snapshots fail explicitly. projectionRevision identifies the captured observation, not a distributed transaction across both databases.",
+        "operationId": "checkAttemptDatabase",
+        "tags": [
+          "Observability"
+        ],
+        "parameters": [
+          {
+            "name": "attemptId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Real Nodo Online comparison, including absent snapshots",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DbCheck"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Query parameters are not accepted",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Attempt absent, outside caller visibility or expired",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "DB_SERVICE_MISSING or DB_SERVICE_UNCONFIGURED",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Incomplete projection, duplicate or invalid snapshot, or server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "DB_UNAVAILABLE: database failure or timeout, no partial result",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "SecurityScheme": []
+          }
+        ]
+      }
+    },
+    "/api/attempts/{attemptId}/re-events": {
+      "post": {
+        "summary": "Consult a bounded RE diagnostic window",
+        "description": "Read-only; disabled until deployment verification and personal-data approval. Explicit UTC [from,to), maximum 24h. Resolves PA/NAV/token and expiry server-side. All RE events matching the AND keys are included, without FSM/primitive filters. With scope POSITION the paymentToken key is dropped: events of the whole PA + NAV pair, including token-less calls such as verifyPaymentNotice, are returned. Coverage never means full history; retained windows may be clipped. Signed opaque seek cursors freeze the ingestion watermark and expire after at most 300s. Maximum 100 events/page, 1000 events/consultation, 5MiB JSON/response. Decoded payload is untrusted plain text; no interpretation or decompression. All responses, including errors, are no-store.",
+        "operationId": "readAttemptReEvents",
+        "tags": [
+          "Observability"
+        ],
+        "parameters": [
+          {
+            "name": "attemptId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ReRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Window-only diagnostic result; never full history",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid explicit UTC window, body, query or cursor",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Attempt not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            }
+          },
+          "410": {
+            "description": "Attempt expired (if its projection row is still present)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate, concurrency or consultation admission limit",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            }
+          },
+          "502": {
+            "description": "ADX/schema/ordering or correlation failure",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Disabled or missing/unverified deployment configuration",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            }
+          },
+          "504": {
+            "description": "RE query timeout or cancellation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "SecurityScheme": []
+          }
+        ]
+      }
+    },
+    "/api/attempts/{attemptId}/reveal": {
+      "post": {
+        "tags": [
+          "Observability"
+        ],
+        "parameters": [
+          {
+            "name": "attemptId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": {}
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RevealResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "SecurityScheme": []
+          }
+        ]
+      }
+    },
+    "/api/catalog": {
+      "get": {
+        "tags": [
+          "Observability"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CatalogDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "SecurityScheme": []
+          }
+        ]
+      }
+    },
+    "/api/creditors": {
+      "get": {
+        "tags": [
+          "Observability"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PageDtoCreditorRowDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "SecurityScheme": []
+          }
+        ]
+      }
+    },
+    "/api/creditors/{paFiscalCode}": {
+      "get": {
+        "tags": [
+          "Observability"
+        ],
+        "parameters": [
+          {
+            "name": "paFiscalCode",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CreditorDetailDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "SecurityScheme": []
+          }
+        ]
+      }
+    },
+    "/api/creditors/{paFiscalCode}/stations": {
+      "get": {
+        "tags": [
+          "Observability"
+        ],
+        "parameters": [
+          {
+            "name": "paFiscalCode",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PageDtoObject"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "SecurityScheme": []
+          }
+        ]
+      }
+    },
+    "/api/events": {
+      "get": {
+        "tags": [
+          "Observability"
+        ],
+        "parameters": [
+          {
+            "name": "Last-Event-ID",
+            "in": "header",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "SSE frames: event type in event:, JSON envelope in data:. Heartbeats are comments.",
+            "content": {
+              "text/event-stream": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "$ref": "#/components/schemas/ReadyEvent"
+                    },
+                    {
+                      "$ref": "#/components/schemas/PaymentDelta"
+                    },
+                    {
+                      "$ref": "#/components/schemas/AggregateDelta"
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "SecurityScheme": []
+          }
+        ]
+      }
+    },
+    "/api/freshness": {
+      "get": {
+        "tags": [
+          "Observability"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FreshnessDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "SecurityScheme": []
+          }
+        ]
+      }
+    },
+    "/api/nodo-monitoring/cache/version": {
+      "get": {
+        "summary": "Cache version of NDP001 and NDP004",
+        "description": "Read-only. Calls Nodo monitoring once per node (X-Ndp-Target) in parallel and aggregates the results. A node that is unconfigured or unreachable is reported with its outcome and null cache fields, without failing the whole response.",
+        "operationId": "getCacheVersions",
+        "tags": [
+          "Observability"
+        ],
+        "responses": {
+          "200": {
+            "description": "One entry per node, including failed ones",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CacheVersions"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Query parameters are not accepted",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "SecurityScheme": []
+          }
+        ]
+      }
+    },
+    "/api/overview": {
+      "get": {
+        "tags": [
+          "Observability"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OverviewDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "SecurityScheme": []
+          }
+        ]
+      }
+    },
+    "/api/overview/primitive-warnings": {
+      "get": {
+        "tags": [
+          "Observability"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PageDtoPrimitiveWarningDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "SecurityScheme": []
+          }
+        ]
+      }
+    },
+    "/api/payments": {
+      "get": {
+        "tags": [
+          "Observability"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PageDtoPaymentSummaryDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "SecurityScheme": []
+          }
+        ]
+      }
+    },
+    "/api/payments/{paFiscalCode}/{noticeNumber}": {
+      "get": {
+        "tags": [
+          "Observability"
+        ],
+        "parameters": [
+          {
+            "name": "noticeNumber",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "paFiscalCode",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PaymentDetailDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "SecurityScheme": []
+          }
+        ]
+      }
+    },
+    "/api/serviceIdentifiers": {
+      "get": {
+        "tags": [
+          "Observability"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "SecurityScheme": []
+          }
+        ]
+      }
+    },
+    "/api/token-lookup": {
+      "post": {
+        "tags": [
+          "Observability"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TokenLookupRequestDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TokenLookupResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "SecurityScheme": []
+          }
+        ]
+      }
+    },
+    "/internal/observability/sync/attempt": {
+      "post": {
+        "tags": [
+          "Observability"
+        ],
+        "requestBody": {
+          "description": "Payment key and attempt token",
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AttemptSyncRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Synchronization outcome",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StatusSyncResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request"
+          },
+          "500": {
+            "description": "Database or server error"
+          },
+          "502": {
+            "description": "Unsupported state returned by Nodo Online"
+          }
+        },
+        "security": [
+          {
+            "SecurityScheme": []
+          }
+        ]
+      }
+    },
+    "/internal/observability/sync/payment": {
+      "post": {
+        "tags": [
+          "Observability"
+        ],
+        "requestBody": {
+          "description": "Payment key",
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PaymentSyncRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Synchronization outcome",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StatusSyncResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request"
+          },
+          "500": {
+            "description": "Database or server error"
+          },
+          "502": {
+            "description": "Unsupported state returned by Nodo Online"
+          }
+        },
+        "security": [
+          {
+            "SecurityScheme": []
+          }
+        ]
+      }
+    },
+    "/paymentToken/{paymentToken}": {
+      "get": {
+        "tags": [
+          "Observability"
+        ],
+        "parameters": [
+          {
+            "name": "paymentToken",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "serviceIdentifier",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PositionPaymentSnapshotDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "SecurityScheme": []
+          }
+        ]
+      }
+    }
+  },
+  "info": {
+    "title": "Nodo Observability - API ${service}",
+    "version": "1.3.2-9-nodo-observability",
+    "termsOfService": "https://www.pagopa.gov.it/"
+  },
+  "servers": [
+    {
+      "url": "${host}/nodo/observability/v1"
+    }
+  ]
 }

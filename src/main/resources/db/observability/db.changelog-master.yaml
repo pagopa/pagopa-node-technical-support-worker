@@ -31,3 +31,6 @@ databaseChangeLog:
   - include:
       file: db/observability/changes/0008-primitive-direction.sql
       relativeToChangelogFile: false
+  - include:
+      file: db/observability/changes/0009-projection-window-indexes.sql
+      relativeToChangelogFile: false

@@ -1,5 +1,7 @@
 package it.gov.pagopa.nodetsworker.observability.resources;
 
+import it.gov.pagopa.nodetsworker.datasource.RequiresDatasource;
+import it.gov.pagopa.nodetsworker.datasource.DatasourceRegistry;
 import it.gov.pagopa.nodetsworker.observability.dto.AttemptSyncRequestDto;
 import it.gov.pagopa.nodetsworker.observability.dto.PaymentSyncRequestDto;
 import it.gov.pagopa.nodetsworker.observability.dto.StatusSyncResponseDto;
@@ -27,6 +29,7 @@ import org.eclipse.microprofile.openapi.annotations.tags.Tag;
 @NoStore
 @SecurityRequirement(name = "SecurityScheme")
 @Tag(name = "Observability")
+@RequiresDatasource({DatasourceRegistry.OBSERVABILITY, DatasourceRegistry.ONLINE_NDP001})
 public class OnlineStatusSyncResource {
 
   @Inject

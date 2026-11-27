@@ -23,9 +23,11 @@ public class ReOpenApiFilter implements OASFilter {
 
   private void scalar(Schema schema) {
     if (schema != null && schema.getOneOf() != null && schema.getOneOf().size() == 3) {
+      // Drop the inferred object type (and its "null" member: alone, OpenAPI 3.0 output would turn it
+      // into "enum: [null]"). Null must match exactly one branch: the document is written as OpenAPI 3.0.3
+      // (quarkus.smallrye-openapi.open-api-version), where the branch becomes "nullable: true".
       schema.setType(null);
-      // OpenAPI 3.0 needs nullable on one concrete branch: null must match exactly one branch.
-      schema.getOneOf().get(0).setNullable(true);
+      schema.getOneOf().get(0).addType(Schema.SchemaType.NULL);
     }
   }
 }

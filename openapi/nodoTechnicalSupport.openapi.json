@@ -1,15 +1,5 @@
 {
   "openapi": "3.0.3",
-  "info": {
-    "title": "Node technical support - API (local) ${service}",
-    "termsOfService": "https://www.pagopa.gov.it/",
-    "version": "1.3.2-9-nodo-observability"
-  },
-  "servers": [
-    {
-      "url": "${host}/technical-support/nodo/api/v1"
-    }
-  ],
   "tags": [
     {
       "name": "Info",
@@ -19,9 +9,6 @@
   "paths": {
     "/events/negative/{bizEventId}": {
       "get": {
-        "tags": [
-          "Events Resource"
-        ],
         "parameters": [
           {
             "name": "bizEventId",
@@ -63,15 +50,18 @@
               }
             }
           }
-        }
+        },
+        "tags": [
+          "Events Resource"
+        ]
       }
     },
     "/info": {
       "get": {
+        "summary": "Get info of Node tech support API",
         "tags": [
           "Info"
         ],
-        "summary": "Get info of Node tech support API",
         "responses": {
           "200": {
             "description": "Success",
@@ -88,9 +78,6 @@
     },
     "/organizations/{organizationFiscalCode}/iuv/{iuv}": {
       "get": {
-        "tags": [
-          "Worker Resource"
-        ],
         "parameters": [
           {
             "name": "iuv",
@@ -154,14 +141,14 @@
               }
             }
           }
-        }
+        },
+        "tags": [
+          "Worker Resource"
+        ]
       }
     },
     "/organizations/{organizationFiscalCode}/iuv/{iuv}/ccp/{ccp}": {
       "get": {
-        "tags": [
-          "Worker Resource"
-        ],
         "parameters": [
           {
             "name": "ccp",
@@ -233,14 +220,14 @@
               }
             }
           }
-        }
+        },
+        "tags": [
+          "Worker Resource"
+        ]
       }
     },
     "/organizations/{organizationFiscalCode}/noticeNumber/{noticeNumber}": {
       "get": {
-        "tags": [
-          "Worker Resource"
-        ],
         "parameters": [
           {
             "name": "noticeNumber",
@@ -304,14 +291,14 @@
               }
             }
           }
-        }
+        },
+        "tags": [
+          "Worker Resource"
+        ]
       }
     },
     "/organizations/{organizationFiscalCode}/noticeNumber/{noticeNumber}/paymentToken/{paymentToken}": {
       "get": {
-        "tags": [
-          "Worker Resource"
-        ],
         "parameters": [
           {
             "name": "noticeNumber",
@@ -383,14 +370,51 @@
               }
             }
           }
-        }
+        },
+        "tags": [
+          "Worker Resource"
+        ]
+      }
+    },
+    "/payments/organizationFiscalCode/{paFiscalCode}/noticeNumber/{noticeNumber}": {
+      "get": {
+        "parameters": [
+          {
+            "name": "noticeNumber",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "paFiscalCode",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PaymentInfoDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "Payments Resource"
+        ]
       }
     },
     "/snapshot/organizations/{organizationFiscalCode}": {
       "get": {
-        "tags": [
-          "Snapshot Resource"
-        ],
         "parameters": [
           {
             "name": "organizationFiscalCode",
@@ -439,9 +463,9 @@
             }
           },
           {
+            "description": "Offline node to query (offline-ndp001 or offline-ndp004 service identifier). When omitted, the default offline-ndp004 datasource is used.",
             "name": "serviceIdentifier",
             "in": "query",
-            "description": "Offline node to query (offline-ndp001 or offline-ndp004 service identifier). When omitted, the default offline-ndp004 datasource is used.",
             "schema": {
               "type": "string"
             }
@@ -488,12 +512,132 @@
               }
             }
           }
-        }
+        },
+        "tags": [
+          "Snapshot Resource"
+        ]
       }
     }
   },
+  "info": {
+    "title": "Node technical support - API (local) ${service}",
+    "version": "1.3.2-9-nodo-observability",
+    "termsOfService": "https://www.pagopa.gov.it/"
+  },
+  "servers": [
+    {
+      "url": "${host}/technical-support/nodo/api/v1"
+    }
+  ],
   "components": {
     "schemas": {
+      "AttemptInfoDto": {
+        "required": [
+          "attemptId",
+          "serviceIdentifier",
+          "psp",
+          "stazione",
+          "canale",
+          "attemptStartedAt",
+          "startTimestampBasis",
+          "timelineIncomplete",
+          "timeline",
+          "paFiscalCode",
+          "noticeNumber",
+          "state",
+          "warning",
+          "hasAnomaly",
+          "tokenDisplay",
+          "paymentToken",
+          "projectionRevision"
+        ],
+        "type": "object",
+        "properties": {
+          "attemptId": {
+            "type": "string"
+          },
+          "serviceIdentifier": {
+            "type": "string",
+            "nullable": true
+          },
+          "psp": {
+            "type": "string",
+            "nullable": true
+          },
+          "stazione": {
+            "type": "string",
+            "nullable": true
+          },
+          "canale": {
+            "type": "string",
+            "nullable": true
+          },
+          "attemptStartedAt": {
+            "format": "date-time",
+            "type": "string",
+            "nullable": true
+          },
+          "startTimestampBasis": {
+            "$ref": "#/components/schemas/TimestampBasis"
+          },
+          "timelineIncomplete": {
+            "type": "boolean"
+          },
+          "timeline": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TimelineItemDto"
+            }
+          },
+          "paFiscalCode": {
+            "type": "string"
+          },
+          "noticeNumber": {
+            "type": "string"
+          },
+          "state": {
+            "enum": [
+              "PAYING",
+              "PAYING_RPT",
+              "PAID_NORPT",
+              "PAID",
+              "FAILED_NORPT",
+              "FAILED",
+              "CANCELLED",
+              "CANCELLED_NORPT",
+              "NOTICE_GENERATED",
+              "NOTICE_STORED",
+              "NOTICE_SENT",
+              "NOTIFIED",
+              "PAYMENT_RESERVED",
+              "PAYMENT_SENT",
+              "PAYMENT_ACCEPTED",
+              "PAYMENT_REFUSED",
+              "PAYMENT_UNKNOWN",
+              "PAYMENT_SEND_ERROR"
+            ],
+            "type": "string"
+          },
+          "warning": {
+            "type": "boolean"
+          },
+          "hasAnomaly": {
+            "type": "boolean"
+          },
+          "tokenDisplay": {
+            "type": "string"
+          },
+          "projectionRevision": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "paymentToken": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
       "ErrorCode": {
         "type": "object",
         "properties": {
@@ -719,6 +863,78 @@
           }
         }
       },
+      "PaymentInfoDto": {
+        "required": [
+          "paFiscalCode",
+          "noticeNumber",
+          "state",
+          "projectionRevision",
+          "timelineIncomplete",
+          "hasAnomaly",
+          "warning",
+          "attemptCount",
+          "timeline",
+          "attempts",
+          "recipients"
+        ],
+        "type": "object",
+        "properties": {
+          "paFiscalCode": {
+            "type": "string"
+          },
+          "noticeNumber": {
+            "type": "string"
+          },
+          "state": {
+            "description": "Logical position state; null while no position event or logical source snapshot has been observed. Never derived from attempts or recipients.",
+            "enum": [
+              "INSERTED",
+              "PAYING",
+              "PAID",
+              "NOTICE_STORED",
+              "NOTIFIED"
+            ],
+            "type": "string",
+            "nullable": true
+          },
+          "projectionRevision": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "timelineIncomplete": {
+            "type": "boolean"
+          },
+          "hasAnomaly": {
+            "type": "boolean"
+          },
+          "warning": {
+            "type": "boolean"
+          },
+          "attemptCount": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "timeline": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TimelineItemDto"
+            }
+          },
+          "attempts": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AttemptInfoDto"
+            }
+          },
+          "recipients": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/RecipientDto"
+            }
+          }
+        },
+        "additionalProperties": false
+      },
       "PaymentResponse": {
         "type": "object",
         "properties": {
@@ -851,6 +1067,101 @@
             "example": "There was an error processing the request"
           }
         }
+      },
+      "RecipientDto": {
+        "description": "Receipt recipient keyed by PA/NAV/stazioneRecipient. No token association or primary role.",
+        "required": [
+          "recipientId",
+          "stazioneRecipient",
+          "paFiscalCode",
+          "noticeNumber",
+          "state",
+          "timelineIncomplete",
+          "hasAnomaly",
+          "timeline",
+          "projectionRevision"
+        ],
+        "type": "object",
+        "properties": {
+          "recipientId": {
+            "type": "string"
+          },
+          "stazioneRecipient": {
+            "description": "Null denotes the single unidentified recipient of this logical pair.",
+            "type": "string",
+            "nullable": true
+          },
+          "paFiscalCode": {
+            "type": "string"
+          },
+          "noticeNumber": {
+            "type": "string"
+          },
+          "state": {
+            "enum": [
+              "NOTICE_GENERATED",
+              "NOTICE_SENT",
+              "NOTICE_PENDING",
+              "NOTIFIED"
+            ],
+            "type": "string"
+          },
+          "timelineIncomplete": {
+            "type": "boolean"
+          },
+          "hasAnomaly": {
+            "type": "boolean"
+          },
+          "timeline": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TimelineItemDto"
+            }
+          },
+          "projectionRevision": {
+            "format": "int64",
+            "type": "integer"
+          }
+        },
+        "additionalProperties": false
+      },
+      "TimelineItemDto": {
+        "description": "Server transition order is authoritative, including repeated states and null or nonmonotonic dates.",
+        "required": [
+          "state",
+          "transitionAt",
+          "timestampBasis",
+          "trigger"
+        ],
+        "type": "object",
+        "properties": {
+          "state": {
+            "type": "string"
+          },
+          "transitionAt": {
+            "format": "date-time",
+            "type": "string",
+            "nullable": true
+          },
+          "timestampBasis": {
+            "$ref": "#/components/schemas/TimestampBasis"
+          },
+          "trigger": {
+            "description": "Original application trigger from the admitted RE event, when available.",
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "TimestampBasis": {
+        "enum": [
+          "SOURCE_EVENT",
+          "SOURCE_SYNC",
+          "INFERRED",
+          "ANOMALY"
+        ],
+        "type": "string"
       }
     },
     "securitySchemes": {}

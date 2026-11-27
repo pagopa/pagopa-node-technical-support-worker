@@ -5,15 +5,19 @@ import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.JsonMappingException.Reference;
 import com.fasterxml.jackson.databind.exc.InvalidFormatException;
 import com.fasterxml.jackson.databind.exc.MismatchedInputException;
+import it.gov.pagopa.nodetsworker.datasource.DatasourceDisabledException;
 import it.gov.pagopa.nodetsworker.exceptions.AppErrorCodeMessageEnum;
 import it.gov.pagopa.nodetsworker.exceptions.AppErrorCodeMessageInterface;
 import it.gov.pagopa.nodetsworker.exceptions.AppException;
 import it.gov.pagopa.nodetsworker.models.ProblemJson;
+import it.gov.pagopa.nodetsworker.observability.exception.Errors;
+import it.gov.pagopa.nodetsworker.observability.exception.ObservabilityExceptionMapper;
 import jakarta.inject.Inject;
 import jakarta.validation.ConstraintViolationException;
 import jakarta.validation.UnexpectedTypeException;
 import jakarta.ws.rs.WebApplicationException;
 import jakarta.ws.rs.core.Response;
+import jakarta.ws.rs.core.UriInfo;
 import org.jboss.logging.Logger;
 import org.jboss.resteasy.reactive.RestResponse;
 import org.jboss.resteasy.reactive.server.ServerExceptionMapper;
@@ -190,6 +194,18 @@ public class ExceptionMappers {
   @ServerExceptionMapper
   public RestResponse<ProblemJson> mapUnexpectedTypeException(UnexpectedTypeException exception) {
     return mapThrowable(exception);
+  }
+
+  @ServerExceptionMapper
+  public Response mapDatasourceDisabledException(
+      DatasourceDisabledException exception, UriInfo uriInfo) {
+    String path = uriInfo.getPath();
+    if (path.startsWith("/api") || path.startsWith("/internal/observability")) {
+      return new ObservabilityExceptionMapper().toResponse(Errors.datasourceUnavailable());
+    }
+    return mapAppException(
+            new AppException(AppErrorCodeMessageEnum.DATASOURCE_UNAVAILABLE, exception.getDatasource()))
+        .toResponse();
   }
 
   @ServerExceptionMapper

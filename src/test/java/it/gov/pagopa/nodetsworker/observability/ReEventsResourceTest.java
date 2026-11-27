@@ -134,8 +134,11 @@ class ReEventsResourceTest {
     assertEquals(36, event.path("properties").size());
     for (String field : ReEvent.FIELDS) {
       assertTrue(event.path("properties").has(field), field);
-      assertTrue(event.path("properties").path(field).path("nullable").asBoolean(), field);
-      if (!field.equals("payload")) {
+      if (field.equals("payload")) {
+        assertTrue(event.path("properties").path(field).path("nullable").asBoolean(), field);
+      } else {
+        // OpenAPI 3.0: without a type, null is admitted by the nullable oneOf branch (SmallRye OpenAPI 4
+        // cannot write a typeless "nullable", which 3.0 would ignore anyway).
         assertFalse(event.path("properties").path(field).has("type"), field + " must not constrain scalars to objects");
         assertTrue(event.path("properties").path(field).path("oneOf").get(0).path("nullable").asBoolean());
       }

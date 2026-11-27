@@ -50,6 +50,11 @@ public final class Errors {
         "Manutenzioni programmate non disponibili.", null, null);
   }
 
+  public static ObservabilityException datasourceUnavailable() {
+    return new ObservabilityException(503, "DATASOURCE_UNAVAILABLE",
+        "Database non abilitato per questa istanza.", null, null);
+  }
+
   public static ObservabilityException internal() {
     return new ObservabilityException(500, "INTERNAL_ERROR", "Errore interno.", null, null);
   }

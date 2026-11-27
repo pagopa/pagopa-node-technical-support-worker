@@ -1,5 +1,7 @@
 package it.gov.pagopa.nodetsworker.observability.resources;
 
+import it.gov.pagopa.nodetsworker.datasource.RequiresDatasource;
+import it.gov.pagopa.nodetsworker.datasource.DatasourceRegistry;
 import org.eclipse.microprofile.openapi.annotations.security.SecurityRequirement;
 import org.eclipse.microprofile.openapi.annotations.tags.Tag;
 import it.gov.pagopa.nodetsworker.observability.dto.RevealResponseDto;
@@ -28,6 +30,7 @@ import java.util.Map;
 @NoStore
 @SecurityRequirement(name = "SecurityScheme")
 @Tag(name = "Observability")
+@RequiresDatasource(DatasourceRegistry.OBSERVABILITY)
 public class TokenResource {
 
   @Inject

@@ -1,5 +1,6 @@
 package it.gov.pagopa.nodetsworker.observability.repository;
 
+import it.gov.pagopa.nodetsworker.datasource.DatasourceRegistry;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import java.sql.Connection;
@@ -8,7 +9,6 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.time.LocalDateTime;
 import java.util.Optional;
-import javax.sql.DataSource;
 
 @ApplicationScoped
 public class OnlineStatusRepository {
@@ -29,9 +29,7 @@ public class OnlineStatusRepository {
       LIMIT 1
       """;
 
-  @Inject
-  @io.quarkus.agroal.DataSource("online-ndp001")
-  DataSource dataSource;
+  @Inject DatasourceRegistry datasources;
 
   public Optional<OnlineStatusSnapshot> findPaymentStatus(String paFiscalCode, String noticeId)
       throws SQLException {
@@ -44,7 +42,7 @@ public class OnlineStatusRepository {
   }
 
   private Optional<OnlineStatusSnapshot> findLatest(String sql, String... keys) throws SQLException {
-    try (Connection connection = dataSource.getConnection();
+    try (Connection connection = datasources.dataSource(DatasourceRegistry.ONLINE_NDP001).getConnection();
         PreparedStatement statement = connection.prepareStatement(sql)) {
       for (int i = 0; i < keys.length; i++) {
         statement.setString(i + 1, keys[i]);

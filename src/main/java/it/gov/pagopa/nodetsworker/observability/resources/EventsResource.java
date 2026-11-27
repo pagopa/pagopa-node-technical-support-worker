@@ -1,5 +1,7 @@
 package it.gov.pagopa.nodetsworker.observability.resources;
 
+import it.gov.pagopa.nodetsworker.datasource.RequiresDatasource;
+import it.gov.pagopa.nodetsworker.datasource.DatasourceRegistry;
 import org.eclipse.microprofile.openapi.annotations.security.SecurityRequirement;
 import org.eclipse.microprofile.openapi.annotations.tags.Tag;
 import io.smallrye.common.annotation.Blocking;
@@ -39,6 +41,7 @@ import java.util.UUID;
 @Path("/api/events")
 @SecurityRequirement(name = "SecurityScheme")
 @Tag(name = "Observability")
+@RequiresDatasource(DatasourceRegistry.OBSERVABILITY)
 public class EventsResource {
 
   private static final Set<String> EVENT_PARAMS = eventParams();

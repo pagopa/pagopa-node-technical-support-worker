@@ -3,6 +3,7 @@ package it.gov.pagopa.nodetsworker.datasource;
 import io.quarkus.hibernate.orm.PersistenceUnit;
 import io.quarkus.test.QuarkusUnitTest;
 import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.enterprise.inject.Instance;
 import jakarta.inject.Inject;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EntityManager;
@@ -64,12 +65,13 @@ class OfflineDatasourceStartupIT {
         @PersistenceUnit("offline-ndp001")
         EntityManager offlineNdp001EntityManager;
 
+        // Instance<>: a direct injection would make the datasource mandatory (active) in every test app.
         @Inject
         @io.quarkus.agroal.DataSource("online-ndp001")
-        DataSource onlineDataSource;
+        Instance<DataSource> onlineDataSource;
 
         int readOnlineDatabase() throws Exception {
-            try (var connection = onlineDataSource.getConnection();
+            try (var connection = onlineDataSource.get().getConnection();
                     var statement = connection.createStatement();
                     var result = statement.executeQuery("select 1")) {
                 result.next();

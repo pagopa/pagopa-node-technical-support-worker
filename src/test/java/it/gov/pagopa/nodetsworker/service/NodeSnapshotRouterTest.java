@@ -1,11 +1,15 @@
 package it.gov.pagopa.nodetsworker.service;
 
+import it.gov.pagopa.nodetsworker.datasource.DatasourceRegistry;
 import it.gov.pagopa.nodetsworker.exceptions.AppErrorCodeMessageEnum;
 import it.gov.pagopa.nodetsworker.exceptions.AppException;
 import it.gov.pagopa.nodetsworker.repository.PositionPaymentSnapshotReader;
 import org.junit.jupiter.api.Test;
 
 import javax.sql.DataSource;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
@@ -75,7 +79,36 @@ class NodeSnapshotRouterTest {
         assertThrows(IllegalStateException.class, () -> router("NDP001", " ndp001 "));
     }
 
+    @Test
+    void resolve_shouldAnswerUnavailableForDisabledNodeWithoutLookupOrFallback() {
+        List<String> lookups = new ArrayList<>();
+        DatasourceRegistry registry = new DatasourceRegistry(
+                DatasourceRegistry.ONLINE_NDP004::equals,
+                name -> {
+                    lookups.add(name);
+                    return ndp004prodDataSource;
+                },
+                Set.of(DatasourceRegistry.ONLINE_NDP001, DatasourceRegistry.ONLINE_NDP004),
+                key -> null);
+        NodeSnapshotRouter router = new NodeSnapshotRouter("ndp001", "ndp004prod", registry);
+
+        AppException reader = assertThrows(AppException.class, () -> router.resolve("ndp001"));
+        AppException dataSource = assertThrows(AppException.class, () -> router.resolveDataSource("NDP001"));
+
+        assertEquals(AppErrorCodeMessageEnum.DATASOURCE_UNAVAILABLE, reader.getCodeMessage());
+        assertEquals(AppErrorCodeMessageEnum.DATASOURCE_UNAVAILABLE, dataSource.getCodeMessage());
+        assertTrue(lookups.isEmpty());
+        assertSame(ndp004prodDataSource, router.resolveDataSource("ndp004prod"));
+        assertEquals(List.of(DatasourceRegistry.ONLINE_NDP004), lookups);
+        verifyNoInteractions(onlineDataSource, ndp004prodDataSource);
+    }
+
     private NodeSnapshotRouter router(String onlineId, String ndp004prodId) {
-        return new NodeSnapshotRouter(onlineId, ndp004prodId, onlineDataSource, ndp004prodDataSource);
+        DatasourceRegistry registry = new DatasourceRegistry(
+                name -> true,
+                name -> DatasourceRegistry.ONLINE_NDP001.equals(name) ? onlineDataSource : ndp004prodDataSource,
+                Set.of(DatasourceRegistry.ONLINE_NDP001, DatasourceRegistry.ONLINE_NDP004),
+                key -> null);
+        return new NodeSnapshotRouter(onlineId, ndp004prodId, registry);
     }
 }

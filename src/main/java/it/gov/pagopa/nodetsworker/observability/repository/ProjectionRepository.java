@@ -1,7 +1,11 @@
 package it.gov.pagopa.nodetsworker.observability.repository;
 
 import io.quarkus.hibernate.orm.PersistenceUnit;
+import it.gov.pagopa.nodetsworker.observability.domain.DomainAttempt;
 import it.gov.pagopa.nodetsworker.observability.domain.DomainPayment;
+import it.gov.pagopa.nodetsworker.observability.domain.DomainRecipient;
+import it.gov.pagopa.nodetsworker.observability.domain.TimelineItem;
+import it.gov.pagopa.nodetsworker.observability.model.TimestampBasis;
 import it.gov.pagopa.nodetsworker.observability.domain.PrimitiveBucket;
 import it.gov.pagopa.nodetsworker.observability.domain.PrimitiveDirection;
 import it.gov.pagopa.nodetsworker.observability.domain.PrimitiveLogic;
@@ -17,21 +21,28 @@ import it.gov.pagopa.nodetsworker.observability.repository.models.PrimitiveCount
 import it.gov.pagopa.nodetsworker.observability.repository.models.PrimitiveWarningEntity;
 import it.gov.pagopa.nodetsworker.observability.repository.models.ProjectionMetaEntity;
 import it.gov.pagopa.nodetsworker.observability.repository.models.RecipientEntity;
-import it.gov.pagopa.nodetsworker.observability.service.ProjectionMapper;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.persistence.EntityManager;
 import jakarta.transaction.Transactional;
 import java.time.Instant;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
+import org.eclipse.microprofile.config.inject.ConfigProperty;
 
 /**
  * Data access over the observability projection (second PostgreSQL datasource / persistence unit).
- * Reads assemble the in-memory domain graph inside the transaction so lazy timelines are initialized.
+ * Reads assemble the in-memory domain graph from scalar projections, a bounded keyset page at a time.
  */
 @ApplicationScoped
 public class ProjectionRepository {
@@ -43,20 +54,180 @@ public class ProjectionRepository {
   @Inject
   IngestionProjectionWriter writer;
 
+  /** Payment natural key, used to reload only the payments touched by an outbox batch. */
+  public record PaymentKey(String paFiscalCode, String noticeNumber) {
+  }
+
+  /**
+   * Keyset page size of every projection read. Each page costs a constant number of statements (one for
+   * the payments, one per child collection) whatever the number of attempts, recipients and transitions.
+   */
+  @ConfigProperty(name = "observability.projection.page-size", defaultValue = "500")
+  int pageSize = 500;
+
   /** Load the visible projection, optionally restricted to a single creditor. */
   @Transactional
   public List<DomainPayment> loadVisible(String allowedPa) {
-    String jpql = "SELECT p FROM PaymentEntity p"
-        + (allowedPa != null ? " WHERE p.paFiscalCode = :pa" : "");
-    var query = em.createQuery(jpql, PaymentEntity.class);
-    if (allowedPa != null) {
-      query.setParameter("pa", allowedPa);
+    StringBuilder where = new StringBuilder();
+    Map<String, Object> params = new LinkedHashMap<>();
+    restrictToPa(where, params, allowedPa);
+    return scan(where.toString(), params);
+  }
+
+  /**
+   * Load only the payments with activity in {@code [from, to)} (open on the right when {@code live}): a
+   * non-ANOMALY transition of the payment, of an attempt or of a recipient, or an attempt start. It is the
+   * same rule as {@link it.gov.pagopa.nodetsworker.observability.domain.ProjectionLogic#withinWindow}, so
+   * the windowed aggregates are identical to those computed over the whole projection.
+   */
+  @Transactional
+  public List<DomainPayment> loadActiveIn(String allowedPa, Instant from, Instant to, boolean live) {
+    StringBuilder where = new StringBuilder();
+    Map<String, Object> params = new LinkedHashMap<>();
+    restrictToPa(where, params, allowedPa);
+    String upper = live ? "" : " AND %1$s < :to";
+    where.append(" AND (p.id IN (SELECT t.payment.id FROM LogicalTransitionEntity t WHERE ")
+        .append(transitionInWindow("t", upper))
+        .append(") OR p.id IN (SELECT a.payment.id FROM AttemptEntity a WHERE a.attemptStartedAt >= :from")
+        .append(String.format(upper, "a.attemptStartedAt"))
+        .append(") OR p.id IN (SELECT t.attempt.payment.id FROM AttemptTransitionEntity t WHERE ")
+        .append(transitionInWindow("t", upper))
+        .append(") OR p.id IN (SELECT t.recipient.payment.id FROM RecipientTransitionEntity t WHERE ")
+        .append(transitionInWindow("t", upper))
+        .append("))");
+    params.put("from", from);
+    params.put("anomaly", TimestampBasis.ANOMALY);
+    if (!live) {
+      params.put("to", to);
     }
+    return scan(where.toString(), params);
+  }
+
+  /** Load the given payments (absent keys are simply missing from the result), sorted by key. */
+  @Transactional
+  public List<DomainPayment> loadByKeys(Collection<PaymentKey> keys) {
+    List<PaymentKey> distinct = new ArrayList<>(new LinkedHashSet<>(keys));
     List<DomainPayment> out = new ArrayList<>();
-    for (PaymentEntity entity : query.getResultList()) {
-      out.add(ProjectionMapper.toDomain(entity));
+    for (int start = 0; start < distinct.size(); start += pageSize) {
+      List<PaymentKey> chunk = distinct.subList(start, Math.min(distinct.size(), start + pageSize));
+      Set<PaymentKey> wanted = new HashSet<>(chunk);
+      // Each column is matched independently and the exact pairs are kept below: portable and index-friendly.
+      List<Object[]> rows = new ArrayList<>(em.createQuery(PAYMENT_COLUMNS
+              + " WHERE p.paFiscalCode IN :pas AND p.noticeNumber IN :notices ORDER BY p.id", Object[].class)
+          .setParameter("pas", chunk.stream().map(PaymentKey::paFiscalCode).collect(Collectors.toSet()))
+          .setParameter("notices", chunk.stream().map(PaymentKey::noticeNumber).collect(Collectors.toSet()))
+          .getResultList());
+      rows.removeIf(r -> !wanted.contains(new PaymentKey((String) r[1], (String) r[2])));
+      out.addAll(hydrate(rows));
     }
+    out.sort(Comparator.comparing(DomainPayment::key));
     return out;
+  }
+
+  private static void restrictToPa(StringBuilder where, Map<String, Object> params, String allowedPa) {
+    if (allowedPa != null) {
+      where.append(" AND p.paFiscalCode = :pa");
+      params.put("pa", allowedPa);
+    }
+  }
+
+  private static String transitionInWindow(String alias, String upper) {
+    String column = alias + ".transitionAt";
+    return alias + ".timestampBasis <> :anomaly AND " + column + " >= :from" + String.format(upper, column);
+  }
+
+  private static final String PAYMENT_COLUMNS =
+      "SELECT p.id, p.paFiscalCode, p.noticeNumber, p.projectionRevision, p.timelineIncomplete FROM PaymentEntity p";
+
+  /** Keyset scan over the payment id: bounded statements, no OFFSET, no entity kept in the persistence context. */
+  private List<DomainPayment> scan(String where, Map<String, Object> params) {
+    List<DomainPayment> out = new ArrayList<>();
+    long after = Long.MIN_VALUE;
+    while (true) {
+      var query = em.createQuery(PAYMENT_COLUMNS + " WHERE p.id > :after" + where + " ORDER BY p.id",
+              Object[].class)
+          .setParameter("after", after)
+          .setMaxResults(pageSize);
+      params.forEach(query::setParameter);
+      List<Object[]> rows = query.getResultList();
+      out.addAll(hydrate(rows));
+      if (rows.size() < pageSize) {
+        return out;
+      }
+      after = (Long) rows.get(rows.size() - 1)[0];
+    }
+  }
+
+  /**
+   * Build the domain graph of a page of payments with one statement per child collection. Children keep
+   * the {@code @OrderColumn} order ({@code INDEX()}); collections are never fetch-joined together, so no
+   * cartesian product is produced.
+   */
+  private List<DomainPayment> hydrate(List<Object[]> paymentRows) {
+    if (paymentRows.isEmpty()) {
+      return List.of();
+    }
+    Map<Long, DomainPayment> payments = new LinkedHashMap<>();
+    for (Object[] r : paymentRows) {
+      payments.put((Long) r[0], DomainPayment.builder()
+          .paFiscalCode((String) r[1]).noticeNumber((String) r[2])
+          .projectionRevision((Long) r[3]).timelineIncomplete((Boolean) r[4]).build());
+    }
+    List<Long> ids = new ArrayList<>(payments.keySet());
+
+    for (Object[] r : children("SELECT p.id, " + TRANSITION_COLUMNS
+        + " FROM PaymentEntity p JOIN p.timeline t WHERE p.id IN :ids ORDER BY p.id, INDEX(t)", ids)) {
+      payments.get((Long) r[0]).getTimeline().add(timelineItem(r));
+    }
+
+    Map<Long, DomainAttempt> attempts = new HashMap<>();
+    for (Object[] r : children("SELECT p.id, a.id, a.attemptId, a.paymentToken, a.serviceIdentifier, a.psp,"
+        + " a.stazione, a.canale, a.attemptStartedAt, a.startTimestampBasis, a.firstSeenAt, a.expiresAt,"
+        + " a.timelineIncomplete FROM PaymentEntity p JOIN p.attempts a WHERE p.id IN :ids"
+        + " ORDER BY p.id, INDEX(a)", ids)) {
+      DomainAttempt attempt = DomainAttempt.builder()
+          .attemptId((String) r[2]).paymentToken((String) r[3]).serviceIdentifier((String) r[4])
+          .psp((String) r[5]).stazione((String) r[6]).canale((String) r[7])
+          .attemptStartedAt((Instant) r[8]).startTimestampBasis((TimestampBasis) r[9])
+          .firstSeenAt((Instant) r[10]).expiresAt((Instant) r[11]).timelineIncomplete((Boolean) r[12])
+          .build();
+      attempts.put((Long) r[1], attempt);
+      payments.get((Long) r[0]).getAttempts().add(attempt);
+    }
+    if (!attempts.isEmpty()) {
+      for (Object[] r : children("SELECT a.id, " + TRANSITION_COLUMNS + " FROM PaymentEntity p JOIN p.attempts a"
+          + " JOIN a.timeline t WHERE p.id IN :ids ORDER BY a.id, INDEX(t)", ids)) {
+        attempts.get((Long) r[0]).getTimeline().add(timelineItem(r));
+      }
+    }
+
+    Map<Long, DomainRecipient> recipients = new HashMap<>();
+    for (Object[] r : children("SELECT p.id, r.id, r.recipientId, r.stazioneRecipient, r.firstSeenAt,"
+        + " r.expiresAt, r.timelineIncomplete FROM PaymentEntity p JOIN p.recipients r WHERE p.id IN :ids"
+        + " ORDER BY p.id, INDEX(r)", ids)) {
+      DomainRecipient recipient = DomainRecipient.builder()
+          .recipientId((String) r[2]).stazioneRecipient((String) r[3]).firstSeenAt((Instant) r[4])
+          .expiresAt((Instant) r[5]).timelineIncomplete((Boolean) r[6]).build();
+      recipients.put((Long) r[1], recipient);
+      payments.get((Long) r[0]).getRecipients().add(recipient);
+    }
+    if (!recipients.isEmpty()) {
+      for (Object[] r : children("SELECT r.id, " + TRANSITION_COLUMNS + " FROM PaymentEntity p JOIN p.recipients r"
+          + " JOIN r.timeline t WHERE p.id IN :ids ORDER BY r.id, INDEX(t)", ids)) {
+        recipients.get((Long) r[0]).getTimeline().add(timelineItem(r));
+      }
+    }
+    return new ArrayList<>(payments.values());
+  }
+
+  private static final String TRANSITION_COLUMNS = "t.state, t.transitionAt, t.timestampBasis, t.trigger";
+
+  private List<Object[]> children(String jpql, List<Long> ids) {
+    return em.createQuery(jpql, Object[].class).setParameter("ids", ids).getResultList();
+  }
+
+  private static TimelineItem timelineItem(Object[] r) {
+    return new TimelineItem((String) r[1], (Instant) r[2], (TimestampBasis) r[3], (String) r[4]);
   }
 
   @Transactional
@@ -120,6 +291,14 @@ public class ProjectionRepository {
         .setParameter("pa", paFiscalCode)
         .setParameter("notice", noticeNumber)
         .getSingleResult() > 0;
+  }
+
+  @Transactional
+  public boolean existsCreditor(String paFiscalCode) {
+    return !em.createQuery("SELECT p.id FROM PaymentEntity p WHERE p.paFiscalCode = :pa", Long.class)
+        .setParameter("pa", paFiscalCode)
+        .setMaxResults(1)
+        .getResultList().isEmpty();
   }
 
   @Transactional
@@ -312,12 +491,14 @@ public class ProjectionRepository {
         .getResultList();
   }
 
+  /** Mark a drained batch as published with one bulk update per {@code pageSize} ids. */
   @Transactional
-  public void markPublished(long id, Instant publishedAt) {
-    OutboxEntity o = em.find(OutboxEntity.class, id);
-    if (o != null) {
-      o.setPublished(true);
-      o.setPublishedAt(publishedAt);
+  public void markPublished(List<Long> ids, Instant publishedAt) {
+    for (int start = 0; start < ids.size(); start += pageSize) {
+      em.createQuery("UPDATE OutboxEntity o SET o.published = true, o.publishedAt = :at WHERE o.id IN :ids")
+          .setParameter("at", publishedAt)
+          .setParameter("ids", ids.subList(start, Math.min(ids.size(), start + pageSize)))
+          .executeUpdate();
     }
   }
 

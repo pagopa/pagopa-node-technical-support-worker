@@ -14,7 +14,7 @@
     <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
     <quarkus.platform.artifact-id>quarkus-bom</quarkus.platform.artifact-id>
     <quarkus.platform.group-id>io.quarkus.platform</quarkus.platform.group-id>
-    <quarkus.platform.version>3.0.1.Final</quarkus.platform.version>
+    <quarkus.platform.version>3.20.6.2</quarkus.platform.version>
     <skipITs>true</skipITs>
     <surefire-plugin.version>3.0.0</surefire-plugin.version>
     <org.mapstruct.version>1.5.3.Final</org.mapstruct.version>
@@ -22,17 +22,6 @@
   </properties>
   <dependencyManagement>
     <dependencies>
-      <!-- Align Netty up to 4.1.108 (declared first so it wins over the Quarkus BOM's 4.1.90).
-           azure-sdk-bom raises azure-core-http-netty -> reactor-netty 1.0.48, which references
-           io.netty.handler.codec.http.HttpDecoderConfig (added in Netty 4.1.107). Keeping the
-           Quarkus-pinned 4.1.90 causes a runtime NoClassDefFoundError: HttpDecoderConfig. -->
-      <dependency>
-        <groupId>io.netty</groupId>
-        <artifactId>netty-bom</artifactId>
-        <version>4.1.108.Final</version>
-        <type>pom</type>
-        <scope>import</scope>
-      </dependency>
       <dependency>
         <groupId>${quarkus.platform.group-id}</groupId>
         <artifactId>${quarkus.platform.artifact-id}</artifactId>
@@ -48,6 +37,20 @@
         <version>1.2.31</version>
         <type>pom</type>
         <scope>import</scope>
+      </dependency>
+      <!-- kusto-data 5.0.2 declares old direct deps that win by proximity over the Azure BOM:
+           - reactor-core 3.4.19: azure-core 1.54 / reactor-netty 1.0.48 are built on 3.4.41;
+           - msal4j 1.13.8 -> oauth2-oidc-sdk 10.7.1, built for nimbus-jose-jwt 9.x while the
+             Quarkus BOM pins nimbus-jose-jwt 10.0. msal4j 1.21.0 -> oauth2-oidc-sdk 11.23 targets 10.x. -->
+      <dependency>
+        <groupId>io.projectreactor</groupId>
+        <artifactId>reactor-core</artifactId>
+        <version>3.4.41</version>
+      </dependency>
+      <dependency>
+        <groupId>com.microsoft.azure</groupId>
+        <artifactId>msal4j</artifactId>
+        <version>1.21.0</version>
       </dependency>
     </dependencies>
   </dependencyManagement>
@@ -110,22 +113,17 @@
 
     <dependency>
       <groupId>io.quarkus</groupId>
-      <artifactId>quarkus-rest-client-reactive-jackson</artifactId>
+      <artifactId>quarkus-rest-client-jackson</artifactId>
     </dependency>
     <dependency>
       <groupId>io.quarkus</groupId>
-      <artifactId>quarkus-resteasy-reactive-jackson</artifactId>
+      <artifactId>quarkus-rest-jackson</artifactId>
     </dependency>
     <!-- Microsoft Entra ID token verification (tenant JWKS) -->
     <dependency>
       <groupId>org.bitbucket.b_c</groupId>
       <artifactId>jose4j</artifactId>
       <version>0.9.6</version>
-    </dependency>
-    <dependency>
-      <groupId>io.quarkiverse.openapi.generator</groupId>
-      <artifactId>quarkus-openapi-generator</artifactId>
-      <version>2.2.2</version>
     </dependency>
     <dependency>
       <groupId>io.quarkus</groupId>
@@ -200,13 +198,11 @@
     <dependency>
       <groupId>org.testcontainers</groupId>
       <artifactId>junit-jupiter</artifactId>
-      <version>1.16.0</version>
       <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.testcontainers</groupId>
       <artifactId>azure</artifactId>
-      <version>1.18.3</version>
       <scope>test</scope>
     </dependency>
     <dependency>
@@ -236,7 +232,7 @@
       <plugin>
         <groupId>org.liquibase</groupId>
         <artifactId>liquibase-maven-plugin</artifactId>
-        <version>4.20.0</version>
+        <version>4.29.1</version><!-- = liquibase-core in the Quarkus BOM -->
         <configuration>
           <changeLogFile>db/observability/db.changelog-master.yaml</changeLogFile>
           <url>${env.OBSERVABILITY_DATASOURCE_URL}</url>
@@ -249,7 +245,7 @@
           <dependency>
             <groupId>org.postgresql</groupId>
             <artifactId>postgresql</artifactId>
-            <version>42.6.0</version>
+            <version>42.7.7</version><!-- = Quarkus BOM -->
           </dependency>
         </dependencies>
       </plugin>

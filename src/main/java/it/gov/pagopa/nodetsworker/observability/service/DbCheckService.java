@@ -1,5 +1,6 @@
 package it.gov.pagopa.nodetsworker.observability.service;
 
+import it.gov.pagopa.nodetsworker.exceptions.AppErrorCodeMessageEnum;
 import it.gov.pagopa.nodetsworker.exceptions.AppException;
 import it.gov.pagopa.nodetsworker.observability.domain.DbCheckContext;
 import it.gov.pagopa.nodetsworker.observability.dto.DbCheckDto;
@@ -40,6 +41,9 @@ public class DbCheckService {
     try {
       source = router.resolveDataSource(context.serviceIdentifier());
     } catch (AppException failure) {
+      if (failure.getCodeMessage() == AppErrorCodeMessageEnum.DATASOURCE_UNAVAILABLE) {
+        throw Errors.datasourceUnavailable();
+      }
       throw new ObservabilityException(422, "DB_SERVICE_UNCONFIGURED",
           "Nessun database configurato per il servizio del tentativo.", null, null);
     }

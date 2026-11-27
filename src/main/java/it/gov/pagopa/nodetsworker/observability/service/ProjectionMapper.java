@@ -6,7 +6,9 @@ import it.gov.pagopa.nodetsworker.observability.domain.DomainRecipient;
 import it.gov.pagopa.nodetsworker.observability.domain.ProjectionLogic;
 import it.gov.pagopa.nodetsworker.observability.domain.TimelineItem;
 import it.gov.pagopa.nodetsworker.observability.dto.AttemptDto;
+import it.gov.pagopa.nodetsworker.observability.dto.AttemptInfoDto;
 import it.gov.pagopa.nodetsworker.observability.dto.PaymentDetailDto;
+import it.gov.pagopa.nodetsworker.observability.dto.PaymentInfoDto;
 import it.gov.pagopa.nodetsworker.observability.dto.PaymentSummaryDto;
 import it.gov.pagopa.nodetsworker.observability.dto.RecipientDto;
 import it.gov.pagopa.nodetsworker.observability.dto.TimelineItemDto;
@@ -183,7 +185,6 @@ public final class ProjectionMapper {
         .warning(ProjectionLogic.warning(attempt))
         .hasAnomaly(ProjectionLogic.anomalousAttempt(attempt))
         .tokenDisplay(TOKEN_DISPLAY)
-        .paymentToken(attempt.getPaymentToken())
         .projectionRevision(payment.getProjectionRevision())
         .build();
   }
@@ -214,6 +215,31 @@ public final class ProjectionMapper {
         .warning(payment.getAttempts().stream().anyMatch(ProjectionLogic::warning))
         .attemptCount(payment.getAttempts().size())
         .build();
+  }
+
+  /**
+   * The dedicated payment-info view: the detail projection whose attempts also carry the raw token.
+   * Only for {@code /payments/...}; the observability API and the SSE outbox use {@link #toDetailDto}.
+   */
+  public static PaymentInfoDto toPaymentInfoDto(DomainPayment payment) {
+    PaymentDetailDto detail = toDetailDto(payment);
+    PaymentInfoDto dto = new PaymentInfoDto();
+    dto.setPaFiscalCode(detail.getPaFiscalCode());
+    dto.setNoticeNumber(detail.getNoticeNumber());
+    dto.setState(detail.getState());
+    dto.setProjectionRevision(detail.getProjectionRevision());
+    dto.setTimelineIncomplete(detail.isTimelineIncomplete());
+    dto.setHasAnomaly(detail.isHasAnomaly());
+    dto.setWarning(detail.isWarning());
+    dto.setAttemptCount(detail.getAttemptCount());
+    dto.setTimeline(detail.getTimeline());
+    List<AttemptInfoDto> attempts = new ArrayList<>();
+    for (DomainAttempt a : payment.getAttempts()) {
+      attempts.add(new AttemptInfoDto(toSafeAttemptDto(a, payment), a.getPaymentToken()));
+    }
+    dto.setAttempts(attempts);
+    dto.setRecipients(detail.getRecipients());
+    return dto;
   }
 
   public static PaymentDetailDto toDetailDto(DomainPayment payment) {

@@ -1,5 +1,6 @@
 package it.gov.pagopa.nodetsworker.observability.service;
 
+import it.gov.pagopa.nodetsworker.datasource.DatasourceRegistry;
 import io.quarkus.runtime.StartupEvent;
 import it.gov.pagopa.nodetsworker.observability.domain.DomainPayment;
 import it.gov.pagopa.nodetsworker.observability.domain.Fixtures;
@@ -26,7 +27,12 @@ public class ObservabilitySeeder {
   @Inject
   ProjectionRepository repository;
 
+  @jakarta.inject.Inject DatasourceRegistry datasources;
+
   void onStart(@Observes StartupEvent event) {
+    if (!datasources.isEnabled(DatasourceRegistry.OBSERVABILITY)) {
+      return;
+    }
     if (!seedEnabled) {
       return;
     }

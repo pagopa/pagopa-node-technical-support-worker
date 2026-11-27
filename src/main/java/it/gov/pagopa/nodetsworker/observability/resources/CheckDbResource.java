@@ -1,5 +1,7 @@
 package it.gov.pagopa.nodetsworker.observability.resources;
 
+import it.gov.pagopa.nodetsworker.datasource.RequiresDatasource;
+import it.gov.pagopa.nodetsworker.datasource.DatasourceRegistry;
 import org.eclipse.microprofile.openapi.annotations.security.SecurityRequirement;
 import org.eclipse.microprofile.openapi.annotations.tags.Tag;
 import it.gov.pagopa.nodetsworker.observability.dto.DbCheckDto;
@@ -26,6 +28,7 @@ import org.eclipse.microprofile.openapi.annotations.responses.APIResponses;
 @NoStore
 @SecurityRequirement(name = "SecurityScheme")
 @Tag(name = "Observability")
+@RequiresDatasource(DatasourceRegistry.OBSERVABILITY)
 public class CheckDbResource {
   @Inject DbCheckService service;
   @Inject CallerResolver callers;

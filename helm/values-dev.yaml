@@ -1,4 +1,4 @@
-microservice-chart:
+microservice-chart: &microservice-chart
   namespace: "nodo"
   image:
     repository: ghcr.io/pagopa/pagopa-node-technical-support-worker
@@ -33,7 +33,7 @@ microservice-chart:
         path: /q/metrics
   service:
     create: true
-  ingress:
+  ingress: &ingress
     create: true
     host: "weudev.nodo.internal.dev.platform.pagopa.it"
     path: /pagopa-nodo-technical-support-service/(.*)
@@ -69,7 +69,7 @@ microservice-chart:
         metricType: Utilization
         metadata:
           value: "75"
-  envConfig:
+  envConfig: &envConfig
     JAVA_OPTS: "-XX:-UseBASE64Intrinsics"
     APP_ENVIRONMENT: "dev"
     TZ: "Europe/Rome"
@@ -79,24 +79,29 @@ microservice-chart:
     COSMOS_NEG_BIZ_ENDPOINT: "https://pagopa-d-weu-bizevents-neg-ds-cosmos-account.documents.azure.com:443/"
     COSMOS_VERIFYKO_ENDPOINT: "https://pagopa-d-weu-nodo-verifyko-cosmos-account.documents.azure.com:443/"
     COSMOS_PREFERRED_REGION: "West Europe"
-    OFFLINE_NDP004_DATASOURCE_USERNAME: "offline"
     OFFLINE_NDP004_DATASOURCE_URL: "jdbc:postgresql://nodo-db.d.internal.postgresql.pagopa.it:5432/nodo?sslmode=require&prepareThreshold=0&currentSchema=offline" # PAGOPA (Nexi not available)
+    OFFLINE_NDP004_DATASOURCE_USERNAME: "offline"
     OFFLINE_NDP004_DATASOURCE_SCHEMA: "offline"
-    OFFLINE_NDP001_DATASOURCE_URL: "TODO SET"
-    OFFLINE_NDP001_DATASOURCE_USERNAME: "TODO SET"
-    OFFLINE_NDP001_DATASOURCE_SCHEMA: "TODO SET"
+    OFFLINE_NDP004_DATASOURCE_ENABLED: "true"
+    OFFLINE_NDP001_DATASOURCE_URL: "jdbc:postgresql://nodo-db.d.internal.postgresql.pagopa.it:5432/nodo?sslmode=require&prepareThreshold=0&currentSchema=offline" # PAGOPA (Nexi not available)
+    OFFLINE_NDP001_DATASOURCE_USERNAME: "offline"
+    OFFLINE_NDP001_DATASOURCE_SCHEMA: "offline"
+    OFFLINE_NDP001_DATASOURCE_ENABLED: "false"
     DB_SERVICE_IDENTIFIER: "NDP001DEV"
     LOG_LEVEL: "INFO"
     NDP001_IDENTIFIER: "NDP001DEV"
     ONLINE_NDP001_DATASOURCE_USERNAME: "onliner"
     ONLINE_NDP001_DATASOURCE_URL: "jdbc:postgresql://nodo-db.d.internal.postgresql.pagopa.it:5432/nodo?sslmode=require&prepareThreshold=0&currentSchema=cfg"
+    ONLINE_NDP001_DATASOURCE_ENABLED: "false"
     NDP004_IDENTIFIER: "NDP004IT"
     ONLINE_NDP004_DATASOURCE_USERNAME: "NODO_ONLINE"
     ONLINE_NDP004_DATASOURCE_URL: "jdbc:postgresql://db-postgres-ndp.d.db-nodo-pagamenti.com:6432/ndpspct?prepareThreshold=0&currentSchema=NODO_ONLINE"
+    ONLINE_NDP004_DATASOURCE_ENABLED: "false"
     OBSERVABILITY_DATASOURCE_USERNAME: "observability"
     OBSERVABILITY_DATASOURCE_URL: "jdbc:postgresql://nodo-db.d.internal.postgresql.pagopa.it:5432/nodo?sslmode=require&prepareThreshold=0&currentSchema=observability"
     OBSERVABILITY_DATASOURCE_SCHEMA: "observability"
-    OBSERVABILITY_RE_DIAGNOSTICS_ENABLED: "true"
+    OBSERVABILITY_DATASOURCE_ENABLED: "false"
+    OBSERVABILITY_RE_DIAGNOSTICS_ENABLED: "false"
     RE_DATA_EXPLORER_URL: "https://pagopaddataexplorer.westeurope.kusto.windows.net"
     RE_DATA_EXPLORER_CLIENT_ID: "8677a3ca-8d05-453f-947c-0bdb1d15e512"
     RE_DATA_EXPLORER_TENANT_ID: "7788edaf-0346-4068-9d79-c868aed15b3d"
@@ -113,13 +118,13 @@ microservice-chart:
   envFieldRef:
     APP_NAME: "metadata.labels['app.kubernetes.io/instance']"
     APP_VERSION: "metadata.labels['app.kubernetes.io/version']"
-  envSecret:
+  envSecret: &envSecret
     OTEL_AUTH_BEARER: "otel-auth-bearer"
     COSMOS_BIZ_KEY: "cosmos-biz-account-key"
     COSMOS_NEG_BIZ_KEY: "cosmos-neg-biz-account-key"
     COSMOS_VERIFYKO_KEY: "cosmos-verifyko-account-key"
     OFFLINE_NDP004_DATASOURCE_PASSWORD: "db-offline-password"
-    OFFLINE_NDP001_DATASOURCE_PASSWORD: "TODO SET"
+    OFFLINE_NDP001_DATASOURCE_PASSWORD: "db-offline-password"
     ONLINE_NDP001_DATASOURCE_PASSWORD: "db-online-password-read"
     ONLINE_NDP004_DATASOURCE_PASSWORD: "db-nexi-online-password"
     OBSERVABILITY_DATASOURCE_PASSWORD: "db-observability-password"
@@ -148,3 +153,25 @@ microservice-chart:
       image:
         tag: 1.0.3-5-using_re_cosmos_nosql
     create: false
+
+node-technical-support:
+  !!merge <<: *microservice-chart
+  ingress:
+    !!merge <<: *ingress
+    path: /pagopa-nodo-technical-support-service/(.*)
+
+nodo-observability:
+  !!merge <<: *microservice-chart
+  ingress:
+    !!merge <<: *ingress
+    path: /pagopa-nodo-observability-service/(.*)
+  envConfig:
+    !!merge <<: *envConfig
+    OFFLINE_NDP004_DATASOURCE_ENABLED: "true"
+    OFFLINE_NDP001_DATASOURCE_ENABLED: "false"
+    ONLINE_NDP001_DATASOURCE_ENABLED: "true"
+    ONLINE_NDP004_DATASOURCE_ENABLED: "true"
+    OBSERVABILITY_DATASOURCE_ENABLED: "true"
+    OBSERVABILITY_RE_INGESTION: "true"
+  envSecret:
+    !!merge <<: *envSecret

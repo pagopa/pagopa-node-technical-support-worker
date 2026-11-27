@@ -43,7 +43,7 @@ class ReTelemetryPrivacyTest {
   void autoconfigurationLoadsPrivacyWrapperAndPreservesConfiguredDelegate() {
     assertTrue(ServiceLoader.load(AutoConfigurationCustomizerProvider.class).stream()
         .anyMatch(provider -> provider.type().equals(ReTelemetryPrivacy.class)));
-    var sdk = AutoConfiguredOpenTelemetrySdk.builder().registerShutdownHook(false).setResultAsGlobal(false)
+    var sdk = AutoConfiguredOpenTelemetrySdk.builder().disableShutdownHook()
         .addPropertiesSupplier(() -> Map.of("otel.traces.exporter", "none",
             "otel.metrics.exporter", "none", "otel.logs.exporter", "none",
             "otel.traces.sampler", "always_on")).build().getOpenTelemetrySdk();
@@ -63,7 +63,7 @@ class ReTelemetryPrivacyTest {
 
   @Test
   void dropsMatrixAndEncodedRouteVariantsThroughTheActualAutoconfigurationSpi() {
-    var sdk = AutoConfiguredOpenTelemetrySdk.builder().registerShutdownHook(false).setResultAsGlobal(false)
+    var sdk = AutoConfiguredOpenTelemetrySdk.builder().disableShutdownHook()
         .addPropertiesSupplier(() -> Map.of("otel.traces.exporter", "none",
             "otel.metrics.exporter", "none", "otel.logs.exporter", "none",
             "otel.traces.sampler", "always_on")).build().getOpenTelemetrySdk();

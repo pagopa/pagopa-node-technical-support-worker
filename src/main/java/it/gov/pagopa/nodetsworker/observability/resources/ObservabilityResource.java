@@ -1,5 +1,7 @@
 package it.gov.pagopa.nodetsworker.observability.resources;
 
+import it.gov.pagopa.nodetsworker.datasource.RequiresDatasource;
+import it.gov.pagopa.nodetsworker.datasource.DatasourceRegistry;
 import org.eclipse.microprofile.openapi.annotations.security.SecurityRequirement;
 import org.eclipse.microprofile.openapi.annotations.tags.Tag;
 import it.gov.pagopa.nodetsworker.observability.dto.AnalyticsDto;
@@ -72,6 +74,7 @@ public class ObservabilityResource {
   @GET
   @Tag(name = "Observability")
   @Path("/catalog")
+  @RequiresDatasource(DatasourceRegistry.OBSERVABILITY)
   public CatalogDto catalog(@Context UriInfo uriInfo) {
     requireNoQuery(uriInfo);
     return service.catalog(callerResolver.resolve());
@@ -80,6 +83,7 @@ public class ObservabilityResource {
   @GET
   @Tag(name = "Observability")
   @Path("/freshness")
+  @RequiresDatasource(DatasourceRegistry.OBSERVABILITY)
   public FreshnessDto freshness(@Context UriInfo uriInfo) {
     requireNoQuery(uriInfo);
     return service.freshnessCurrent();
@@ -96,6 +100,7 @@ public class ObservabilityResource {
   @GET
   @Tag(name = "Observability")
   @Path("/payments")
+  @RequiresDatasource(DatasourceRegistry.OBSERVABILITY)
   public PageDto<PaymentSummaryDto> payments(@Context UriInfo uriInfo) {
     Map<String, String> q = QuerySupport.validate(query(uriInfo), LIST_PARAMS);
     return service.payments(callerResolver.resolve(), q);
@@ -104,6 +109,7 @@ public class ObservabilityResource {
   @GET
   @Tag(name = "Observability")
   @Path("/attempts")
+  @RequiresDatasource(DatasourceRegistry.OBSERVABILITY)
   public PageDto<AttemptDto> attempts(@Context UriInfo uriInfo) {
     Map<String, String> q = QuerySupport.validate(query(uriInfo), LIST_PARAMS);
     return service.attempts(callerResolver.resolve(), q);
@@ -112,6 +118,7 @@ public class ObservabilityResource {
   @GET
   @Tag(name = "Observability")
   @Path("/payments/{paFiscalCode}/{noticeNumber}")
+  @RequiresDatasource(DatasourceRegistry.OBSERVABILITY)
   public PaymentDetailDto paymentDetail(@PathParam("paFiscalCode") String paFiscalCode,
       @PathParam("noticeNumber") String noticeNumber, @Context UriInfo uriInfo) {
     requireNoQuery(uriInfo);
@@ -124,6 +131,7 @@ public class ObservabilityResource {
   @GET
   @Tag(name = "Observability")
   @Path("/overview")
+  @RequiresDatasource(DatasourceRegistry.OBSERVABILITY)
   public OverviewDto overview(@Context UriInfo uriInfo) {
     Map<String, String> q = QuerySupport.validate(query(uriInfo), OVERVIEW_PARAMS);
     QuerySupport.checkAggregate(q);
@@ -137,6 +145,7 @@ public class ObservabilityResource {
   @GET
   @Tag(name = "Observability")
   @Path("/analytics/activations-outcomes")
+  @RequiresDatasource(DatasourceRegistry.OBSERVABILITY)
   public AnalyticsDto activationsOutcomes(@Context UriInfo uriInfo) {
     Map<String, String> q = QuerySupport.validate(query(uriInfo), ANALYTICS_PARAMS);
     return service.activationsOutcomes(callerResolver.resolve(), q);
@@ -146,6 +155,7 @@ public class ObservabilityResource {
   @GET
   @Tag(name = "Observability")
   @Path("/overview/primitive-warnings")
+  @RequiresDatasource(DatasourceRegistry.OBSERVABILITY)
   public PageDto<PrimitiveWarningDto> primitiveWarnings(@Context UriInfo uriInfo) {
     Map<String, String> q = QuerySupport.validate(query(uriInfo), PRIMITIVE_WARNING_PARAMS);
     if (!q.containsKey("primitive") || q.get("primitive").length() > 128) {
@@ -157,6 +167,7 @@ public class ObservabilityResource {
   @GET
   @Tag(name = "Observability")
   @Path("/creditors")
+  @RequiresDatasource(DatasourceRegistry.OBSERVABILITY)
   public PageDto<CreditorRowDto> creditors(@Context UriInfo uriInfo) {
     Map<String, String> q = QuerySupport.validate(query(uriInfo), CREDITOR_PARAMS);
     QuerySupport.checkAggregate(q);
@@ -170,6 +181,7 @@ public class ObservabilityResource {
   @GET
   @Tag(name = "Observability")
   @Path("/creditors/{paFiscalCode}")
+  @RequiresDatasource(DatasourceRegistry.OBSERVABILITY)
   public CreditorDetailDto creditorDetail(@PathParam("paFiscalCode") String paFiscalCode,
       @Context UriInfo uriInfo) {
     Map<String, String> q = QuerySupport.validate(query(uriInfo), CREDITOR_PARAMS);
@@ -184,6 +196,7 @@ public class ObservabilityResource {
   @GET
   @Tag(name = "Observability")
   @Path("/creditors/{paFiscalCode}/stations")
+  @RequiresDatasource(DatasourceRegistry.OBSERVABILITY)
   public PageDto<?> stations(@PathParam("paFiscalCode") String paFiscalCode, @Context UriInfo uriInfo) {
     Map<String, String> q = QuerySupport.validate(query(uriInfo), CREDITOR_PARAMS);
     requireCreditorPath(q, paFiscalCode);

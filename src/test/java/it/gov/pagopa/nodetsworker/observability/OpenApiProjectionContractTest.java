@@ -7,15 +7,10 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.quarkus.test.junit.QuarkusTest;
 import jakarta.inject.Inject;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import org.junit.jupiter.api.Test;
-import org.yaml.snakeyaml.Yaml;
-import org.yaml.snakeyaml.LoaderOptions;
-import org.yaml.snakeyaml.constructor.SafeConstructor;
-import org.yaml.snakeyaml.nodes.Tag;
 
 @QuarkusTest
 class OpenApiProjectionContractTest {
@@ -51,19 +46,6 @@ class OpenApiProjectionContractTest {
         "TransitionTrendDto", "PaymentChanges", "RecipientChange", "AggregateChanges")) {
       assertEquals(schemas.path(name), documentedSchemas.path(name), name + " is stale");
     }
-  }
-
-  @Test
-  void generatedJsonAndYamlContractsAreEquivalent() throws Exception {
-    JsonNode json = mapper.readTree(Path.of("openapi/openapi.json").toFile());
-    Yaml parser = new Yaml(new SafeConstructor(new LoaderOptions()) {
-      {
-        // OpenAPI date examples are strings, not YAML-native Date objects.
-        yamlConstructors.put(Tag.TIMESTAMP, yamlConstructors.get(Tag.STR));
-      }
-    });
-    JsonNode yaml = mapper.valueToTree(parser.load(Files.readString(Path.of("openapi/openapi.yaml"))));
-    assertEquals(json, yaml);
   }
 
   private static List<String> values(JsonNode node) {

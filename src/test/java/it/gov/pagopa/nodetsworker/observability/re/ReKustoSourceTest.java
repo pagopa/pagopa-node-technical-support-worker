@@ -102,6 +102,8 @@ class ReKustoSourceTest {
 
   @Test
   void usesQueryOnlySdkWithBoundValuesAndPreservesRawScalarPrecision() throws Exception {
+    // Explicit, so the assertion checks the seconds -> milliseconds propagation and not ReConfig's default.
+    config.timeoutSeconds = 15;
     var columns = new java.util.ArrayList<java.util.Map<String, String>>();
     var row = new java.util.ArrayList<Object>();
     for (String name : ReEvent.FIELDS) {

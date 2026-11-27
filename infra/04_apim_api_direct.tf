@@ -38,29 +38,16 @@ module "api_ndp_direct" { # direct API to NDP
   # content_value  = file("${path.module}/../openapi/nodoTechnicalSupport_direct_openapi.json")
   content_value  = data.local_file.openapi_direct.content
 
-  xml_content = templatestring(data.http.template_decoupler_policy.body, { # we consider decoupler ON 👀👇
-    # address-range-from       = var.env_short == "p" ? "10.1.128.0" : "0.0.0.0"
-    # address-range-to         = var.env_short == "p" ? "10.1.128.255" : "0.0.0.0"
-    address-range-from       = "0.0.0.0"
-    address-range-to         = "0.0.0.0"
-    is-nodo-auth-pwd-replace = false
-  })
+  # xml_content = templatestring(data.http.template_decoupler_policy.body, { # we consider decoupler ON 👀👇
+  #   # address-range-from       = var.env_short == "p" ? "10.1.128.0" : "0.0.0.0"
+  #   # address-range-to         = var.env_short == "p" ? "10.1.128.255" : "0.0.0.0"
+  #   address-range-from       = "0.0.0.0"
+  #   address-range-to         = "0.0.0.0"
+  #   is-nodo-auth-pwd-replace = false
+  # })
+  xml_content = file("${path.module}/../policy/direct/api_group_base_policy.xml")
 
 }
-
-# resource "terraform_data" "merge_openapi_script" {
-#   # Forza la riesecuzione ogni volta che cambia l'hash dello script o un input
-#   triggers_replace = [
-#   #   filesha256("${path.module}/scripts/merge_openapi.sh")
-#     timestamp()
-#   ]
-#
-#
-#   provisioner "local-exec" {
-#     command     = "/bin/bash ${path.module}/../scripts/merge_openapi.sh"
-#   }
-# }
-
 
 data "external" "merge_openapi_script" {
   program = ["/bin/bash", "${path.module}/../scripts/wrapper_merge_openapi.sh"]

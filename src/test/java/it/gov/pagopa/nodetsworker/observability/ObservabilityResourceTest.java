@@ -153,6 +153,15 @@ class ObservabilityResourceTest {
   }
 
   @Test
+  void dedicatedPaymentInfoApiExposesRawToken() {
+    given().when().get("/payments/organizationFiscalCode/00000000001/noticeNumber/300000000000000001")
+        .then().statusCode(200)
+        .body("state", equalTo("PAYING"))
+        .body("attempts[0].tokenDisplay", notNullValue())
+        .body("attempts[0].paymentToken", equalTo("SYNTHETIC-TOKEN-1-1"));
+  }
+
+  @Test
   void paymentDetailNotFound() {
     given().when().get("/api/payments/00000000009/300000000000000099").then().statusCode(404)
         .body("code", equalTo("NOT_FOUND"));

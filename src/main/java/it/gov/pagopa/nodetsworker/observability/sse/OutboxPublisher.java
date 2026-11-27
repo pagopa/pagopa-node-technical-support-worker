@@ -1,5 +1,6 @@
 package it.gov.pagopa.nodetsworker.observability.sse;
 
+import it.gov.pagopa.nodetsworker.datasource.ObservabilityDatasourceDisabled;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.quarkus.scheduler.Scheduled;
@@ -13,8 +14,13 @@ import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import java.time.Instant;
 import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.jboss.logging.Logger;
 
 /**
@@ -27,7 +33,11 @@ import org.jboss.logging.Logger;
 public class OutboxPublisher {
 
   private static final Logger LOG = Logger.getLogger(OutboxPublisher.class);
-  private static final int BATCH = 200;
+  static final int DEFAULT_BATCH_SIZE = 200;
+
+  /** Upper bound of outbox rows drained (and of payments reloaded) per tick. */
+  @ConfigProperty(name = "observability.outbox.batch-size", defaultValue = "200")
+  int batchSize = DEFAULT_BATCH_SIZE;
 
   @Inject
   ProjectionRepository repository;
@@ -41,7 +51,8 @@ public class OutboxPublisher {
   @Inject
   ObjectMapper objectMapper;
 
-  @Scheduled(every = "1s", concurrentExecution = Scheduled.ConcurrentExecution.SKIP)
+  @Scheduled(every = "1s", concurrentExecution = Scheduled.ConcurrentExecution.SKIP,
+      skipExecutionIf = ObservabilityDatasourceDisabled.class)
   void drain() {
     try {
       poll();
@@ -51,18 +62,58 @@ public class OutboxPublisher {
   }
 
   void poll() {
-    List<OutboxEntity> rows = repository.unpublishedOutbox(BATCH);
-    List<DomainPayment> after = safeSnapshot(repository.loadVisible(null));
+    List<OutboxEntity> rows = repository.unpublishedOutbox(batchSize);
+    List<DomainPayment> previous = hub.lastSnapshot();
 
-    if (rows.isEmpty()) {
-      if (hub.lastSnapshot() == null) {
-        hub.setLastSnapshot(after);
+    if (previous == null) {
+      // Once per process: the baseline snapshot every following delta is merged into.
+      previous = safeSnapshot(repository.loadVisible(null));
+      if (rows.isEmpty()) {
+        hub.setLastSnapshot(previous);
+        return;
       }
+      publish(rows, previous, previous);
       return;
     }
+    if (rows.isEmpty()) {
+      return;
+    }
+    // Every projection write stores its outbox row in the same transaction, so the payments named by the
+    // batch are the only ones that may differ from the previous snapshot.
+    publish(rows, previous, merge(previous, rows));
+  }
 
-    List<DomainPayment> before = hub.lastSnapshot() != null ? hub.lastSnapshot() : after;
+  private List<DomainPayment> merge(List<DomainPayment> previous, List<OutboxEntity> rows) {
+    Set<ProjectionRepository.PaymentKey> keys = new LinkedHashSet<>();
+    for (OutboxEntity row : rows) {
+      if (row.getPaFiscalCode() != null) {
+        keys.add(new ProjectionRepository.PaymentKey(row.getPaFiscalCode(), row.getNoticeNumber()));
+      }
+    }
+    if (keys.isEmpty()) {
+      return previous;
+    }
+    Map<String, DomainPayment> reloaded = new LinkedHashMap<>();
+    for (DomainPayment p : safeSnapshot(repository.loadByKeys(new ArrayList<>(keys)))) {
+      reloaded.put(p.key(), p);
+    }
+    Set<String> touched = new HashSet<>();
+    for (ProjectionRepository.PaymentKey key : keys) {
+      touched.add(key.paFiscalCode() + "/" + key.noticeNumber());
+    }
+    List<DomainPayment> after = new ArrayList<>(previous.size() + reloaded.size());
+    for (DomainPayment p : previous) {
+      if (!touched.contains(p.key())) {
+        after.add(p);
+      } else if (reloaded.containsKey(p.key())) {
+        after.add(reloaded.remove(p.key()));
+      }
+    }
+    after.addAll(reloaded.values());
+    return after;
+  }
 
+  private void publish(List<OutboxEntity> rows, List<DomainPayment> before, List<DomainPayment> after) {
     List<HistoryEntry.PaymentChange> paymentChanges = new ArrayList<>();
     List<PrimitiveBucket> primitiveChanges = new ArrayList<>();
     long maxSequence = 0;
@@ -94,10 +145,7 @@ public class OutboxPublisher {
       hub.setLastSnapshot(after);
     }
 
-    Instant now = Instant.now();
-    for (OutboxEntity row : rows) {
-      repository.markPublished(row.getId(), now);
-    }
+    repository.markPublished(rows.stream().map(OutboxEntity::getId).toList(), Instant.now());
   }
 
   private static boolean hasRemovals(Map<String, Object> changes, String key) {

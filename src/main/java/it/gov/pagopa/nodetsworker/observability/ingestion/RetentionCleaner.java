@@ -1,5 +1,6 @@
 package it.gov.pagopa.nodetsworker.observability.ingestion;
 
+import it.gov.pagopa.nodetsworker.datasource.ObservabilityDatasourceDisabled;
 import io.quarkus.scheduler.Scheduled;
 import it.gov.pagopa.nodetsworker.observability.repository.ProjectionRepository;
 import it.gov.pagopa.nodetsworker.observability.service.ObservabilityConfig;
@@ -27,7 +28,8 @@ public class RetentionCleaner {
   ObservabilityConfig config;
 
   @Scheduled(cron = "{observability.retention.cleanup-cron}",
-      concurrentExecution = Scheduled.ConcurrentExecution.SKIP)
+      concurrentExecution = Scheduled.ConcurrentExecution.SKIP,
+      skipExecutionIf = ObservabilityDatasourceDisabled.class)
   void sweep() {
     try {
       Instant now = Instant.now();

@@ -1,0 +1,24 @@
+<policies>
+  <inbound>
+    <base />
+    <!-- set ndphost header -->
+    <include-fragment fragment-id="ndphost-header" />
+
+    <include-fragment fragment-id="decoupler-configuration" />
+
+    <include-fragment fragment-id="ndptarget-header" />
+
+    <!-- set backend service url -->
+    <set-backend-service base-url="@((string)context.Variables["baseUrl"])" />
+
+  </inbound>
+  <outbound>
+    <base />
+  </outbound>
+  <backend>
+    <base />
+  </backend>
+  <on-error>
+    <base />
+  </on-error>
+</policies>

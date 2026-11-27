@@ -1,5 +1,6 @@
 package it.gov.pagopa.nodetsworker.observability.ingestion;
 
+import it.gov.pagopa.nodetsworker.datasource.DatasourceRegistry;
 import com.azure.messaging.eventhubs.EventProcessorClient;
 import com.azure.messaging.eventhubs.EventProcessorClientBuilder;
 import com.azure.messaging.eventhubs.checkpointstore.blob.BlobCheckpointStore;
@@ -59,7 +60,13 @@ public class ReEventHubConsumer {
 
   private volatile EventProcessorClient processor;
 
+  @jakarta.inject.Inject DatasourceRegistry datasources;
+
   void onStart(@Observes StartupEvent event) {
+    if (!datasources.isEnabled(DatasourceRegistry.OBSERVABILITY)) {
+      LOG.info("Observability RE ingestion skipped: observability datasource disabled");
+      return;
+    }
     if (!enabled) {
       LOG.info("Observability RE ingestion disabled (observability.ingestion.enabled=false)");
       return;

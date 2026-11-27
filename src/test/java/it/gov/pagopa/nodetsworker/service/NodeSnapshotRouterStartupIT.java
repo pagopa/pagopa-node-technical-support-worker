@@ -1,6 +1,8 @@
 package it.gov.pagopa.nodetsworker.service;
 
 import io.quarkus.test.QuarkusUnitTest;
+import it.gov.pagopa.nodetsworker.datasource.DatasourceDisabledException;
+import it.gov.pagopa.nodetsworker.datasource.DatasourceRegistry;
 import org.junit.jupiter.api.extension.RegisterExtension;
 import org.junit.jupiter.api.Test;
 
@@ -13,7 +15,7 @@ class NodeSnapshotRouterStartupIT {
 
     @RegisterExtension
     static final QuarkusUnitTest quarkus = new QuarkusUnitTest()
-            .withApplicationRoot(jar -> jar.addClasses(NodeSnapshotRouter.class))
+            .withApplicationRoot(jar -> jar.addClasses(NodeSnapshotRouter.class, DatasourceRegistry.class, DatasourceDisabledException.class))
             .overrideConfigKey("snapshot.online.nodes.online-ndp001.service-identifier", "ndp001")
             .overrideConfigKey("snapshot.online.nodes.online-ndp004.service-identifier", "ndp001")
             .overrideConfigKey("quarkus.datasource.online-ndp001.db-kind", "h2")

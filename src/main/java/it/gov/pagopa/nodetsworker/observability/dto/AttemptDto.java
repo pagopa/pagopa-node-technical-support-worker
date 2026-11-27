@@ -46,6 +46,5 @@ public class AttemptDto {
   private boolean warning;
   private boolean hasAnomaly;
   private String tokenDisplay;
-  private String paymentToken;
   private long projectionRevision;
 }

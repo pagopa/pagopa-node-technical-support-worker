@@ -1,5 +1,6 @@
 package it.gov.pagopa.nodetsworker.observability.ingestion;
 
+import it.gov.pagopa.nodetsworker.datasource.ObservabilityDatasourceDisabled;
 import io.quarkus.scheduler.Scheduled;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
@@ -16,7 +17,8 @@ public class PrimitiveTimeoutSweeper {
   PrimitiveIngestionService service;
 
   @Scheduled(every = "{observability.primitives.sweep-interval:2s}",
-      concurrentExecution = Scheduled.ConcurrentExecution.SKIP)
+      concurrentExecution = Scheduled.ConcurrentExecution.SKIP,
+      skipExecutionIf = ObservabilityDatasourceDisabled.class)
   void sweep() {
     try {
       service.sweep(Instant.now());
