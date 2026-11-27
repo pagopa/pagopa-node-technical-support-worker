@@ -67,13 +67,6 @@ public class ObservabilityResource {
   String ndp004Identifier;
 
   @GET
-  @Path("/me")
-  public MeDto me(@Context UriInfo uriInfo) {
-    requireNoQuery(uriInfo);
-    return service.me(callerResolver.resolve());
-  }
-
-  @GET
   @Tag(name = "Observability")
   @Path("/catalog")
   @RequiresDatasource(DatasourceRegistry.OBSERVABILITY)

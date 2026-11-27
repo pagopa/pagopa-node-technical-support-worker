@@ -63,17 +63,6 @@ public class ObservabilityService {
 
   // --- identity & catalog ---------------------------------------------------
 
-  public MeDto me(Caller caller) {
-    return MeDto.builder()
-        .id(caller.id())
-        .role(caller.role())
-        .visiblePaFiscalCodes(caller.allowedPa() == null ? null : List.of(caller.allowedPa()))
-        .capabilities(new it.gov.pagopa.nodetsworker.observability.dto.CapabilitiesDto(
-            caller.canReadTokens(), caller.canReadTokens(), caller.canMock()))
-        .authentication(caller.isImplicit() ? "LOCAL_DEMO_ONLY" : "ENTRA_ID")
-        .build();
-  }
-
   public it.gov.pagopa.nodetsworker.observability.dto.FreshnessDto freshnessCurrent() {
     return freshnessService.current();
   }

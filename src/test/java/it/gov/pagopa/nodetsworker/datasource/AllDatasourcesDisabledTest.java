@@ -85,7 +85,6 @@ class AllDatasourcesDisabledTest {
 
     @Test
     void observabilityRoutesWithoutDatabaseKeepWorking() {
-        given().when().get("/api/me").then().statusCode(200);
         given().when().get("/api/serviceIdentifiers").then().statusCode(200);
     }
 

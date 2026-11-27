@@ -69,15 +69,6 @@ class ObservabilityResourceTest {
   }
 
   @Test
-  void me() {
-    given().when().get("/api/me").then().statusCode(200)
-        .body("id", equalTo("demo-operator"))
-        .body("role", equalTo("operator"))
-        .body("authentication", equalTo("LOCAL_DEMO_ONLY"))
-        .body("capabilities.revealToken", equalTo(true));
-  }
-
-  @Test
   void catalog() {
     given().when().get("/api/catalog").then().statusCode(200)
         .body("logicalStates", hasItem("INSERTED"))

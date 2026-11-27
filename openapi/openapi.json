@@ -581,20 +581,6 @@
           }
         }
       },
-      "CapabilitiesDto" : {
-        "type" : "object",
-        "properties" : {
-          "lookupToken" : {
-            "type" : "boolean"
-          },
-          "revealToken" : {
-            "type" : "boolean"
-          },
-          "mockControls" : {
-            "type" : "boolean"
-          }
-        }
-      },
       "CatalogDto" : {
         "type" : "object",
         "properties" : {
@@ -1194,29 +1180,6 @@
           }
         },
         "additionalProperties" : false
-      },
-      "MeDto" : {
-        "type" : "object",
-        "properties" : {
-          "id" : {
-            "type" : "string"
-          },
-          "role" : {
-            "type" : "string"
-          },
-          "visiblePaFiscalCodes" : {
-            "type" : "array",
-            "items" : {
-              "type" : "string"
-            }
-          },
-          "capabilities" : {
-            "$ref" : "#/components/schemas/CapabilitiesDto"
-          },
-          "authentication" : {
-            "type" : "string"
-          }
-        }
       },
       "Metadata" : {
         "type" : "object",
@@ -1972,7 +1935,7 @@
             "type" : "string"
           },
           "direction" : {
-            "description" : "Direzione rispetto al Nodo dai campi RE fruitore/erogatore dell'evento REQ: INBOUND se il Nodo Ã¨ l'erogatore, OUTBOUND se Ã¨ il fruitore, UNKNOWN altrimenti. Mai dedotta dal nome della primitiva.",
+            "description" : "Direzione rispetto al Nodo dai campi RE fruitore/erogatore dell'evento REQ: INBOUND se il Nodo è l'erogatore, OUTBOUND se è il fruitore, UNKNOWN altrimenti. Mai dedotta dal nome della primitiva.",
             "enum" : [ "INBOUND", "OUTBOUND", "UNKNOWN" ],
             "type" : "string"
           },
@@ -3361,26 +3324,6 @@
         "security" : [ {
           "SecurityScheme" : [ ]
         } ]
-      }
-    },
-    "/api/me" : {
-      "get" : {
-        "responses" : {
-          "200" : {
-            "description" : "OK",
-            "content" : {
-              "application/json" : {
-                "schema" : {
-                  "$ref" : "#/components/schemas/MeDto"
-                }
-              }
-            }
-          }
-        },
-        "security" : [ {
-          "SecurityScheme" : [ ]
-        } ],
-        "tags" : [ "Observability Resource" ]
       }
     },
     "/api/nodo-monitoring/cache/version" : {
