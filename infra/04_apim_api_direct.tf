@@ -1,6 +1,6 @@
-data "http" "template_decoupler_policy" {
-  url = "https://raw.githubusercontent.com/pagopa/pagopa-infra/main/src/domains/nodo-app/api_product/legacy/nodo_pagamenti_api/decoupler/base_policy.xml.tpl"
-}
+# data "http" "template_decoupler_policy" {
+#   url = "https://raw.githubusercontent.com/pagopa/pagopa-infra/main/src/domains/nodo-app/api_product/legacy/nodo_pagamenti_api/decoupler/base_policy.xml.tpl"
+# }
 
 resource "azurerm_api_management_api_version_set" "api_version_set_ndp_direct" {
   name                = format("%s-technical-support-api-ndp-direct", local.project)
@@ -31,21 +31,10 @@ module "api_ndp_direct" { # direct API to NDP
 
 
   content_format = "openapi"
-  # content_value  = templatefile("../openapi/_swagger_chk_pos_only.json.tpl", {
-  #   host = local.host,
-  #   service = local.apim.product_id
-  # })
-  # content_value  = file("${path.module}/../openapi/nodoTechnicalSupport_direct_openapi.json")
+
   content_value  = data.local_file.openapi_direct.content
 
-  # xml_content = templatestring(data.http.template_decoupler_policy.body, { # we consider decoupler ON 👀👇
-  #   # address-range-from       = var.env_short == "p" ? "10.1.128.0" : "0.0.0.0"
-  #   # address-range-to         = var.env_short == "p" ? "10.1.128.255" : "0.0.0.0"
-  #   address-range-from       = "0.0.0.0"
-  #   address-range-to         = "0.0.0.0"
-  #   is-nodo-auth-pwd-replace = false
-  # })
-  xml_content = file("${path.module}/../policy/direct/api_group_base_policy.xml")
+  xml_content = file("./policy/direct/api_group_base_policy.xml")
 
 }
 
@@ -58,4 +47,27 @@ data "local_file" "openapi_direct" {
 
   # Forza la lettura del file DOPO l'esecuzione dello script nel plan
   depends_on = [data.external.merge_openapi_script]
+}
+
+# resource "azurerm_api_management_api_operation_policy" "paymentStatus_policy" {
+#
+#   api_name              = module.observability_api_v1.name
+#   api_management_name   = local.apim.name
+#   resource_group_name   = local.apim.rg
+#
+#   operation_id          = "paymentStatus"
+#
+#   xml_content = file("./policy/nodo_observability/api_events_base_policy.xml")
+# }
+
+
+resource "azurerm_api_management_api_operation_policy" "verifyPaymentNotice_policy" {
+
+  api_name              = module.api_ndp_direct.name
+  api_management_name   = local.apim.name
+  resource_group_name   = local.apim.rg
+
+  operation_id          = "verifyPaymentNotice"
+
+  xml_content = file("./policy/direct/api_verifyPaymentNotice_base_policy.xml")
 }
