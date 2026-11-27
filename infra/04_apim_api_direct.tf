@@ -49,16 +49,16 @@ data "local_file" "openapi_direct" {
   depends_on = [data.external.merge_openapi_script]
 }
 
-# resource "azurerm_api_management_api_operation_policy" "paymentStatus_policy" {
-#
-#   api_name              = module.observability_api_v1.name
-#   api_management_name   = local.apim.name
-#   resource_group_name   = local.apim.rg
-#
-#   operation_id          = "paymentStatus"
-#
-#   xml_content = file("./policy/nodo_observability/api_events_base_policy.xml")
-# }
+resource "azurerm_api_management_api_operation_policy" "paymentStatus_policy" {
+
+  api_name              = module.api_ndp_direct.name
+  api_management_name   = local.apim.name
+  resource_group_name   = local.apim.rg
+
+  operation_id          = "paymentStatus"
+
+  xml_content = file("./policy/direct/api_paymentStatus_base_policy.xml")
+}
 
 
 resource "azurerm_api_management_api_operation_policy" "verifyPaymentNotice_policy" {

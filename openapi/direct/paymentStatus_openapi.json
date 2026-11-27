@@ -25,10 +25,10 @@
           {
             "name": "caller",
             "in": "query",
-            "required": true,
             "schema": {
               "type": "string",
-              "maxLength": 35
+              "maxLength": 35,
+              "default": "unknown"
             }
           },
           {
