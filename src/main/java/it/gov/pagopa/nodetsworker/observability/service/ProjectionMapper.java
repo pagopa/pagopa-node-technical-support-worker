@@ -183,6 +183,7 @@ public final class ProjectionMapper {
         .warning(ProjectionLogic.warning(attempt))
         .hasAnomaly(ProjectionLogic.anomalousAttempt(attempt))
         .tokenDisplay(TOKEN_DISPLAY)
+        .paymentToken(attempt.getPaymentToken())
         .projectionRevision(payment.getProjectionRevision())
         .build();
   }

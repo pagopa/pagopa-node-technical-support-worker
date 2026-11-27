@@ -1,5 +1,7 @@
 package it.gov.pagopa.nodetsworker.observability.service;
 
+import it.gov.pagopa.nodetsworker.exceptions.AppErrorCodeMessageEnum;
+import it.gov.pagopa.nodetsworker.exceptions.AppException;
 import it.gov.pagopa.nodetsworker.observability.domain.DomainAttempt;
 import it.gov.pagopa.nodetsworker.observability.domain.DomainPayment;
 import it.gov.pagopa.nodetsworker.observability.domain.Filters;
@@ -143,6 +145,10 @@ public class ObservabilityService {
 
   public PaymentDetailDto paymentDetail(Caller caller, String paFiscalCode, String noticeNumber) {
     return ProjectionMapper.toDetailDto(getPayment(caller, paFiscalCode, noticeNumber));
+  }
+
+  public PaymentDetailDto paymentDetail(String paFiscalCode, String noticeNumber) {
+    return ProjectionMapper.toDetailDto(getPayment(paFiscalCode, noticeNumber));
   }
 
   // --- aggregates -----------------------------------------------------------
@@ -473,6 +479,16 @@ public class ObservabilityService {
       }
     }
     throw Errors.notFound("Pagamento non disponibile.");
+  }
+
+  private DomainPayment getPayment(String paFiscalCode, String noticeNumber) {
+    List<DomainPayment> domainPayments = repository.loadVisible(null);
+    for (DomainPayment p : domainPayments) {
+      if (p.getPaFiscalCode().equals(paFiscalCode) && p.getNoticeNumber().equals(noticeNumber)) {
+        return p;
+      }
+    }
+    throw new AppException(AppErrorCodeMessageEnum.NOT_FOUND, "Pagamento non disponibile.");
   }
 
   private DomainAttempt getAttempt(Caller caller, String attemptId) {
