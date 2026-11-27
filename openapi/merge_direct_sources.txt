@@ -1,0 +1,3 @@
+openapi/direct/checkPosition_openapi.json
+openapi/direct/paymentStatus_openapi.json
+openapi/direct/verifyPaymentNotice_openapi.json

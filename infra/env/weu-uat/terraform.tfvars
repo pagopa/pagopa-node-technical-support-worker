@@ -14,3 +14,6 @@ tags = {
 apim_dns_zone_prefix               = "uat.platform"
 external_domain                    = "pagopa.it"
 hostname = "weuuat.nodo.internal.uat.platform.pagopa.it"
+
+# Application (client) id of the Nodo Observability frontend app registration on Entra ID
+nodo_observability_entra_client_id = "598bf87d-b2d2-4610-89b8-a74f616d06e9"

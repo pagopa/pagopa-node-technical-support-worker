@@ -37,6 +37,8 @@ generate_openapi () {
   sleep 10
   curl http://localhost:8080/q/openapi?format=json > openapi/$conf.json
   docker rm -f exporttechsupport_$conf
+  ./scripts/nodoTechnicalSupport_openapi.sh
+  ./scripts/observability_openapi.sh
 }
 
 test_curl () {

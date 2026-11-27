@@ -1,0 +1,15 @@
+<policies>
+  <inbound>
+    <base />
+  </inbound>
+  <outbound>
+    <base />
+  </outbound>
+  <backend>
+<!--    <base />-->
+    <forward-request buffer-response="false" />
+  </backend>
+  <on-error>
+    <base />
+  </on-error>
+</policies>

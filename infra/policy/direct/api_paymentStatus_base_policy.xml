@@ -1,0 +1,45 @@
+<policies>
+  <inbound>
+    <base />
+
+    <set-variable name="subkey" value="@(context.Request.Headers.GetValueOrDefault("Ocp-Apim-Subscription-Key", ""))" />
+
+    <set-variable name="subscriptionId" value="@(context.Subscription?.Id ?? "NONE")" />
+    <set-variable name="subscriptionKey" value="@(context.Subscription?.Key ?? "NONE")" />
+    <set-variable name="userId" value="@(context.User?.Id ?? "NONE")" />
+<!--    <set-variable name="userIdent" value="@(context.User?.Identities?.Id ?? "NONE")" />-->
+<!--    <set-variable name="userGroups" value="@(context.User?.Groups?.Id ?? "NONE")" />-->
+<!--    <set-variable name="userGroups" value="@(context.User?.Groups?.Name ?? "NONE")" />-->
+<!--
+    <choose>
+      <!- Ecommerce -
+      <when condition="@(!string.IsNullOrEmpty((string)context.Variables["subscriptionName"]))">
+        <set-query-parameter name="caller" exists-action="override">
+          <value>ecommerce</value>
+        </set-query-parameter>
+      </when>
+      <!- Ecommerce WatchDog-
+      <when condition="@(!string.IsNullOrEmpty((string)context.Variables["subscriptionName"]))">
+        <set-query-parameter name="caller" exists-action="override">
+          <value>ecommerce-watchdog</value>
+        </set-query-parameter>
+      </when>
+      <otherwise>
+        <set-query-parameter name="caller" exists-action="override">
+          <value>unknown</value>
+        </set-query-parameter>
+      </otherwise>
+    </choose>
+-->
+
+  </inbound>
+  <outbound>
+    <base />
+  </outbound>
+  <backend>
+    <base />
+  </backend>
+  <on-error>
+    <base />
+  </on-error>
+</policies>

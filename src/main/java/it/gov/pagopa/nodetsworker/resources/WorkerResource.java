@@ -1,5 +1,6 @@
 package it.gov.pagopa.nodetsworker.resources;
 
+import io.quarkus.arc.profile.IfBuildProfile;
 import it.gov.pagopa.nodetsworker.models.ProblemJson;
 import it.gov.pagopa.nodetsworker.resources.response.PaymentsFullResponse;
 import it.gov.pagopa.nodetsworker.resources.response.PaymentsResponse;
@@ -20,6 +21,7 @@ import java.util.Optional;
 
 @Path("/organizations")
 @Produces(value = MediaType.APPLICATION_JSON)
+@IfBuildProfile(anyOf = {"build", "dev", "uat", "prod", "test", "technical_support"})
 public class WorkerResource implements Serializable {
 
   @Inject

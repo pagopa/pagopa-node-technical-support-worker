@@ -9,6 +9,8 @@ public enum AppErrorCodeMessageEnum implements AppErrorCodeMessageInterface {
   ERROR("0500", "system.error", RestResponse.Status.INTERNAL_SERVER_ERROR),
   BAD_REQUEST("0400", "bad.request", RestResponse.Status.BAD_REQUEST),
   NOT_FOUND("0404", "payment.not.found", RestResponse.Status.NOT_FOUND),
+  DATASOURCE_UNAVAILABLE(
+      "0503", "datasource.unavailable", RestResponse.Status.SERVICE_UNAVAILABLE),
   BAD_REQUEST_INPUT_JSON("0401", "bad.request.inputJson", RestResponse.Status.BAD_REQUEST),
   BAD_REQUEST_INPUT_JSON_INSTANT(
       "0402", "bad.request.inputJson.instant", RestResponse.Status.BAD_REQUEST),

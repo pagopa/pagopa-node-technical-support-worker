@@ -4,7 +4,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>it.gov.pagopa</groupId>
   <artifactId>node-techical-support-worker</artifactId>
-  <version>1.3.2</version>
+  <version>1.3.2-9-nodo-observability</version>
   <properties>
     <compiler-plugin.version>3.11.0</compiler-plugin.version>
     <lombok.version>1.18.26</lombok.version>
@@ -14,7 +14,7 @@
     <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
     <quarkus.platform.artifact-id>quarkus-bom</quarkus.platform.artifact-id>
     <quarkus.platform.group-id>io.quarkus.platform</quarkus.platform.group-id>
-    <quarkus.platform.version>3.0.1.Final</quarkus.platform.version>
+    <quarkus.platform.version>3.20.6.2</quarkus.platform.version>
     <skipITs>true</skipITs>
     <surefire-plugin.version>3.0.0</surefire-plugin.version>
     <org.mapstruct.version>1.5.3.Final</org.mapstruct.version>
@@ -29,9 +29,44 @@
         <type>pom</type>
         <scope>import</scope>
       </dependency>
+      <!-- Aligns the Azure client versions (Event Hubs + Blob checkpoint store) used by the
+           observability RE ingestion so their compatible versions are chosen consistently. -->
+      <dependency>
+        <groupId>com.azure</groupId>
+        <artifactId>azure-sdk-bom</artifactId>
+        <version>1.2.31</version>
+        <type>pom</type>
+        <scope>import</scope>
+      </dependency>
+      <!-- kusto-data 5.0.2 declares old direct deps that win by proximity over the Azure BOM:
+           - reactor-core 3.4.19: azure-core 1.54 / reactor-netty 1.0.48 are built on 3.4.41;
+           - msal4j 1.13.8 -> oauth2-oidc-sdk 10.7.1, built for nimbus-jose-jwt 9.x while the
+             Quarkus BOM pins nimbus-jose-jwt 10.0. msal4j 1.21.0 -> oauth2-oidc-sdk 11.23 targets 10.x. -->
+      <dependency>
+        <groupId>io.projectreactor</groupId>
+        <artifactId>reactor-core</artifactId>
+        <version>3.4.41</version>
+      </dependency>
+      <dependency>
+        <groupId>com.microsoft.azure</groupId>
+        <artifactId>msal4j</artifactId>
+        <version>1.21.0</version>
+      </dependency>
     </dependencies>
   </dependencyManagement>
   <dependencies>
+    <!-- Dedicated read-only RE diagnostics client; same SDK family as stand-in-manager. -->
+    <dependency>
+      <groupId>com.microsoft.azure.kusto</groupId>
+      <artifactId>kusto-data</artifactId>
+      <version>5.0.2</version>
+      <exclusions>
+        <exclusion>
+          <groupId>org.slf4j</groupId>
+          <artifactId>slf4j-simple</artifactId>
+        </exclusion>
+      </exclusions>
+    </dependency>
     <dependency>
       <groupId>io.quarkus</groupId>
       <artifactId>quarkus-arc</artifactId>
@@ -78,20 +113,25 @@
 
     <dependency>
       <groupId>io.quarkus</groupId>
-      <artifactId>quarkus-rest-client-reactive-jackson</artifactId>
+      <artifactId>quarkus-rest-client-jackson</artifactId>
     </dependency>
     <dependency>
       <groupId>io.quarkus</groupId>
-      <artifactId>quarkus-resteasy-reactive-jackson</artifactId>
+      <artifactId>quarkus-rest-jackson</artifactId>
     </dependency>
+    <!-- Microsoft Entra ID token verification (tenant JWKS) -->
     <dependency>
-      <groupId>io.quarkiverse.openapi.generator</groupId>
-      <artifactId>quarkus-openapi-generator</artifactId>
-      <version>2.2.2</version>
+      <groupId>org.bitbucket.b_c</groupId>
+      <artifactId>jose4j</artifactId>
+      <version>0.9.6</version>
     </dependency>
     <dependency>
       <groupId>io.quarkus</groupId>
       <artifactId>quarkus-jdbc-postgresql</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>io.quarkus</groupId>
+      <artifactId>quarkus-liquibase</artifactId>
     </dependency>
     <dependency>
       <groupId>io.quarkus</groupId>
@@ -100,6 +140,11 @@
     <dependency>
       <groupId>io.quarkus</groupId>
       <artifactId>quarkus-junit5</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>io.quarkus</groupId>
+      <artifactId>quarkus-junit5-internal</artifactId>
       <scope>test</scope>
     </dependency>
     <dependency>
@@ -141,16 +186,23 @@
       <artifactId>azure-data-tables</artifactId>
       <version>12.3.12</version>
     </dependency>
+    <!-- Observability RE ingestion: Event Hubs consumer + Blob checkpoint store (versions from azure-sdk-bom). -->
+    <dependency>
+      <groupId>com.azure</groupId>
+      <artifactId>azure-messaging-eventhubs</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>com.azure</groupId>
+      <artifactId>azure-messaging-eventhubs-checkpointstore-blob</artifactId>
+    </dependency>
     <dependency>
       <groupId>org.testcontainers</groupId>
       <artifactId>junit-jupiter</artifactId>
-      <version>1.16.0</version>
       <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.testcontainers</groupId>
       <artifactId>azure</artifactId>
-      <version>1.18.3</version>
       <scope>test</scope>
     </dependency>
     <dependency>
@@ -176,6 +228,26 @@
             </goals>
           </execution>
         </executions>
+      </plugin>
+      <plugin>
+        <groupId>org.liquibase</groupId>
+        <artifactId>liquibase-maven-plugin</artifactId>
+        <version>4.29.1</version><!-- = liquibase-core in the Quarkus BOM -->
+        <configuration>
+          <changeLogFile>db/observability/db.changelog-master.yaml</changeLogFile>
+          <url>${env.OBSERVABILITY_DATASOURCE_URL}</url>
+          <username>${env.OBSERVABILITY_DATASOURCE_USERNAME}</username>
+          <password>${env.OBSERVABILITY_DATASOURCE_PASSWORD}</password>
+          <driver>org.postgresql.Driver</driver>
+          <defaultSchemaName>observability</defaultSchemaName>
+        </configuration>
+        <dependencies>
+          <dependency>
+            <groupId>org.postgresql</groupId>
+            <artifactId>postgresql</artifactId>
+            <version>42.7.7</version><!-- = Quarkus BOM -->
+          </dependency>
+        </dependencies>
       </plugin>
       <plugin>
         <artifactId>maven-compiler-plugin</artifactId>

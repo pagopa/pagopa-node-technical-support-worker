@@ -1,13 +1,19 @@
 package it.gov.pagopa.nodetsworker.resources;
 
+import io.quarkus.arc.profile.IfBuildProfile;
 import it.gov.pagopa.nodetsworker.models.PositionPaymentSnapshotDto;
 import it.gov.pagopa.nodetsworker.service.PositionPaymentSnapshotService;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
+import org.eclipse.microprofile.openapi.annotations.security.SecurityRequirement;
+import org.eclipse.microprofile.openapi.annotations.tags.Tag;
 
 @Path("/paymentToken")
 @Produces(MediaType.APPLICATION_JSON)
+@SecurityRequirement(name = "SecurityScheme")
+@Tag(name = "Observability")
+@IfBuildProfile(anyOf = {"build", "dev", "uat", "prod", "test", "observability"})
 public class PositionPaymentSnapshotResource {
 
     @Inject

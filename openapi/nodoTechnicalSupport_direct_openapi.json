@@ -1,0 +1,405 @@
+{
+  "openapi": "3.0.1",
+  "info": {
+    "title": "Nodo Technical Support direct API",
+    "version": "1.3.2-1-nodo-observability"
+  },
+  "paths": {
+    "/checkPosition": {
+      "post": {
+        "tags": [
+          "Nodo"
+        ],
+        "summary": "checkPosition",
+        "description": "Ha lo scopo di consentire di fare il check di positions",
+        "operationId": "checkPosition",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CheckPosition"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "successful operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CheckPositionResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "408": {
+            "description": "Request Timeout",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Unprocessable entry",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/paymentstatus": {
+      "get": {
+        "tags": [
+          "PaymentStatus"
+        ],
+        "summary": "paymentStatus",
+        "description": "Get payment status by token",
+        "operationId": "paymentStatus",
+        "parameters": [
+          {
+            "name": "paymenttoken",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "caller",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "maxLength": 35,
+              "default": "unknown"
+            }
+          },
+          {
+            "name": "daysToGoBack",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 89
+            }
+          }
+        ],
+        "responses": {
+          "403": {
+            "description": "Forbidden"
+          },
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PaymentDataResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemJson"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemJson"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "500": {
+            "description": "Service unavailable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemJson"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "ApiKey": []
+          }
+        ]
+      }
+    },
+    "/verifyPaymentNotice": {
+      "post": {
+        "summary": "verifyPaymentNotice",
+        "description": "Gets Payment Notice Data. A Payment Notice is identified by its QR-CODE data.",
+        "operationId": "verifyPaymentNotice",
+        "requestBody": {
+          "description": "verifyPaymentNoticeReq",
+          "content": {
+            "text/xml": {
+              "example": "<?xml version=\"1.0\" encoding=\"utf-8\"?> <Envelope xmlns=\"http://schemas.xmlsoap.org/soap/envelope/\"> <Body> <verifyPaymentNoticeReq xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xmlns=\"http://pagopa-api.pagopa.gov.it/node/nodeForPsp.xsd\"> <idPSP xmlns=\"\">idPSP1</idPSP> <idBrokerPSP xmlns=\"\">idBrokerPSP1</idBrokerPSP> <idChannel xmlns=\"\">idChannel1</idChannel> <qrCode xmlns=\"\"> <fiscalCode>fiscalCode1</fiscalCode> <noticeNumber>noticeNumber1</noticeNumber> </qrCode> </verifyPaymentNoticeReq> </Body> </Envelope>"
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "verifyPaymentNoticeRes",
+            "content": {
+              "text/xml": {
+                "example": "<?xml version=\"1.0\" encoding=\"utf-8\"?> <Envelope xmlns=\"http://schemas.xmlsoap.org/soap/envelope/\"> <Body> <verifyPaymentNoticeRes xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xmlns=\"http://pagopa-api.pagopa.gov.it/node/nodeForPsp.xsd\"> <outcome xmlns=\"\">OK</outcome> <fault xmlns=\"\"> <faultCode>faultCode1</faultCode> <faultString>faultString1</faultString> <id>id1</id> <description>description1</description> <serial>1</serial> <originalFaultCode>originalFaultCode1</originalFaultCode> <originalFaultString>originalFaultString1</originalFaultString> <originalDescription>originalDescription1</originalDescription> </fault> <paymentList xmlns=\"\"> <paymentOptionDescription> <amount>1</amount> <options>EQ</options> <dueDate>1900-01-01</dueDate> <paymentNote>paymentNote1</paymentNote> </paymentOptionDescription> <paymentOptionDescription> <amount>-79228162514264337593543950335</amount> <options>LS</options> <dueDate>0001-01-01</dueDate> <paymentNote>paymentNote2</paymentNote> </paymentOptionDescription> <paymentOptionDescription> <amount>999999999.99</amount> <options>GT</options> <dueDate>9999-12-31</dueDate> <paymentNote>paymentNote3</paymentNote> </paymentOptionDescription> <paymentOptionDescription> <amount>0.9</amount> <options>ANY</options> <dueDate>1899-11-30</dueDate> <paymentNote>paymentNote4</paymentNote> </paymentOptionDescription> <paymentOptionDescription> <amount>1.1</amount> <options>EQ</options> <dueDate>1900-02-02</dueDate> <paymentNote>paymentNote5</paymentNote> </paymentOptionDescription> </paymentList> <paymentDescription xmlns=\"\">paymentDescription1</paymentDescription> <fiscalCodePA xmlns=\"\">fiscalCode1</fiscalCodePA> <companyName xmlns=\"\">companyName1</companyName> <officeName xmlns=\"\">officeName1</officeName> </verifyPaymentNoticeRes> </Body> </Envelope>"
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "CheckPosition": {
+        "type": "object",
+        "required": [
+          "positionslist"
+        ],
+        "properties": {
+          "positionslist": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/listelement"
+            },
+            "minItems": 1,
+            "maxItems": 5
+          }
+        }
+      },
+      "CheckPositionResponse": {
+        "type": "object",
+        "required": [
+          "esito"
+        ],
+        "properties": {
+          "esito": {
+            "type": "string",
+            "enum": [
+              "OK",
+              "KO"
+            ]
+          }
+        }
+      },
+      "Error": {
+        "type": "object",
+        "required": [
+          "error"
+        ],
+        "properties": {
+          "error": {
+            "type": "string",
+            "example": "error message"
+          }
+        }
+      },
+      "PaymentDataResponse": {
+        "required": [
+          "payment_status"
+        ],
+        "type": "object",
+        "description": "Response contenente lo stato di un pagamento",
+        "properties": {
+          "payment_status": {
+            "$ref": "#/components/schemas/PaymentStatusData",
+            "description": "Oggetto contenente i dettagli dello stato del pagamento"
+          }
+        }
+      },
+      "PaymentStatusData": {
+        "required": [
+          "id",
+          "pa_fiscal_code",
+          "notice_id",
+          "creditor_reference_id",
+          "payment_token",
+          "status",
+          "inserted_timestamp",
+          "updated_timestamp",
+          "fk_position_payment",
+          "inserted_by",
+          "updated_by"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int64",
+            "description": "Identificativo univoco del pagamento nel sistema"
+          },
+          "pa_fiscal_code": {
+            "type": "string",
+            "description": "Codice fiscale dell'ente creditore (PA) che ha ricevuto il pagamento"
+          },
+          "notice_id": {
+            "type": "string",
+            "description": "Numero dell'avviso di pagamento (IUV) formato esteso 18 caratteri"
+          },
+          "creditor_reference_id": {
+            "type": "string",
+            "description": "Identificativo del creditore dal sistema del PSP"
+          },
+          "payment_token": {
+            "type": "string",
+            "description": "Token univoco a 32 caratteri che identifica il pagamento nel sistema nodo4"
+          },
+          "status": {
+            "type": "string",
+            "description": "Payment Status - Enum Stati: PAYING (IN CORSO), PAYING_RPT (IN CORSO), PAID_NORPT (OK), PAID (OK), FAILED_NORPT (KO), FAILED (KO), CANCELLED (KO), CANCELLED_NORPT (KO), NOTICE_GENERATED (OK), NOTICE_STORED (OK), NOTICE_SENT (OK), NOTIFIED (OK), PAYMENT_SENT (IN CORSO), PAYMENT_REFUSED (KO), PAYMENT_SEND_ERROR (KO), PAYMENT_ACCEPTED (OK), PAYMENT_UNKNOWN (IN CORSO), PAYMENT_RESERVED (IN CORSO).",
+            "enum": [
+              "PAYING",
+              "PAYING_RPT",
+              "PAID_NORPT",
+              "PAID",
+              "FAILED_NORPT",
+              "FAILED",
+              "CANCELLED",
+              "CANCELLED_NORPT",
+              "NOTICE_GENERATED",
+              "NOTICE_STORED",
+              "NOTICE_SENT",
+              "NOTIFIED",
+              "PAYMENT_SENT",
+              "PAYMENT_REFUSED",
+              "PAYMENT_SEND_ERROR",
+              "PAYMENT_ACCEPTED",
+              "PAYMENT_UNKNOWN",
+              "PAYMENT_RESERVED"
+            ]
+          },
+          "inserted_timestamp": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Data e ora di creazione del pagamento nel formato ISO 8601 con fuso orario"
+          },
+          "updated_timestamp": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Data e ora dell'ultimo aggiornamento dello stato nel formato ISO 8601 con fuso orario"
+          },
+          "fk_position_payment": {
+            "type": "integer",
+            "format": "int64",
+            "description": "Identificativo esterno della posizione di pagamento nel sistema dell'ente"
+          },
+          "inserted_by": {
+            "type": "string",
+            "description": "Primitiva o attore che ha creato il pagamento (es. activatePaymentNoticeV2, closePayment-V2)"
+          },
+          "updated_by": {
+            "type": "string",
+            "description": "Primitiva o attore che ha aggiornato per ultimo lo stato del pagamento (es. nodoInviaRT, closePayment)"
+          }
+        }
+      },
+      "PaymentStatusRequest": {
+        "required": [
+          "caller"
+        ],
+        "type": "object",
+        "properties": {
+          "caller": {
+            "type": "string"
+          },
+          "daysToGoBack": {
+            "type": "integer",
+            "format": "int32"
+          }
+        }
+      },
+      "ProblemJson": {
+        "type": "object",
+        "properties": {
+          "title": {
+            "type": "string",
+            "description": "A short, summary of the problem type. Written in english and readable for engineers (usually not suited for non technical stakeholders and not localized); example: Service Unavailable"
+          },
+          "status": {
+            "maximum": 600,
+            "minimum": 100,
+            "type": "integer",
+            "description": "The HTTP status code generated by the origin server for this occurrence of the problem.",
+            "format": "int32",
+            "example": 200
+          },
+          "detail": {
+            "type": "string",
+            "description": "A human readable explanation specific to this occurrence of the problem.",
+            "example": "There was an error processing the request"
+          }
+        }
+      },
+      "listelement": {
+        "type": "object",
+        "required": [
+          "fiscalCode",
+          "noticeNumber"
+        ],
+        "properties": {
+          "fiscalCode": {
+            "type": "string",
+            "pattern": "^[0-9]{11}$"
+          },
+          "noticeNumber": {
+            "type": "string",
+            "pattern": "^[0-9]{18}$"
+          }
+        }
+      }
+    },
+    "securitySchemes": {
+      "ApiKey": {
+        "type": "apiKey",
+        "description": "The API key to access this function app.",
+        "name": "Ocp-Apim-Subscription-Key",
+        "in": "header"
+      }
+    }
+  }
+}

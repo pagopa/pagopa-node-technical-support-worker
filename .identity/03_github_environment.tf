@@ -32,9 +32,12 @@ locals {
     "CLUSTER_NAME" : local.aks_cluster.name,
     "CLUSTER_RESOURCE_GROUP" : local.aks_cluster.resource_group_name,
     "NAMESPACE" : local.domain,
-    "WORKLOAD_IDENTITY_ID": data.azurerm_user_assigned_identity.workload_identity_clientid.client_id
+    "WORKLOAD_IDENTITY_ID": data.azurerm_user_assigned_identity.workload_identity_clientid.client_id,
   }
   repo_secrets = {
+    "OBSERVABILITY_DATASOURCE_URL" : "jdbc:postgresql://nodo-db.${var.env_short}.internal.postgresql.pagopa.it:5432/nodo?sslmode=require&prepareThreshold=0&currentSchema=observability",
+    "OBSERVABILITY_DATASOURCE_USERNAME" : "observability",
+    "OBSERVABILITY_DATASOURCE_PASSWORD" : data.azurerm_key_vault_secret.key_vault_observability_password.value
   }
 }
 
@@ -44,6 +47,14 @@ locals {
 
 resource "github_actions_environment_secret" "github_environment_runner_secrets" {
   for_each        = local.env_secrets
+  repository      = local.github.repository
+  environment     = var.env
+  secret_name     = each.key
+  plaintext_value = each.value
+}
+
+resource "github_actions_environment_secret" "github_environment_runner_variables" {
+  for_each        = local.repo_secrets
   repository      = local.github.repository
   environment     = var.env
   secret_name     = each.key
@@ -61,7 +72,6 @@ resource "github_actions_environment_variable" "github_environment_runner_variab
   variable_name = each.key
   value         = each.value
 }
-
 
 #tfsec:ignore:github-actions-no-plain-text-action-secrets # not real secret
 resource "github_actions_secret" "secret_sonar_token" {
@@ -100,7 +110,6 @@ resource "github_actions_secret" "deploy_slack_webhook_url" {
   secret_name      = "SLACK_WEBHOOK_URL_DEPLOY"
   plaintext_value  = data.azurerm_key_vault_secret.key_vault_deploy_slack_webhook_url.value
 }
-
 
 ############
 ## Labels ##

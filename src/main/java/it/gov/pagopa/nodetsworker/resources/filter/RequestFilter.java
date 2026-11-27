@@ -5,6 +5,7 @@ import jakarta.ws.rs.container.ContainerRequestContext;
 import jakarta.ws.rs.container.ContainerRequestFilter;
 import jakarta.ws.rs.core.MultivaluedMap;
 import jakarta.ws.rs.ext.Provider;
+import it.gov.pagopa.nodetsworker.observability.re.ReDiagnosticPaths;
 import org.jboss.logging.Logger;
 
 import java.io.IOException;
@@ -17,6 +18,10 @@ public class RequestFilter implements ContainerRequestFilter {
 
   @Override
   public void filter(ContainerRequestContext containerRequestContext) throws IOException {
+    // RE has a dedicated metadata-only audit; even rejected query parameters can contain secrets.
+    if (ReDiagnosticPaths.suppressDecodedPath(containerRequestContext.getUriInfo().getPath())) {
+      return;
+    }
     long requestStartTime = System.nanoTime();
     containerRequestContext.setProperty("requestStartTime", requestStartTime);
 

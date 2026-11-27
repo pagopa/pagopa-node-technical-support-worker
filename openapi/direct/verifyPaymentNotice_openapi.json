@@ -1,0 +1,47 @@
+{
+  "openapi": "3.0.1",
+  "info": {
+    "title": "VerifyPaymentNotice API",
+    "description": "API to verify the status of a payment notice in the PagoPA system",
+    "version": "1.3.2-1-nodo-observability"
+  },
+  "paths": {
+    "/verifyPaymentNotice": {
+      "post": {
+        "summary": "verifyPaymentNotice",
+        "description": "Gets Payment Notice Data. A Payment Notice is identified by its QR-CODE data.",
+        "operationId": "verifyPaymentNotice",
+        "requestBody": {
+          "description": "verifyPaymentNoticeReq",
+          "content": {
+            "text/xml": {
+              "example": "<?xml version=\"1.0\" encoding=\"utf-8\"?> <Envelope xmlns=\"http://schemas.xmlsoap.org/soap/envelope/\"> <Body> <verifyPaymentNoticeReq xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xmlns=\"http://pagopa-api.pagopa.gov.it/node/nodeForPsp.xsd\"> <idPSP xmlns=\"\">idPSP1</idPSP> <idBrokerPSP xmlns=\"\">idBrokerPSP1</idBrokerPSP> <idChannel xmlns=\"\">idChannel1</idChannel> <qrCode xmlns=\"\"> <fiscalCode>fiscalCode1</fiscalCode> <noticeNumber>noticeNumber1</noticeNumber> </qrCode> </verifyPaymentNoticeReq> </Body> </Envelope>"
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "verifyPaymentNoticeRes",
+            "content": {
+              "text/xml": {
+                "example": "<?xml version=\"1.0\" encoding=\"utf-8\"?> <Envelope xmlns=\"http://schemas.xmlsoap.org/soap/envelope/\"> <Body> <verifyPaymentNoticeRes xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xmlns=\"http://pagopa-api.pagopa.gov.it/node/nodeForPsp.xsd\"> <outcome xmlns=\"\">OK</outcome> <fault xmlns=\"\"> <faultCode>faultCode1</faultCode> <faultString>faultString1</faultString> <id>id1</id> <description>description1</description> <serial>1</serial> <originalFaultCode>originalFaultCode1</originalFaultCode> <originalFaultString>originalFaultString1</originalFaultString> <originalDescription>originalDescription1</originalDescription> </fault> <paymentList xmlns=\"\"> <paymentOptionDescription> <amount>1</amount> <options>EQ</options> <dueDate>1900-01-01</dueDate> <paymentNote>paymentNote1</paymentNote> </paymentOptionDescription> <paymentOptionDescription> <amount>-79228162514264337593543950335</amount> <options>LS</options> <dueDate>0001-01-01</dueDate> <paymentNote>paymentNote2</paymentNote> </paymentOptionDescription> <paymentOptionDescription> <amount>999999999.99</amount> <options>GT</options> <dueDate>9999-12-31</dueDate> <paymentNote>paymentNote3</paymentNote> </paymentOptionDescription> <paymentOptionDescription> <amount>0.9</amount> <options>ANY</options> <dueDate>1899-11-30</dueDate> <paymentNote>paymentNote4</paymentNote> </paymentOptionDescription> <paymentOptionDescription> <amount>1.1</amount> <options>EQ</options> <dueDate>1900-02-02</dueDate> <paymentNote>paymentNote5</paymentNote> </paymentOptionDescription> </paymentList> <paymentDescription xmlns=\"\">paymentDescription1</paymentDescription> <fiscalCodePA xmlns=\"\">fiscalCode1</fiscalCodePA> <companyName xmlns=\"\">companyName1</companyName> <officeName xmlns=\"\">officeName1</officeName> </verifyPaymentNoticeRes> </Body> </Envelope>"
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+    },
+    "securitySchemes": {
+      "ApiKey": {
+        "type": "apiKey",
+        "description": "The API key to access this function app.",
+        "name": "Ocp-Apim-Subscription-Key",
+        "in": "header"
+      }
+    }
+  }
+}
